@@ -24,10 +24,10 @@ const NODES = [
 
   { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket 서버", path: "backend/app/main.py", features: ["25+ 엔드포인트", "CORS", "파일 업로드"] },
   { id: "websocket",      emoji: "\uD83D\uDD0C",  label: "WebSocket",                   status: "active",  col: 1, row: 1, desc: "실시간 양방향 통신", path: "backend/app/main.py", features: ["실시간 상태 동기화", "이벤트 스트리밍"] },
-  { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "pending", col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드", "ChromaDB", "프론트엔드"] },
-  { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "pending", col: 1, row: 3, desc: "클라우드 배포 플랫폼", path: "railway.toml", features: ["자동 배포", "볼륨 마운트"] },
+  { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "active",  col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드", "ChromaDB", "프론트엔드"] },
+  { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "active",  col: 1, row: 3, desc: "클라우드 배포 플랫폼 ($5/월)", path: "railway.toml", features: ["자동 배포", "볼륨 마운트", "Health check"] },
 
-  { id: "orchestrator",   emoji: "\uD83D\uDD04",  label: "Orchestrator (LangGraph)",    status: "active",  col: 2, row: 0, desc: "LangGraph 크로스 도메인 연쇄 엔진", path: "backend/agents/orchestrator.py", features: ["StateGraph", "도메인 라우팅", "연쇄 효과 계산"] },
+  { id: "orchestrator",   emoji: "\uD83D\uDD04",  label: "Orchestrator (LangGraph)",    status: "active",  col: 2, row: 0, desc: "조건 분기 + 대화 메모리 LangGraph 엔진", path: "backend/agents/orchestrator.py", features: ["조건 분기", "멀티도메인", "대화 메모리 50턴", "평가 노드"] },
   { id: "simulator",      emoji: "\u23F0",        label: "Schedule Simulator",          status: "active",  col: 2, row: 1, desc: "24시간 스케줄 시뮬레이터", path: "backend/rl_engine/schedule_simulator.py", features: ["장기 예측", "건강 변화 추적", "리듬 분석"] },
   { id: "risk",           emoji: "\u26A0\uFE0F",  label: "Risk Engine",                 status: "active",  col: 2, row: 2, desc: "음식 위험도 + 야식 패널티", path: "backend/risk_engine/", features: ["베이지안 위험도", "야식 -5 패널티", "타임라인"] },
 
@@ -36,13 +36,23 @@ const NODES = [
   { id: "health",         emoji: "\uD83C\uDFE5",  label: "Health Agent (LangChain)",     status: "active",  col: 3, row: 2, desc: "건강검진 분석 + 건강 플랜", path: "backend/agents/health_agent.py", features: ["검진 분석", "위험도 분류", "맞춤 플랜"] },
   { id: "hobby",          emoji: "\uD83C\uDFB8",  label: "Hobby Agent (LangChain)",      status: "active",  col: 3, row: 3, desc: "취미 추천 + 스트레스 해소 계산", path: "backend/agents/hobby_agent.py", features: ["스트레스 기반 추천", "시너지 계산", "감소율 모델링"] },
   { id: "ppo",            emoji: "\uD83C\uDFAF",  label: "PPO Reinforcement Learning",  status: "active",  col: 3, row: 4, desc: "PPO 강화학습 정책", path: "backend/rl_engine/ppo_agent.py", features: ["40차원 상태", "Stable-Baselines3", "자동 재학습"] },
+  { id: "retrain",        emoji: "\uD83D\uDD01",  label: "Retrain Scheduler",           status: "active",  col: 3, row: 5, desc: "피드백 기반 자동 재학습 트리거", path: "backend/rl_engine/retrain_scheduler.py", features: ["6시간 주기", "보상 하락 감지", "사용자 가중치"] },
+  { id: "optuna",         emoji: "\uD83D\uDD2C",  label: "Optuna AutoTuner",            status: "active",  col: 3, row: 6, desc: "하이퍼파라미터 자동 최적화", path: "backend/rl_engine/auto_tuner.py", features: ["100 trial", "lr/gamma/batch 탐색", "베이지안 최적화"] },
 
-  { id: "gpt4o",          emoji: "\uD83E\uDD16",  label: "GPT-4o-mini",                 status: "active",  col: 4, row: 0, desc: "OpenAI LLM 추론 엔진", path: ".env (OPENAI_API_KEY)", features: ["자연어 생성", "분석", "추천"] },
-  { id: "chromadb",       emoji: "\uD83D\uDCDA",  label: "ChromaDB (RAG)",              status: "active",  col: 4, row: 1, desc: "벡터 DB (RAG 검색)", path: "backend/knowledge/", features: ["레시피 10만건", "운동 데이터", "건강 가이드라인"] },
+  { id: "gpt4o",          emoji: "\uD83E\uDD16",  label: "GPT-4o-mini",                 status: "active",  col: 4, row: 0, desc: "OpenAI LLM 추론 엔진", path: ".env (OPENAI_API_KEY)", features: ["자연어 생성", "분석", "추천", "개인화 조언"] },
+  { id: "chromadb",       emoji: "\uD83D\uDCDA",  label: "ChromaDB (RAG)",              status: "active",  col: 4, row: 1, desc: "벡터 DB + 쿼리 확장 + 리랭킹", path: "backend/knowledge/", features: ["다중 쿼리 검색", "컨텍스트 부스트", "리랭킹"] },
   { id: "supabase",       emoji: "\uD83D\uDC18",  label: "Supabase PostgreSQL",         status: "active",  col: 4, row: 2, desc: "PostgreSQL 사용자 상태 저장", path: "backend/services/user_state_manager.py", features: ["40차원 State 벡터", "UPSERT", "pg8000 연결"] },
-  { id: "yolo",           emoji: "\uD83D\uDCF7",  label: "YOLO Food Recognition",       status: "partial", col: 4, row: 3, desc: "YOLOv8 식재료 인식", path: "backend/multimodal/food_recognizer.py", features: ["객체 감지", "신뢰도 필터링", "바운딩 박스"] },
-  { id: "openclip",       emoji: "\uD83D\uDDBC\uFE0F", label: "OpenCLIP Embedding",     status: "partial", col: 4, row: 4, desc: "512차원 이미지 임베딩", path: "backend/multimodal/clip_embedder.py", features: ["이미지-텍스트 유사도", "Top-K 검색"] },
-  { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 5, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["자세 교정", "관절 각도", "운동 폼 분석"] },
+  { id: "s3",             emoji: "\u2601\uFE0F",  label: "AWS S3 Model Storage",        status: "active",  col: 4, row: 3, desc: "모델 가중치 저장 + 버전 관리", path: "backend/services/model_registry.py", features: ["SHA256 체크섬", "버전 관리", "자동 동기화"] },
+  { id: "yolo",           emoji: "\uD83D\uDCF7",  label: "YOLO Food Recognition",       status: "partial", col: 4, row: 4, desc: "YOLOv8 식재료 인식", path: "backend/multimodal/food_recognizer.py", features: ["객체 감지", "신뢰도 필터링", "바운딩 박스"] },
+  { id: "openclip",       emoji: "\uD83D\uDDBC\uFE0F", label: "OpenCLIP Embedding",     status: "partial", col: 4, row: 5, desc: "512차원 이미지 임베딩 + LLM 개인화", path: "backend/multimodal/photo_analyzer.py", features: ["얼굴/체형 분석", "LLM 개인화 조언", "Top-K 생성"] },
+  { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 6, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["자세 교정", "관절 각도", "운동 폼 분석"] },
+
+  // Layer 5: 배포 + 오프라인
+  { id: "offline",        emoji: "\uD83D\uDCF1",  label: "Offline Engine (JS)",          status: "active",  col: 0, row: 3, desc: "오프라인 추론 + 모델 동기화", path: "frontend/src/services/offlineEngine.js", features: ["IndexedDB 캐싱", "smartSimulate", "자동 동기화"] },
+  { id: "capacitor",      emoji: "\uD83D\uDCF2",  label: "Capacitor (Android APK)",     status: "active",  col: 0, row: 4, desc: "Android APK 빌드 + 네이티브 기능", path: "frontend/capacitor.config.json", features: ["카메라", "파일시스템", "오프라인 모드"] },
+  { id: "vercel",         emoji: "\u25B2",        label: "Vercel (Frontend Deploy)",    status: "active",  col: 1, row: 4, desc: "프론트엔드 CDN 배포", path: "frontend/vercel.json", features: ["자동 배포", "SPA Rewrite", "글로벌 CDN"] },
+  { id: "jwt",            emoji: "\uD83D\uDD10",  label: "JWT Auth + Rate Limit",       status: "active",  col: 1, row: 5, desc: "인증 미들웨어 + API 보안", path: "backend/app/main.py", features: ["Bearer 토큰", "분당 60회 제한", "Kakao OAuth"] },
+  { id: "gpu_train",      emoji: "\uD83D\uDDA5\uFE0F", label: "GPU Training Pipeline",  status: "active",  col: 2, row: 3, desc: "로컬 GPU 학습 → S3 업로드", path: "scripts/train_and_upload.py", features: ["PPO 학습", "Optuna 최적화", "서버 업로드"] },
 ];
 
 // Connection categories with distinct colors
@@ -84,6 +94,23 @@ const CONNECTIONS = [
   { from: "whisper",   to: "fastapi",      label: "변환된 텍스트",        cat: "voice" },
   { from: "fastapi",   to: "gtts",         label: "TTS 생성 요청",       cat: "voice" },
   { from: "gtts",      to: "frontend",     label: "음성 응답 재생",       cat: "voice" },
+  // RL 피드백 루프
+  { from: "fastapi",   to: "retrain",      label: "피드백 → 재학습 트리거", cat: "rl" },
+  { from: "retrain",   to: "optuna",       label: "하이퍼파라미터 최적화",  cat: "rl" },
+  { from: "retrain",   to: "ppo",          label: "PPO 재학습 실행",       cat: "rl" },
+  // 모델 동기화
+  { from: "ppo",        to: "s3",          label: "모델 업로드",           cat: "data" },
+  { from: "s3",         to: "frontend",    label: "모델 다운로드 (동기화)",  cat: "data" },
+  { from: "gpu_train",  to: "s3",          label: "학습 모델 업로드",       cat: "rl" },
+  { from: "gpu_train",  to: "ppo",         label: "PPO 학습 실행",         cat: "rl" },
+  // 오프라인 + 배포
+  { from: "frontend",  to: "offline",      label: "오프라인 추론 폴백",     cat: "api" },
+  { from: "offline",   to: "capacitor",    label: "APK 내장 추론",         cat: "api" },
+  { from: "frontend",  to: "vercel",       label: "CDN 배포",             cat: "api" },
+  // 보안
+  { from: "fastapi",   to: "jwt",          label: "인증 + Rate Limit",    cat: "api" },
+  // 멀티모달 LLM 연결
+  { from: "openclip",  to: "gpt4o",        label: "LLM 개인화 조언 생성",  cat: "llm" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -127,7 +154,19 @@ const TREE_POS = {
   supabase:     { x: 1400, y: 360 },
   yolo:         { x: 1400, y: 520 },
   openclip:     { x: 1400, y: 680 },
-  mediapipe:    { x: 1400, y: 820 },
+  mediapipe:    { x: 1400, y: 840 },
+  s3:           { x: 1400, y: 520 },
+
+  // RL 확장
+  retrain:      { x: 1040, y: 840 },
+  optuna:       { x: 1040, y: 960 },
+
+  // 배포 + 오프라인
+  offline:      { x: 40,   y: 740 },
+  capacitor:    { x: 40,   y: 880 },
+  vercel:       { x: 340,  y: 740 },
+  jwt:          { x: 340,  y: 880 },
+  gpu_train:    { x: 680,  y: 680 },
 };
 
 const EXPANDED_POPUP_OFFSET = POPUP_H + 16;

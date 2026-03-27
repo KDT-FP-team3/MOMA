@@ -9,7 +9,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -26,6 +26,9 @@ from backend.multimodal.food_recognizer import FoodRecognizer
 from backend.rl_engine.env.life_env import LifeEnv, ACTION_DEFINITIONS
 from backend.rl_engine.reward_cross_domain import CrossDomainReward
 from backend.rl_engine.schedule_simulator import ScheduleSimulator
+from backend.rl_engine.retrain_scheduler import RetrainScheduler
+from backend.rl_engine.ppo_agent import PPOAgent
+from backend.services.model_registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,8 @@ async def lifespan(app: FastAPI):
     logger.info("LifeSync AI 서버 시작")
     yield
     # 종료 시 DB 연결 풀 정리
-    state_manager.close()
+    if state_manager is not None:
+        state_manager.close()
     logger.info("LifeSync AI 서버 종료")
 
 
@@ -81,19 +85,32 @@ app.add_middleware(
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
 
-# --- 서비스 초기화 ---
-orchestrator = Orchestrator()
-intent_classifier = IntentClassifier()
-tts_responder = TTSResponder()
-state_manager = UserStateManager()
-feedback_collector = FeedbackCollector()
-gauge_calculator = GaugeCalculator()
-photo_analyzer = PhotoAnalyzer()
-timeline_generator = TimelineGenerator()
-night_meal_penalty = NightMealPenalty()
-food_recognizer = FoodRecognizer()
-reward_calculator = CrossDomainReward()
-schedule_simulator = ScheduleSimulator()
+# --- 서비스 초기화 (개별 실패 허용) ---
+def _safe_init(name: str, factory):
+    """서비스를 안전하게 초기화. 실패 시 None 반환."""
+    try:
+        instance = factory()
+        logger.info("서비스 초기화 성공: %s", name)
+        return instance
+    except Exception:
+        logger.exception("서비스 초기화 실패 (비활성): %s", name)
+        return None
+
+orchestrator = _safe_init("Orchestrator", Orchestrator)
+intent_classifier = _safe_init("IntentClassifier", IntentClassifier)
+tts_responder = _safe_init("TTSResponder", TTSResponder)
+state_manager = _safe_init("UserStateManager", UserStateManager)
+feedback_collector = _safe_init("FeedbackCollector", FeedbackCollector)
+gauge_calculator = _safe_init("GaugeCalculator", GaugeCalculator)
+photo_analyzer = _safe_init("PhotoAnalyzer", PhotoAnalyzer)
+timeline_generator = _safe_init("TimelineGenerator", TimelineGenerator)
+night_meal_penalty = _safe_init("NightMealPenalty", NightMealPenalty)
+food_recognizer = _safe_init("FoodRecognizer", FoodRecognizer)
+reward_calculator = _safe_init("CrossDomainReward", CrossDomainReward)
+schedule_simulator = _safe_init("ScheduleSimulator", ScheduleSimulator)
+retrain_scheduler = _safe_init("RetrainScheduler", RetrainScheduler)
+ppo_agent = _safe_init("PPOAgent", PPOAgent)
+model_registry = _safe_init("ModelRegistry", ModelRegistry)
 
 # --- RL 시뮬레이션 세션 관리 ---
 simulation_sessions: dict[str, LifeEnv] = {}
@@ -116,8 +133,98 @@ class FeedbackRequest(BaseModel):
     feedback: dict[str, Any]
 
 
-# --- 카카오 로그인 ---
+# --- JWT 인증 미들웨어 ---
 from backend.services.kakao_auth import get_kakao_login_url, kakao_login, verify_token
+from starlette.requests import Request
+
+# 인증 불필요 경로
+PUBLIC_PATHS = {
+    "/health", "/docs", "/openapi.json", "/redoc",
+    "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
+}
+
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    """JWT 토큰 검증 미들웨어.
+
+    PUBLIC_PATHS와 OPTIONS 요청은 인증 없이 통과.
+    나머지는 Authorization 헤더의 Bearer 토큰을 검증.
+    개발 환경(ENV != production)에서는 인증을 선택적으로 적용.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        # 공개 경로 및 OPTIONS(CORS preflight) 통과
+        if path in PUBLIC_PATHS or request.method == "OPTIONS":
+            return await call_next(request)
+        # WebSocket은 별도 처리
+        if path.startswith("/ws"):
+            return await call_next(request)
+        # 개발 환경(로컬)에서만 인증 선택적 — ENV=development 명시 필요
+        if os.getenv("ENV") == "development":
+            return await call_next(request)
+
+        auth_header = request.headers.get("Authorization", "")
+        token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+        if not token:
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "인증 토큰이 필요합니다."},
+            )
+        payload = verify_token(token)
+        if not payload:
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "유효하지 않은 토큰입니다."},
+            )
+        # 요청에 사용자 정보 주입
+        request.state.user = payload
+        return await call_next(request)
+
+
+app.add_middleware(AuthMiddleware)
+
+# --- Rate Limiting ---
+_rate_limit_store: dict[str, list[float]] = {}
+RATE_LIMIT_MAX = 60  # 분당 최대 요청 수
+RATE_LIMIT_WINDOW = 60  # 초
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """IP 기반 Rate Limiting 미들웨어 (분당 60회)."""
+
+    async def dispatch(self, request: Request, call_next):
+        client_ip = request.client.host if request.client else "unknown"
+        now = __import__("time").time()
+
+        if client_ip not in _rate_limit_store:
+            _rate_limit_store[client_ip] = []
+
+        # 윈도우 밖 기록 제거
+        _rate_limit_store[client_ip] = [
+            t for t in _rate_limit_store[client_ip]
+            if now - t < RATE_LIMIT_WINDOW
+        ]
+
+        if len(_rate_limit_store[client_ip]) >= RATE_LIMIT_MAX:
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "요청 한도 초과. 잠시 후 다시 시도하세요."},
+            )
+
+        _rate_limit_store[client_ip].append(now)
+        response = await call_next(request)
+        response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX)
+        response.headers["X-RateLimit-Remaining"] = str(
+            RATE_LIMIT_MAX - len(_rate_limit_store[client_ip])
+        )
+        return response
+
+
+app.add_middleware(RateLimitMiddleware)
 
 
 @app.get("/api/auth/kakao/login-url")
@@ -137,7 +244,7 @@ async def kakao_callback(data: dict):
         return result
     except Exception as e:
         logger.error("카카오 로그인 실패: %s", e)
-        raise HTTPException(status_code=401, detail=str(e))
+        raise HTTPException(status_code=401, detail="요청 처리 중 오류가 발생했습니다.")
 
 
 @app.get("/api/auth/me")
@@ -169,6 +276,8 @@ async def query_endpoint(request: QueryRequest) -> dict[str, Any]:
     Returns:
         오케스트레이터 실행 결과.
     """
+    if orchestrator is None:
+        raise HTTPException(status_code=503, detail="오케스트레이터 서비스가 초기화되지 않았습니다.")
     try:
         result = orchestrator.run_chain(
             user_id=request.user_id,
@@ -177,10 +286,10 @@ async def query_endpoint(request: QueryRequest) -> dict[str, Any]:
         )
         return result
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="요청 처리 중 오류가 발생했습니다.")
     except Exception as e:
         logger.error("query_endpoint error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="요청 처리 중 오류가 발생했습니다.")
 
 
 @app.post("/api/photo/upload")
@@ -193,7 +302,15 @@ async def photo_upload(file: UploadFile = File(...)) -> dict[str, Any]:
     Returns:
         Top-5 분석 결과.
     """
+    if photo_analyzer is None:
+        raise HTTPException(status_code=503, detail="사진 분석 서비스가 비활성 상태입니다.")
+    # 파일 타입 검증
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="허용되지 않는 파일 형식입니다.")
     image_bytes = await file.read()
+    # 파일 크기 검증
+    if len(image_bytes) > MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=413, detail="파일 크기 초과 (최대 10MB)")
     top_k = photo_analyzer.get_top_k_similar(image_bytes, k=5)
     face = photo_analyzer.analyze_face(image_bytes)
     body = photo_analyzer.analyze_body(image_bytes)
@@ -219,17 +336,157 @@ async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
     Returns:
         6개 게이지 점수.
     """
+    if state_manager is None or gauge_calculator is None:
+        raise HTTPException(status_code=503, detail="대시보드 서비스가 비활성 상태입니다.")
     user_state = state_manager.to_dict(user_id)
     gauges = gauge_calculator.calculate_all(user_state)
     return {"user_id": user_id, "gauges": gauges, "state": user_state}
 
 
 @app.post("/api/feedback")
-async def feedback_endpoint(request: FeedbackRequest) -> dict[str, Any]:
-    """피드백 수집 엔드포인트."""
+async def feedback_endpoint(
+    request: FeedbackRequest,
+    background_tasks: BackgroundTasks,
+) -> dict[str, Any]:
+    """피드백 수집 + RL 재학습 트리거."""
+    if feedback_collector is None:
+        raise HTTPException(status_code=503, detail="피드백 서비스가 비활성 상태입니다.")
     feedback_collector.collect(request.user_id, request.feedback)
     reward = feedback_collector.to_reward(request.feedback)
-    return {"status": "received", "reward": reward}
+
+    # RL 피드백 루프: 트리거 조건 확인 → 백그라운드 재학습
+    retrain_triggered = False
+    if retrain_scheduler is not None:
+        # 사용자별 보상 가중치 업데이트
+        domain_satisfaction = request.feedback.get("domain_scores", {})
+        if domain_satisfaction:
+            retrain_scheduler.update_user_reward_weights(
+                request.user_id, domain_satisfaction
+            )
+
+        metrics = {
+            "avg_reward": reward,
+            "feedback_score": request.feedback.get("value", 3.0)
+            if isinstance(request.feedback.get("value"), (int, float))
+            else 3.0,
+        }
+        if retrain_scheduler.check_trigger(metrics):
+            retrain_triggered = True
+            background_tasks.add_task(
+                _background_retrain, request.user_id
+            )
+
+    return {
+        "status": "received",
+        "reward": reward,
+        "retrain_triggered": retrain_triggered,
+    }
+
+
+def _background_retrain(user_id: str) -> None:
+    """백그라운드 RL 재학습."""
+    if retrain_scheduler is None:
+        return
+    logger.info("백그라운드 재학습 시작: user=%s", user_id)
+    result = retrain_scheduler.schedule_retrain(user_id=user_id)
+    logger.info("재학습 결과: %s", result)
+
+    # 학습된 모델 로드
+    if ppo_agent is not None and result.get("status") == "retrain_completed":
+        model_path = f"models/ppo_{user_id}.zip"
+        if ppo_agent._model is not None:
+            ppo_agent.save(model_path)
+            logger.info("학습 모델 저장: %s", model_path)
+
+
+@app.get("/api/rl/status")
+async def rl_status() -> dict[str, Any]:
+    """RL 학습 상태 조회."""
+    status: dict[str, Any] = {"retrain_scheduler": retrain_scheduler is not None}
+    if retrain_scheduler is not None:
+        status["avg_confidence"] = retrain_scheduler.get_average_confidence()
+        status["recent_rewards_count"] = len(retrain_scheduler._recent_rewards)
+        status["last_retrain_elapsed_hours"] = round(
+            (__import__("time").time() - retrain_scheduler._last_retrain_time) / 3600, 1
+        )
+    if ppo_agent is not None:
+        status["ppo_model_loaded"] = ppo_agent._model is not None
+    return status
+
+
+# --- 모델 동기화 API (클라이언트 오프라인 지원) ---
+
+
+@app.get("/api/models/list")
+async def list_models() -> dict[str, Any]:
+    """등록된 모델 목록 조회."""
+    if model_registry is None:
+        return {"models": {}}
+    return {"models": model_registry.list_models()}
+
+
+@app.get("/api/models/{model_name}/version")
+async def model_version(model_name: str) -> dict[str, Any]:
+    """모델 최신 버전 정보 (클라이언트 동기화 체크용).
+
+    클라이언트는 로컬 버전과 비교하여 업데이트 필요 여부를 판단한다.
+    """
+    if model_registry is None:
+        return {"model_name": model_name, "version": 0, "available": False}
+    return model_registry.get_latest_version(model_name)
+
+
+@app.get("/api/models/{model_name}/download")
+async def download_model_weights(model_name: str):
+    """모델 가중치 파일 다운로드 (클라이언트 오프라인용)."""
+    if model_registry is None:
+        raise HTTPException(status_code=503, detail="모델 레지스트리 비활성")
+
+    local_path = model_registry.download_model(model_name)
+    if not local_path or not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail=f"모델 '{model_name}' 파일 없음")
+
+    from starlette.responses import FileResponse
+    return FileResponse(
+        local_path,
+        filename=os.path.basename(local_path),
+        media_type="application/octet-stream",
+    )
+
+
+MODEL_UPLOAD_MAX_SIZE = 100 * 1024 * 1024  # 100MB
+
+
+@app.post("/api/models/upload")
+async def upload_model_endpoint(
+    model_name: str,
+    file: UploadFile = File(...),
+) -> dict[str, Any]:
+    """모델 업로드 (로컬 GPU 학습 결과 → S3 + 버전 등록)."""
+    if model_registry is None:
+        raise HTTPException(status_code=503, detail="모델 레지스트리 비활성")
+
+    # 경로 트래버설 방지: 파일명/모델명 안전화
+    safe_model_name = os.path.basename(model_name)
+    safe_filename = os.path.basename(file.filename or "model.zip")
+    if not safe_model_name or safe_model_name.startswith("."):
+        raise HTTPException(status_code=400, detail="잘못된 모델 이름")
+
+    content = await file.read()
+
+    # 파일 크기 검증
+    if len(content) > MODEL_UPLOAD_MAX_SIZE:
+        raise HTTPException(status_code=413, detail="파일 크기 초과 (최대 100MB)")
+
+    save_dir = os.path.join("models", safe_model_name)
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, safe_filename)
+
+    with open(save_path, "wb") as f:
+        f.write(content)
+
+    result = model_registry.upload_model(safe_model_name, save_path)
+    return result
 
 
 @app.get("/api/roadmap/{user_id}")
@@ -255,10 +512,10 @@ async def cascade_preview(request: QueryRequest) -> dict[str, Any]:
             action=request.action,
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="요청 처리 중 오류가 발생했습니다.")
     except Exception as e:
         logger.error("cascade_preview error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="요청 처리 중 오류가 발생했습니다.")
     return {
         "domain": request.domain,
         "cascade_effects": result.get("cascade_effects", {}),
@@ -446,7 +703,13 @@ async def food_recognize(file: UploadFile = File(...)) -> dict[str, Any]:
     Returns:
         감지된 식재료 목록.
     """
+    if food_recognizer is None:
+        raise HTTPException(status_code=503, detail="식재료 인식 서비스가 비활성 상태입니다.")
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="허용되지 않는 파일 형식입니다.")
     image_bytes = await file.read()
+    if len(image_bytes) > MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=413, detail="파일 크기 초과 (최대 10MB)")
     detections = food_recognizer.detect(image_bytes)
     labels = food_recognizer.classify(image_bytes)
 
@@ -476,12 +739,18 @@ async def schedule_simulate(request: ScheduleSimRequest) -> dict[str, Any]:
     Returns:
         일별 상태 변화, 최종 상태, 분석 결과, 조언.
     """
-    result = schedule_simulator.simulate(
-        schedule=request.schedule,
-        days=request.days,
-        initial_state=request.initial_state,
-    )
-    return result
+    if schedule_simulator is None:
+        raise HTTPException(status_code=503, detail="시뮬레이터 서비스가 초기화되지 않았습니다.")
+    try:
+        result = schedule_simulator.simulate(
+            schedule=request.schedule,
+            days=request.days,
+            initial_state=request.initial_state,
+        )
+        return result
+    except Exception as e:
+        logger.exception("schedule_simulate 에러")
+        raise HTTPException(status_code=500, detail="요청 처리 중 오류가 발생했습니다.")
 
 
 @app.get("/api/schedule/activities")
@@ -574,9 +843,21 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
     메시지 형식:
         {"type": "echo" | "voice" | "query" | "feedback" | "subscribe", "data": ...}
+    인증: query param ?token=xxx 또는 첫 메시지로 {"type":"auth","data":{"token":"xxx"}}
     """
+    # 프로덕션에서는 토큰 검증
+    ws_user_id = "default"
+    if os.getenv("ENV") != "development":
+        token = websocket.query_params.get("token", "")
+        if token:
+            payload = verify_token(token)
+            if not payload:
+                await websocket.close(code=4001, reason="Invalid token")
+                return
+            ws_user_id = payload.get("user_id", "default")
+
     await websocket.accept()
-    logger.info("WebSocket 연결 수립")
+    logger.info("WebSocket 연결 수립: user=%s", ws_user_id)
 
     try:
         while True:

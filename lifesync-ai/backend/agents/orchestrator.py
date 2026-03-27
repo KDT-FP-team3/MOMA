@@ -1,11 +1,19 @@
 """크로스 도메인 연쇄 엔진 — LangGraph StateGraph 기반 오케스트레이션.
 
 4개 도메인 에이전트를 LangGraph 그래프로 연결하고,
-크로스 도메인 연쇄 효과를 노드 간 엣지로 처리한다.
+조건 분기와 대화 메모리를 통해 크로스 도메인 연쇄 효과를 처리한다.
+
+그래프 구조:
+  classify_intent
+      ↓ (조건 분기)
+  ┌── food_agent ──┐
+  ├── exercise_agent ┤
+  ├── health_agent ──┤→ merge_results → compute_cascade → evaluate → END
+  └── hobby_agent ──┘
 """
 
 import logging
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from langgraph.graph import StateGraph, END
 
@@ -27,6 +35,13 @@ class ChainState(TypedDict):
     result: dict[str, Any]
     cascade_effects: dict[str, Any]
     affected_domains: list[str]
+    # 멀티 도메인 지원
+    target_domains: list[str]
+    multi_results: dict[str, Any]
+    # 대화 히스토리
+    history: list[dict[str, Any]]
+    # 평가 메트릭
+    evaluation: dict[str, Any]
 
 
 # --- 크로스 도메인 연쇄 규칙 ---
@@ -99,12 +114,19 @@ CASCADE_RULES: dict[str, dict[str, dict[str, Any]]] = {
     },
 }
 
+# 키워드 → 도메인 매핑 (멀티 도메인 인텐트 분류용)
+DOMAIN_KEYWORDS: dict[str, list[str]] = {
+    "food": ["식사", "음식", "요리", "레시피", "칼로리", "식단", "먹", "밥", "메뉴", "영양", "다이어트"],
+    "exercise": ["운동", "헬스", "달리기", "러닝", "근력", "유산소", "스트레칭", "걷기", "조깅"],
+    "health": ["건강", "검진", "혈압", "콜레스테롤", "수면", "스트레스", "체중", "BMI", "혈액"],
+    "hobby": ["취미", "기타", "독서", "명상", "그림", "음악", "게임", "산책", "여행"],
+}
+
 
 class Orchestrator:
     """LangGraph 기반 크로스 도메인 오케스트레이터.
 
-    StateGraph를 사용하여 4개 도메인 에이전트를 그래프로 연결하고,
-    도메인 라우팅 → 에이전트 실행 → 연쇄 효과 계산 파이프라인을 구성한다.
+    조건 분기, 멀티 도메인 실행, 대화 메모리를 지원한다.
     """
 
     VALID_DOMAINS: list[str] = ["food", "exercise", "health", "hobby"]
@@ -115,27 +137,47 @@ class Orchestrator:
         self.health_agent = HealthAgent()
         self.hobby_agent = HobbyAgent()
 
+        # 사용자별 대화 히스토리 (메모리)
+        self._memory: dict[str, list[dict[str, Any]]] = {}
+
         # LangGraph 그래프 구성
         self._graph = self._build_graph()
 
     def _build_graph(self) -> Any:
-        """LangGraph StateGraph 구성.
-
-        그래프 구조:
-          route_domain → execute_agent → compute_cascade → END
-        """
+        """조건 분기 + 멀티 도메인 LangGraph 구성."""
         graph = StateGraph(ChainState)
 
         # 노드 등록
-        graph.add_node("route_domain", self._route_domain_node)
-        graph.add_node("execute_agent", self._execute_agent_node)
+        graph.add_node("classify_intent", self._classify_intent_node)
+        graph.add_node("food_agent", self._food_agent_node)
+        graph.add_node("exercise_agent", self._exercise_agent_node)
+        graph.add_node("health_agent", self._health_agent_node)
+        graph.add_node("hobby_agent", self._hobby_agent_node)
+        graph.add_node("merge_results", self._merge_results_node)
         graph.add_node("compute_cascade", self._compute_cascade_node)
+        graph.add_node("evaluate", self._evaluate_node)
 
-        # 엣지 연결
-        graph.set_entry_point("route_domain")
-        graph.add_edge("route_domain", "execute_agent")
-        graph.add_edge("execute_agent", "compute_cascade")
-        graph.add_edge("compute_cascade", END)
+        # 진입점
+        graph.set_entry_point("classify_intent")
+
+        # 조건 분기: 인텐트에 따라 에이전트 선택
+        graph.add_conditional_edges(
+            "classify_intent",
+            self._route_to_agent,
+            {
+                "food": "food_agent",
+                "exercise": "exercise_agent",
+                "health": "health_agent",
+                "hobby": "hobby_agent",
+            },
+        )
+
+        # 모든 에이전트 → merge → cascade → evaluate → END
+        for agent_name in ["food_agent", "exercise_agent", "health_agent", "hobby_agent"]:
+            graph.add_edge(agent_name, "merge_results")
+        graph.add_edge("merge_results", "compute_cascade")
+        graph.add_edge("compute_cascade", "evaluate")
+        graph.add_edge("evaluate", END)
 
         return graph.compile()
 
@@ -162,6 +204,9 @@ class Orchestrator:
 
         logger.info("run_chain 호출: user=%s, domain=%s", user_id, domain)
 
+        # 대화 히스토리 로드
+        history = self._memory.get(user_id, [])
+
         # LangGraph 실행
         initial_state: ChainState = {
             "user_id": user_id,
@@ -170,44 +215,93 @@ class Orchestrator:
             "result": {},
             "cascade_effects": {},
             "affected_domains": [],
+            "target_domains": [domain],
+            "multi_results": {},
+            "history": history[-10:],  # 최근 10턴
+            "evaluation": {},
         }
 
         final_state = self._graph.invoke(initial_state)
+
+        # 히스토리 저장
+        turn = {
+            "domain": domain,
+            "action": action,
+            "result": final_state.get("result", {}),
+        }
+        if user_id not in self._memory:
+            self._memory[user_id] = []
+        self._memory[user_id].append(turn)
+        # 메모리 상한 (50턴)
+        if len(self._memory[user_id]) > 50:
+            self._memory[user_id] = self._memory[user_id][-50:]
 
         return {
             "user_id": final_state["user_id"],
             "domain": final_state["domain"],
             "result": final_state["result"],
             "cascade_effects": final_state["cascade_effects"],
+            "evaluation": final_state.get("evaluation", {}),
+            "history_length": len(self._memory.get(user_id, [])),
         }
 
-    # --- LangGraph 노드 함수 ---
+    # --- 인텐트 분류 ---
 
-    def _route_domain_node(self, state: ChainState) -> ChainState:
-        """도메인 라우팅 노드 — 유효성 검증 및 로깅."""
-        domain = state["domain"]
-        logger.info("[LangGraph] route_domain: %s", domain)
-        return state
-
-    def _execute_agent_node(self, state: ChainState) -> ChainState:
-        """에이전트 실행 노드 — 도메인별 에이전트 호출."""
-        domain = state["domain"]
+    def _classify_intent_node(self, state: ChainState) -> ChainState:
+        """인텐트 분류 노드 — 쿼리에서 도메인 감지."""
         action = state["action"]
+        query = action.get("query", "")
 
-        logger.info("[LangGraph] execute_agent: domain=%s", domain)
+        if state["domain"] in self.VALID_DOMAINS:
+            # 명시적 도메인이 이미 지정된 경우
+            return {**state, "target_domains": [state["domain"]]}
 
-        if domain == "food":
-            result = self.food_agent.recommend(action)
-        elif domain == "exercise":
-            result = self.exercise_agent.recommend(action)
-        elif domain == "health":
-            result = self.health_agent.analyze_checkup(action)
-        elif domain == "hobby":
-            result = self.hobby_agent.recommend(action)
-        else:
-            result = {}
+        # 키워드 기반 멀티 도메인 감지
+        detected = []
+        for domain, keywords in DOMAIN_KEYWORDS.items():
+            if any(kw in query for kw in keywords):
+                detected.append(domain)
 
-        return {**state, "result": result}
+        if not detected:
+            detected = ["food"]  # 기본값
+
+        return {**state, "domain": detected[0], "target_domains": detected}
+
+    def _route_to_agent(self, state: ChainState) -> str:
+        """조건 분기 함수 — 도메인에 따라 에이전트 선택."""
+        return state["domain"]
+
+    # --- 에이전트 노드 ---
+
+    def _food_agent_node(self, state: ChainState) -> ChainState:
+        """음식 에이전트 노드."""
+        result = self.food_agent.recommend(state["action"])
+        return {**state, "result": result, "multi_results": {**state.get("multi_results", {}), "food": result}}
+
+    def _exercise_agent_node(self, state: ChainState) -> ChainState:
+        """운동 에이전트 노드."""
+        result = self.exercise_agent.recommend(state["action"])
+        return {**state, "result": result, "multi_results": {**state.get("multi_results", {}), "exercise": result}}
+
+    def _health_agent_node(self, state: ChainState) -> ChainState:
+        """건강 에이전트 노드."""
+        result = self.health_agent.analyze_checkup(state["action"])
+        return {**state, "result": result, "multi_results": {**state.get("multi_results", {}), "health": result}}
+
+    def _hobby_agent_node(self, state: ChainState) -> ChainState:
+        """취미 에이전트 노드."""
+        result = self.hobby_agent.recommend(state["action"])
+        return {**state, "result": result, "multi_results": {**state.get("multi_results", {}), "hobby": result}}
+
+    # --- 후처리 노드 ---
+
+    def _merge_results_node(self, state: ChainState) -> ChainState:
+        """결과 병합 노드 — 멀티 도메인 결과 통합."""
+        multi = state.get("multi_results", {})
+        if len(multi) > 1:
+            # 멀티 도메인: 결과를 통합
+            return {**state, "result": {"multi_domain": True, "domains": multi}}
+        return state
 
     def _compute_cascade_node(self, state: ChainState) -> ChainState:
         """연쇄 효과 계산 노드 — 크로스 도메인 전파."""
@@ -240,3 +334,17 @@ class Orchestrator:
         }
 
         return {**state, "cascade_effects": cascade, "affected_domains": list(effects.keys())}
+
+    def _evaluate_node(self, state: ChainState) -> ChainState:
+        """평가 노드 — 결과 품질 메트릭 생성."""
+        result = state.get("result", {})
+        cascade = state.get("cascade_effects", {})
+
+        evaluation = {
+            "has_result": bool(result),
+            "cascade_count": len(cascade.get("affected_domains", [])),
+            "domains_involved": state.get("target_domains", []),
+            "history_context_used": len(state.get("history", [])) > 0,
+        }
+
+        return {**state, "evaluation": evaluation}

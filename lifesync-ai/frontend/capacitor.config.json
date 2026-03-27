@@ -3,6 +3,6 @@
   "appName": "LifeSync AI",
   "webDir": "dist",
   "server": {
-    "cleartext": true
+    "cleartext": false
   }
 }

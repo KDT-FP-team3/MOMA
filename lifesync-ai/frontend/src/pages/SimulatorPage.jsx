@@ -51,20 +51,21 @@ export default function SimulatorPage() {
   const [week, setWeek] = useState(() => saved.week || 1);
   const [day, setDay] = useState(() => saved.day || 1);
   const [history, setHistory] = useState(() => saved.history || []);
-  const [lastReward, setLastReward] = useState(() => saved.lastReward || null);
-  const [lastCascade, setLastCascade] = useState(() => saved.lastCascade || null);
+  const [lastReward, setLastReward] = useState(null);
+  const [lastCascade, setLastCascade] = useState(null);
   const [terminated, setTerminated] = useState(() => saved.terminated || false);
   const [loading, setLoading] = useState(false);
   const [totalReward, setTotalReward] = useState(() => saved.totalReward || 0);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [actionLog, setActionLog] = useState(() => saved.actionLog || []);
 
   // Save simulator state to global context + localStorage whenever it changes
   useEffect(() => {
     updateAppState("simulatorState", {
       started, healthState: state, gauges, step, week, day,
-      history, lastReward, lastCascade, terminated, totalReward,
+      history, lastReward, lastCascade, terminated, totalReward, actionLog,
     });
-  }, [started, state, gauges, step, week, day, history, lastReward, lastCascade, terminated, totalReward, updateAppState]);
+  }, [started, state, gauges, step, week, day, history, lastReward, lastCascade, terminated, totalReward, actionLog, updateAppState]);
 
   const reset = async () => {
     setLoading(true);
@@ -81,6 +82,7 @@ export default function SimulatorPage() {
       setTerminated(false);
       setStarted(true);
       setTotalReward(0);
+      setActionLog([]);
       setShowAnimation(true);
       setTimeout(() => setShowAnimation(false), 3000);
     } catch (e) {
@@ -112,6 +114,13 @@ export default function SimulatorPage() {
         ...prev,
         { step: res.data.step, action: res.data.action.description, ...res.data.health_state },
       ].slice(-30));
+
+      // 행동 로그 누적
+      const actionName = Object.keys(ACTION_STYLES)[actionId];
+      setActionLog((prev) => [
+        ...prev,
+        { name: actionName, step: res.data.step, reward: res.data.reward },
+      ]);
     } catch (e) {
       console.error("시뮬레이션 스텝 실패:", e);
     } finally {
@@ -190,10 +199,12 @@ export default function SimulatorPage() {
           </div>
         )}
 
-        {/* 시뮬레이션 시작 애니메이션 */}
-        <SimulationAnimation active={showAnimation} onComplete={() => setShowAnimation(false)}>
-          <div className="text-center text-cyan-400 text-lg font-semibold">시뮬레이션 초기화 중...</div>
-        </SimulationAnimation>
+        {/* 시뮬레이션 시작 애니메이션 (초기화 클릭 시에만 표시) */}
+        {showAnimation && (
+          <SimulationAnimation active={showAnimation} onComplete={() => setShowAnimation(false)}>
+            <div className="text-center text-cyan-400 text-lg font-semibold">시뮬레이션 초기화 중...</div>
+          </SimulationAnimation>
+        )}
 
         {/* 가상 인물 + 게이지 */}
         {!showAnimation && (
@@ -238,8 +249,67 @@ export default function SimulatorPage() {
               ))}
             </div>
 
-            {/* 마지막 행동 결과 */}
-            {lastCascade && (
+            {/* 행동 누적 요약 */}
+            {actionLog.length > 0 && (() => {
+              // 같은 행동끼리 그룹화
+              const grouped = {};
+              for (const log of actionLog) {
+                if (!grouped[log.name]) {
+                  grouped[log.name] = { count: 0, totalReward: 0 };
+                }
+                grouped[log.name].count += 1;
+                grouped[log.name].totalReward += log.reward;
+              }
+              const entries = Object.entries(grouped).sort((a, b) => b[1].count - a[1].count);
+              return (
+                <div className="mt-4 bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 max-h-64 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-2 sticky top-0 bg-gray-900/90 pb-1 z-10">
+                    <h4 className="text-xs font-semibold text-gray-500">행동 누적 기록</h4>
+                    <span className="text-[10px] text-gray-600">총 {actionLog.length}회</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {entries.map(([name, info]) => {
+                      const style = ACTION_STYLES[name] || {};
+                      return (
+                        <div
+                          key={name}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${style.border || "border-gray-600"} ${style.bg || "bg-gray-700/30"}`}
+                        >
+                          <span className="text-sm">{style.emoji}</span>
+                          <span className={`text-[11px] font-medium ${style.color || "text-gray-300"}`}>
+                            {style.label || name}
+                          </span>
+                          <span className="text-[11px] font-bold text-white bg-gray-700 rounded-full px-1.5 min-w-[20px] text-center">
+                            {info.count}
+                          </span>
+                          <span className={`text-[10px] ${info.totalReward >= 0 ? "text-green-400" : "text-red-400"}`}>
+                            {info.totalReward >= 0 ? "+" : ""}{info.totalReward.toFixed(0)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* 전체 시간순 리스트 (스크롤) */}
+                  <div className="mt-2 space-y-0.5">
+                    {[...actionLog].reverse().map((log, i) => {
+                      const style = ACTION_STYLES[log.name] || {};
+                      return (
+                        <div key={i} className="flex items-center gap-2 text-[10px] text-gray-500">
+                          <span className="text-gray-600 w-10">Day {log.step}</span>
+                          <span>{style.emoji} {style.label}</span>
+                          <span className={`ml-auto ${log.reward >= 0 ? "text-green-500" : "text-red-500"}`}>
+                            {log.reward >= 0 ? "+" : ""}{log.reward.toFixed(1)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 마지막 행동 결과 (행동을 한 적이 있을 때만 표시) */}
+            {lastCascade && step > 0 && actionLog.length > 0 && (
               <div className={`mt-4 border rounded-xl p-4 ${
                 lastCascade.severity === "positive" ? "border-green-500/30 bg-green-500/5" :
                 lastCascade.severity === "medium" ? "border-yellow-500/30 bg-yellow-500/5" :

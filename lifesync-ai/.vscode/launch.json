@@ -7,7 +7,8 @@
       "request": "launch",
       "module": "uvicorn",
       "args": ["backend.app.main:app", "--reload", "--port", "8000"],
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "React (vite)",
@@ -16,6 +17,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "cwd": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (Backend + Frontend)",
+      "configurations": ["FastAPI (uvicorn)", "React (vite)"],
+      "stopAll": true
     }
   ]
 }

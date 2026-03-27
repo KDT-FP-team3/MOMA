@@ -63,16 +63,26 @@ class RecipeDB:
             )
             logger.info("레시피 %d건 시딩 완료", len(documents))
 
-    def search(self, query: str, n_results: int = 5) -> list[dict[str, Any]]:
-        """레시피 검색.
+    def search(
+        self,
+        query: str,
+        n_results: int = 5,
+        context: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """레시피 검색 (컨텍스트 있으면 확장 검색 + 리랭킹).
 
         Args:
             query: 검색 쿼리 (예: "고단백 저칼로리 저녁 메뉴").
             n_results: 반환할 결과 수.
+            context: 사용자 상태 (BMI, 칼로리 목표 등). 있으면 확장 검색.
 
         Returns:
             유사도 순 레시피 리스트.
         """
+        if context:
+            return self._client.query_expanded(
+                self.COLLECTION_NAME, query, context=context, n_results=n_results
+            )
         return self._client.query(self.COLLECTION_NAME, query, n_results)
 
     def add_recipe(self, recipe: dict[str, Any]) -> None:

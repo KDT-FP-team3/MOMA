@@ -3,6 +3,9 @@
 .env.local
 .env.production
 
+# Local notes
+**/실행방법.txt
+
 # Python
 .venv/
 __pycache__/

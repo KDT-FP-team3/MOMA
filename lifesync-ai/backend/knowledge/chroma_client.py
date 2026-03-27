@@ -63,6 +63,109 @@ class ChromaClient:
             n_results=actual_n,
         )
 
+        return self._format_results(results)
+
+    def query_expanded(
+        self,
+        collection_name: str,
+        query_text: str,
+        context: dict[str, Any] | None = None,
+        n_results: int = 5,
+    ) -> list[dict[str, Any]]:
+        """쿼리 확장 + 리랭킹 검색.
+
+        원본 쿼리와 컨텍스트 기반 확장 쿼리를 함께 검색한 후,
+        거리 기반 리랭킹으로 결과를 통합한다.
+
+        Args:
+            collection_name: 컬렉션 이름.
+            query_text: 원본 검색 쿼리.
+            context: 사용자 상태 컨텍스트 (BMI, 목표, 선호 등).
+            n_results: 최종 반환 결과 수.
+
+        Returns:
+            리랭킹된 검색 결과 리스트.
+        """
+        collection = self.get_or_create_collection(collection_name)
+        if collection.count() == 0:
+            return []
+
+        # 1. 쿼리 확장: 컨텍스트 기반 보조 쿼리 생성
+        queries = [query_text]
+        if context:
+            expanded = self._expand_query(query_text, context)
+            queries.extend(expanded)
+
+        # 2. 다중 쿼리 검색 (후보 풀 확대)
+        fetch_n = min(n_results * 3, collection.count())
+        seen_ids: set[str] = set()
+        candidates: list[dict[str, Any]] = []
+
+        for q in queries:
+            results = collection.query(query_texts=[q], n_results=fetch_n)
+            for item in self._format_results(results):
+                if item["id"] not in seen_ids:
+                    seen_ids.add(item["id"])
+                    candidates.append(item)
+
+        # 3. 리랭킹: 거리 점수 + 컨텍스트 관련성 부스트
+        for item in candidates:
+            base_score = 1.0 / (1.0 + item["distance"])
+            boost = self._context_boost(item, context) if context else 0.0
+            item["relevance_score"] = base_score + boost
+
+        candidates.sort(key=lambda x: x["relevance_score"], reverse=True)
+        return candidates[:n_results]
+
+    def _expand_query(
+        self, query: str, context: dict[str, Any]
+    ) -> list[str]:
+        """컨텍스트 기반 쿼리 확장."""
+        expanded: list[str] = []
+
+        bmi = context.get("bmi", 0)
+        if bmi > 25:
+            expanded.append(f"{query} 저칼로리 다이어트")
+        elif bmi < 18.5:
+            expanded.append(f"{query} 고단백 영양")
+
+        stress = context.get("stress_level", 0)
+        if stress > 60:
+            expanded.append(f"{query} 스트레스 해소")
+
+        goal = context.get("goal", "")
+        if goal:
+            expanded.append(f"{query} {goal}")
+
+        return expanded[:2]  # 최대 2개 확장 쿼리
+
+    def _context_boost(
+        self, item: dict[str, Any], context: dict[str, Any]
+    ) -> float:
+        """컨텍스트 관련성 부스트 점수 계산."""
+        boost = 0.0
+        meta = item.get("metadata", {})
+        doc = item.get("document", "").lower()
+
+        # 칼로리 목표 관련성
+        cal_target = context.get("calorie_target", 0)
+        cal_item = meta.get("calories", 0)
+        if cal_target > 0 and cal_item > 0:
+            diff_ratio = abs(cal_target - cal_item) / cal_target
+            if diff_ratio < 0.2:
+                boost += 0.15
+
+        # BMI 기반 키워드 부스트
+        bmi = context.get("bmi", 0)
+        if bmi > 25 and any(kw in doc for kw in ["저칼로리", "샐러드", "닭가슴살"]):
+            boost += 0.1
+        if bmi < 18.5 and any(kw in doc for kw in ["고단백", "영양", "칼로리"]):
+            boost += 0.1
+
+        return boost
+
+    def _format_results(self, results: dict[str, Any]) -> list[dict[str, Any]]:
+        """ChromaDB 결과를 표준 형식으로 변환."""
         formatted: list[dict[str, Any]] = []
         documents = results.get("documents", [[]])[0]
         metadatas = results.get("metadatas", [[]])[0]

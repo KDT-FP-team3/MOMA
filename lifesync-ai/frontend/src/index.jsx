@@ -15,6 +15,22 @@ if (API_BASE) {
   axios.defaults.baseURL = API_BASE;
 }
 
+// API 타임아웃 설정 (30초)
+axios.defaults.timeout = 30000;
+
+// 응답 인터셉터 — 401 시 로그인 리다이렉트, 서버 에러 콘솔 로깅
+axios.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      window.location.hash = "#/login";
+    } else if (err.response?.status >= 500) {
+      console.error("[API 서버 에러]", err.response?.data || err.message);
+    }
+    return Promise.reject(err);
+  }
+);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ThemeProvider>

@@ -83,7 +83,16 @@ class FoodAgent:
         query = self._build_search_query(user_state)
         rag_results: list[dict[str, Any]] = []
         if self._recipe_db:
-            rag_results = self._recipe_db.search(query, n_results=5)
+            # 컨텍스트 기반 확장 검색 + 리랭킹
+            rag_context = {
+                "bmi": user_state.get("bmi", 0),
+                "calorie_target": user_state.get("calorie_target", 0),
+                "stress_level": user_state.get("stress_level", 0),
+                "goal": user_state.get("goal", ""),
+            }
+            rag_results = self._recipe_db.search(
+                query, n_results=5, context=rag_context
+            )
 
         risk_alerts: list[str] = []
         if self._risk_scorer:

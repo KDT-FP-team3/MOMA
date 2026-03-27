@@ -171,11 +171,16 @@ export default function SchedulePage() {
     setLoading(true);
     setResults(null);
     try {
-      const res = await axios.post("/api/schedule/simulate", { schedule, days: simDays });
-      setResults(res.data);
+      // 온라인/오프라인 자동 전환 시뮬레이션
+      const { smartSimulate } = await import("../services/offlineEngine");
+      const data = await smartSimulate(schedule, simDays);
+      setResults(data);
+      if (data.source === "offline") {
+        console.info("[시뮬레이션] 오프라인 모드로 실행됨");
+      }
     } catch (e) {
       console.error("시뮬레이션 실패:", e);
-      alert("백엔드 서버 연결 실패! 서버가 실행 중인지 확인하세요.\n\n오류: " + (e.message || e));
+      alert("시뮬레이션 실패!\n\n오류: " + (e.message || e));
     } finally {
       setLoading(false);
     }

@@ -234,10 +234,10 @@ class ScheduleSimulator:
                 state.exercise_hours_week = weekly_exercise
                 if weekly_exercise < 2.5:
                     state.blood_purity = max(0, state.blood_purity - 2)
-                    state.reactive_oxygen = max(0, state.reactive_oxygen - 1)
+                    state.reactive_oxygen = min(100, state.reactive_oxygen + 1)
                 else:
                     state.blood_purity = min(100, state.blood_purity + 1)
-                    state.reactive_oxygen = min(100, state.reactive_oxygen + 1)
+                    state.reactive_oxygen = max(0, state.reactive_oxygen - 1)
                 weekly_exercise = 0.0
 
             # 스트레스-탈모 연쇄

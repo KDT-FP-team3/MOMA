@@ -109,23 +109,103 @@ class PhotoAnalyzer:
     def get_top_k_similar(
         self, image_bytes: bytes, k: int = 5
     ) -> list[dict[str, Any]]:
-        """사진 분석 기반 Top-K 맞춤 조언 생성.
+        """사진 분석 + LLM 기반 개인화 Top-K 조언 생성.
+
+        CLIP/MediaPipe 분석 결과를 LLM에 전달하여
+        사용자별 맞춤 조언을 생성한다.
 
         Args:
             image_bytes: 이미지 바이트 데이터.
             k: 반환할 조언 수.
 
         Returns:
-            Top-K 조언 리스트 (similarity 점수 포함).
+            Top-K 개인화 조언 리스트.
         """
         face = self.analyze_face(image_bytes)
         body = self.analyze_body(image_bytes)
 
-        # 조건에 따라 적합한 조언 선택 및 점수 부여
+        # LLM 개인화 조언 시도
+        llm_advice = self._generate_llm_advice(face, body, k)
+        if llm_advice:
+            return llm_advice
+
+        # LLM 실패 시 기존 템플릿 기반 폴백
+        return self._template_based_advice(face, body, k)
+
+    def _generate_llm_advice(
+        self,
+        face: dict[str, Any],
+        body: dict[str, Any],
+        k: int,
+    ) -> list[dict[str, Any]]:
+        """LLM 기반 개인화 조언 생성."""
+        try:
+            import os
+            import json
+            from openai import OpenAI
+
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                return []
+
+            client = OpenAI(api_key=api_key)
+
+            prompt = f"""사진 분석 결과를 기반으로 맞춤형 건강/생활 개선 Top-{k} 조언을 생성해주세요.
+
+[분석 결과]
+- 피부 상태: {face.get('skin_condition', 50):.0f}/100
+- 피로도: {face.get('fatigue_level', 50):.0f}/100
+- 스트레스 지표: {face.get('stress_indicator', 50):.0f}/100
+- 건강 외관: {face.get('health_appearance', 50):.0f}/100
+- 체형 추정: {body.get('body_type_estimate', 'average')}
+- 자세 점수: {body.get('posture_score', 50):.0f}/100
+
+[응답 형식] JSON 배열로 반환:
+[{{"domain": "food|exercise|health|hobby", "title": "제목(20자 이내)", "description": "설명(50자 이내)", "priority": 0.0~1.0}}]
+
+우선순위가 높은 순서로 {k}개만 반환하세요. 한국어로 작성하세요."""
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=500,
+            )
+
+            content = response.choices[0].message.content or ""
+            # JSON 파싱 (마크다운 코드블록 제거)
+            content = content.strip()
+            if content.startswith("```"):
+                content = content.split("\n", 1)[-1].rsplit("```", 1)[0]
+
+            items = json.loads(content)
+            result = []
+            for i, item in enumerate(items[:k]):
+                result.append({
+                    "id": i + 1,
+                    "domain": item.get("domain", "health"),
+                    "title": item.get("title", ""),
+                    "description": item.get("description", ""),
+                    "similarity": round(item.get("priority", 0.5), 3),
+                    "source": "llm",
+                })
+            return result
+
+        except Exception:
+            logger.exception("LLM 개인화 조언 생성 실패, 템플릿으로 폴백")
+            return []
+
+    def _template_based_advice(
+        self,
+        face: dict[str, Any],
+        body: dict[str, Any],
+        k: int,
+    ) -> list[dict[str, Any]]:
+        """기존 템플릿 기반 조언 (폴백)."""
         scored_advice: list[dict[str, Any]] = []
 
         for advice in ADVICE_TEMPLATES:
-            score = 0.5  # 기본 점수
+            score = 0.5
             condition = advice["condition"]
 
             if condition == "bmi_high" and body.get("body_type_estimate") == "overweight":
@@ -139,16 +219,14 @@ class PhotoAnalyzer:
             elif condition == "general":
                 score = 0.6
 
-            scored_advice.append(
-                {
-                    "id": advice["id"],
-                    "domain": advice["domain"],
-                    "title": advice["title"],
-                    "description": advice["description"],
-                    "similarity": round(score, 3),
-                }
-            )
+            scored_advice.append({
+                "id": advice["id"],
+                "domain": advice["domain"],
+                "title": advice["title"],
+                "description": advice["description"],
+                "similarity": round(score, 3),
+                "source": "template",
+            })
 
-        # 점수 순 정렬 후 Top-K 반환
         scored_advice.sort(key=lambda x: x["similarity"], reverse=True)
         return scored_advice[:k]
