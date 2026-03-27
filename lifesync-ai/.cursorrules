@@ -1,0 +1,13 @@
+# LifeSync AI — Cursor Rules
+
+## 금지 사항
+1. .env 파일 내용을 코드에 하드코딩하지 말 것
+2. requirements.txt, docker-compose.yml을 무단으로 수정하지 말 것
+3. orchestrator.py의 run_chain() 시그니처 변경 금지
+4. main 브랜치 직접 push 금지
+5. 새 라이브러리 추가 시 반드시 버전 고정
+
+## 코드 컨벤션
+- Python: Black 포맷터, 타입 힌트 필수, docstring Google 스타일
+- JS/JSX: Prettier, 함수형 컴포넌트만, props 타입 명시
+- 환경변수: 절대 하드코딩 금지, 반드시 os.getenv() 사용

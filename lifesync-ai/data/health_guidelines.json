@@ -1,0 +1,22 @@
+[
+  {"metric": "blood_pressure_sys", "name": "수축기 혈압", "unit": "mmHg", "normal_min": 90, "normal_max": 120, "warning_max": 140, "danger_max": 180, "advice_low": "저혈압 - 충분한 수분 섭취와 적절한 염분 섭취 필요", "advice_high": "고혈압 - 나트륨 제한, 유산소 운동 권장"},
+  {"metric": "blood_pressure_dia", "name": "이완기 혈압", "unit": "mmHg", "normal_min": 60, "normal_max": 80, "warning_max": 90, "danger_max": 120, "advice_low": "이완기 저혈압 - 수분 보충 필요", "advice_high": "이완기 고혈압 - 스트레스 관리, 식이 조절 필요"},
+  {"metric": "blood_sugar_fasting", "name": "공복 혈당", "unit": "mg/dL", "normal_min": 70, "normal_max": 100, "warning_max": 126, "danger_max": 200, "advice_low": "저혈당 - 즉시 당분 섭취 필요", "advice_high": "고혈당 - 탄수화물 제한, 규칙적 운동 필요"},
+  {"metric": "total_cholesterol", "name": "총 콜레스테롤", "unit": "mg/dL", "normal_min": 0, "normal_max": 200, "warning_max": 240, "danger_max": 300, "advice_low": "", "advice_high": "고콜레스테롤 - 포화지방 제한, 식이섬유 증가, 유산소 운동"},
+  {"metric": "ldl_cholesterol", "name": "LDL 콜레스테롤", "unit": "mg/dL", "normal_min": 0, "normal_max": 130, "warning_max": 160, "danger_max": 190, "advice_low": "", "advice_high": "LDL 상승 - 튀김/가공식품 줄이기, 오메가3 섭취 권장"},
+  {"metric": "hdl_cholesterol", "name": "HDL 콜레스테롤", "unit": "mg/dL", "normal_min": 40, "normal_max": 60, "warning_max": 999, "danger_max": 999, "advice_low": "HDL 부족 - 유산소 운동 30분 이상, 불포화지방 섭취", "advice_high": ""},
+  {"metric": "triglycerides", "name": "중성지방", "unit": "mg/dL", "normal_min": 0, "normal_max": 150, "warning_max": 200, "danger_max": 500, "advice_low": "", "advice_high": "중성지방 상승 - 당분/알코올 제한, 오메가3 보충"},
+  {"metric": "hemoglobin", "name": "혈색소", "unit": "g/dL", "normal_min": 12.0, "normal_max": 17.0, "warning_max": 20.0, "danger_max": 22.0, "advice_low": "빈혈 - 철분 풍부한 식품(시금치, 소고기) 섭취", "advice_high": "다혈증 - 수분 섭취 증가"},
+  {"metric": "bmi", "name": "체질량지수", "unit": "kg/m2", "normal_min": 18.5, "normal_max": 23.0, "warning_max": 25.0, "danger_max": 30.0, "advice_low": "저체중 - 균형 잡힌 식사와 근력 운동 필요", "advice_high": "과체중/비만 - 칼로리 조절과 유산소 운동 병행"},
+  {"metric": "body_fat_percentage", "name": "체지방률", "unit": "%", "normal_min": 10.0, "normal_max": 20.0, "warning_max": 25.0, "danger_max": 35.0, "advice_low": "체지방 과소 - 건강한 지방 섭취 필요", "advice_high": "체지방 과다 - HIIT와 식이 조절 병행"},
+  {"metric": "heart_rate_resting", "name": "안정시 심박수", "unit": "bpm", "normal_min": 60, "normal_max": 100, "warning_max": 110, "danger_max": 120, "advice_low": "서맥 - 심장 검진 필요", "advice_high": "빈맥 - 스트레스 관리, 카페인 줄이기"},
+  {"metric": "uric_acid", "name": "요산", "unit": "mg/dL", "normal_min": 2.0, "normal_max": 7.0, "warning_max": 9.0, "danger_max": 12.0, "advice_low": "", "advice_high": "고요산 - 퓨린 음식(내장, 맥주) 제한, 수분 섭취 증가"},
+  {"metric": "alt_sgpt", "name": "ALT(간기능)", "unit": "U/L", "normal_min": 0, "normal_max": 40, "warning_max": 80, "danger_max": 200, "advice_low": "", "advice_high": "간수치 상승 - 음주 절제, 간 보호 식품(밀크시슬) 권장"},
+  {"metric": "creatinine", "name": "크레아티닌(신장)", "unit": "mg/dL", "normal_min": 0.6, "normal_max": 1.2, "warning_max": 1.5, "danger_max": 4.0, "advice_low": "", "advice_high": "신장 기능 저하 의심 - 단백질 과다 섭취 주의, 수분 보충"},
+  {"metric": "vitamin_d", "name": "비타민 D", "unit": "ng/mL", "normal_min": 30, "normal_max": 100, "warning_max": 150, "danger_max": 200, "advice_low": "비타민 D 부족 - 일광 노출 15분/일, 보충제 권장", "advice_high": "비타민 D 과다 - 보충제 중단 필요"},
+  {"metric": "sleep_hours", "name": "수면 시간", "unit": "hours", "normal_min": 7.0, "normal_max": 9.0, "warning_max": 10.0, "danger_max": 12.0, "advice_low": "수면 부족 - 카페인 오후 제한, 규칙적 수면 습관", "advice_high": "과다 수면 - 수면무호흡증 의심, 전문 상담 권장"},
+  {"metric": "daily_water_intake", "name": "일일 수분 섭취", "unit": "L", "normal_min": 1.5, "normal_max": 3.0, "warning_max": 5.0, "danger_max": 8.0, "advice_low": "수분 부족 - 하루 2L 이상 물 마시기", "advice_high": "과다 수분 - 전해질 불균형 위험"},
+  {"metric": "daily_steps", "name": "일일 걸음 수", "unit": "steps", "normal_min": 7000, "normal_max": 15000, "warning_max": 30000, "danger_max": 50000, "advice_low": "활동 부족 - 하루 7000보 이상 걷기 목표", "advice_high": "과도한 활동 - 관절 부담 주의, 휴식 필요"},
+  {"metric": "stress_score", "name": "스트레스 점수", "unit": "score", "normal_min": 0, "normal_max": 40, "warning_max": 70, "danger_max": 90, "advice_low": "", "advice_high": "높은 스트레스 - 취미 활동, 명상, 가벼운 운동 권장"},
+  {"metric": "waist_circumference", "name": "허리둘레", "unit": "cm", "normal_min": 0, "normal_max": 85, "warning_max": 90, "danger_max": 102, "advice_low": "", "advice_high": "복부비만 - 유산소 운동과 탄수화물 조절 필요"}
+]

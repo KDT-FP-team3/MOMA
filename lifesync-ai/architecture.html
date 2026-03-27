@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LifeSync AI — Architecture Overview</title>
+<style>
+  :root {
+    --bg: #1a1b26;
+    --surface: #24283b;
+    --surface2: #2f3349;
+    --border: #3b4261;
+    --text: #c0caf5;
+    --text-dim: #ffffff;
+    --accent: #7aa2f7;
+    --green: #9ece6a;
+    --red: #f7768e;
+    --yellow: #e0af68;
+    --orange: #ff9e64;
+    --cyan: #7dcfff;
+    --magenta: #bb9af7;
+    --teal: #2ac3de;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'Malgun Gothic', '맑은 고딕', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.7; padding: 0;
+  }
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(26,27,38,.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px; display: flex; gap: 24px; flex-wrap: wrap;
+    align-items: center;
+  }
+  nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color .2s; }
+  nav a:hover { color: var(--accent); }
+  nav .logo { color: var(--accent); font-weight: 700; font-size: 18px; margin-right: 16px; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  section { margin-bottom: 56px; }
+  h1 { font-size: 36px; color: #fff; margin-bottom: 8px; }
+  h1 span { color: var(--accent); }
+  h2 {
+    font-size: 22px; color: var(--accent); margin-bottom: 20px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .icon { font-size: 20px; }
+  h3 { font-size: 17px; color: var(--yellow); margin: 16px 0 8px; }
+  p, li { color: var(--text); font-size: 15px; }
+  .subtitle { color: var(--text-dim); font-size: 16px; margin-bottom: 32px; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center; padding: 60px 20px 40px;
+    background: linear-gradient(135deg, rgba(122,162,247,.08), rgba(187,154,247,.08));
+    border-radius: 16px; margin-bottom: 48px;
+  }
+  .hero h1 { font-size: 42px; }
+  .hero .badges { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+  }
+  .badge-blue { background: rgba(122,162,247,.2); color: var(--accent); }
+  .badge-green { background: rgba(158,206,106,.2); color: var(--green); }
+  .badge-orange { background: rgba(255,158,100,.2); color: var(--orange); }
+  .badge-magenta { background: rgba(187,154,247,.2); color: var(--magenta); }
+  .badge-cyan { background: rgba(125,207,255,.2); color: var(--cyan); }
+  .badge-red { background: rgba(247,118,142,.2); color: var(--red); }
+  .badge-yellow { background: rgba(224,175,104,.2); color: var(--yellow); }
+  .badge-teal { background: rgba(42,195,222,.2); color: var(--teal); }
+
+  /* ── CARDS ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; transition: transform .2s, border-color .2s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .card .card-icon { font-size: 28px; margin-bottom: 8px; }
+  .card h4 { font-size: 16px; color: #fff; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--text-dim); }
+  .card .tech { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram { display: flex; flex-direction: column; gap: 16px; }
+  .arch-layer {
+    border: 2px solid var(--border); border-radius: 14px;
+    padding: 20px; position: relative;
+  }
+  .arch-layer .layer-title {
+    position: absolute; top: -13px; left: 20px;
+    background: var(--bg); padding: 0 12px;
+    font-size: 14px; font-weight: 700;
+  }
+  .arch-layer .layer-subtitle {
+    font-size: 12px; color: var(--text-dim); margin-bottom: 14px; padding-top: 4px;
+  }
+  .arch-boxes { display: flex; gap: 12px; flex-wrap: wrap; }
+  .arch-box {
+    padding: 14px 18px; border-radius: 10px; min-width: 150px;
+    flex: 1; text-align: center;
+  }
+  .arch-box h5 { font-size: 14px; color: #fff; margin-bottom: 4px; }
+  .arch-box p { font-size: 11px; margin: 0; }
+  .layer-client { border-color: var(--accent); }
+  .layer-client .layer-title { color: var(--accent); }
+  .layer-backend { border-color: var(--green); }
+  .layer-backend .layer-title { color: var(--green); }
+  .layer-data { border-color: var(--yellow); }
+  .layer-data .layer-title { color: var(--yellow); }
+  .box-blue { background: rgba(122,162,247,.15); }
+  .box-green { background: rgba(158,206,106,.15); }
+  .box-orange { background: rgba(255,158,100,.15); }
+  .box-magenta { background: rgba(187,154,247,.15); }
+  .box-cyan { background: rgba(125,207,255,.15); }
+  .box-yellow { background: rgba(224,175,104,.15); }
+  .box-red { background: rgba(247,118,142,.15); }
+  .box-teal { background: rgba(42,195,222,.15); }
+  .arch-arrow {
+    text-align: center; color: var(--text-dim); font-size: 13px;
+    padding: 4px 0; letter-spacing: 2px;
+  }
+
+  /* ── FOLDER TREE ── */
+  .tree { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; }
+  .tree ul { list-style: none; padding-left: 22px; }
+  .tree > ul { padding-left: 0; }
+  .tree li { position: relative; padding: 3px 0; }
+  .tree li::before {
+    content: ''; position: absolute; left: -16px; top: 0;
+    border-left: 1px solid var(--border); height: 100%;
+  }
+  .tree li::after {
+    content: ''; position: absolute; left: -16px; top: 14px;
+    border-bottom: 1px solid var(--border); width: 12px;
+  }
+  .tree li:last-child::before { height: 14px; }
+  .tree > ul > li::before, .tree > ul > li::after { display: none; }
+  .tree .fname { color: var(--cyan); }
+  .tree .dirname { color: var(--yellow); font-weight: 600; cursor: pointer; }
+  .tree .desc { color: var(--text-dim); font-size: 12px; margin-left: 8px; }
+  .tree .team-badge {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; margin-left: 6px; vertical-align: middle;
+  }
+  .tb-a { background: rgba(247,118,142,.25); color: var(--red); }
+  .tb-b { background: rgba(187,154,247,.25); color: var(--magenta); }
+  .tb-c { background: rgba(125,207,255,.25); color: var(--cyan); }
+  .tb-d { background: rgba(224,175,104,.25); color: var(--yellow); }
+  .tb-e { background: rgba(158,206,106,.25); color: var(--green); }
+  .tb-f { background: rgba(255,158,100,.25); color: var(--orange); }
+  .tb-new { background: rgba(42,195,222,.25); color: var(--teal); }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td {
+    padding: 10px 14px; text-align: left; font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { background: var(--surface2); color: var(--accent); font-weight: 600; }
+  td { color: var(--text); }
+  tr:hover td { background: rgba(122,162,247,.05); }
+
+  /* ── COMPARE TABLE ── */
+  .compare-table th:first-child { width: 140px; }
+  .compare-table .rec {
+    background: rgba(158,206,106,.1); border: 1px solid var(--green);
+  }
+  .compare-table .rec th { color: var(--green); }
+
+  /* ── BRANCH DIAGRAM ── */
+  .branch-diagram {
+    background: var(--surface); border-radius: 14px; padding: 28px;
+    border: 1px solid var(--border); overflow-x: auto;
+  }
+  .branch-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 0; position: relative;
+  }
+  .branch-name {
+    min-width: 180px; padding: 6px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; text-align: center;
+  }
+  .branch-line {
+    flex: 1; height: 4px; border-radius: 2px; position: relative;
+    min-width: 200px;
+  }
+  .branch-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    position: absolute; top: -4px;
+  }
+  .bn-main { background: rgba(247,118,142,.3); color: var(--red); }
+  .bl-main { background: var(--red); }
+  .bn-dev { background: rgba(122,162,247,.3); color: var(--accent); }
+  .bl-dev { background: var(--accent); }
+  .bn-feat-a { background: rgba(158,206,106,.3); color: var(--green); }
+  .bl-feat-a { background: var(--green); }
+  .bn-feat-b { background: rgba(187,154,247,.3); color: var(--magenta); }
+  .bl-feat-b { background: var(--magenta); }
+  .bn-feat-c { background: rgba(125,207,255,.3); color: var(--cyan); }
+  .bl-feat-c { background: var(--cyan); }
+  .bn-feat-d { background: rgba(224,175,104,.3); color: var(--yellow); }
+  .bl-feat-d { background: var(--yellow); }
+  .bn-feat-e { background: rgba(42,195,222,.3); color: var(--teal); }
+  .bl-feat-e { background: var(--teal); }
+  .bn-docs { background: rgba(255,158,100,.3); color: var(--orange); }
+  .bl-docs { background: var(--orange); }
+
+  .branch-legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .branch-flow {
+    margin-top: 12px; text-align: center;
+    background: var(--surface2); border-radius: 8px; padding: 10px;
+    font-size: 13px; color: var(--text-dim);
+  }
+
+  /* ── REWARD ── */
+  .formula-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; font-family: 'Cascadia Code', monospace;
+    font-size: 15px; line-height: 2; overflow-x: auto;
+  }
+  .formula-box .fn { color: var(--accent); }
+  .formula-box .pos { color: var(--green); }
+  .formula-box .neg { color: var(--red); }
+  .formula-box .var { color: var(--yellow); }
+
+  .penalty-bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 700px) { .penalty-bonus-grid { grid-template-columns: 1fr; } }
+  .pb-card {
+    background: var(--surface); border-radius: 10px; padding: 16px;
+    border-left: 4px solid;
+  }
+  .pb-card.penalty { border-left-color: var(--red); }
+  .pb-card.bonus { border-left-color: var(--green); }
+  .pb-card h4 { font-size: 14px; margin-bottom: 8px; }
+  .pb-card .val { font-family: monospace; font-weight: 700; }
+  .pb-card .cascade { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── SETUP GUIDE ── */
+  .setup-steps { counter-reset: step; }
+  .setup-step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 20px 20px 60px;
+    margin-bottom: 12px; position: relative;
+  }
+  .setup-step::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute; left: 18px; top: 18px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .setup-step h4 { color: #fff; margin-bottom: 6px; font-size: 15px; }
+  .setup-step p { font-size: 13px; color: var(--text-dim); margin: 4px 0; }
+  .setup-step a { color: var(--cyan); text-decoration: none; }
+  .setup-step a:hover { text-decoration: underline; }
+  .setup-step code {
+    background: var(--surface2); padding: 2px 8px; border-radius: 4px;
+    font-family: 'Cascadia Code', monospace; font-size: 13px; color: var(--green);
+  }
+  .setup-step .free { color: var(--green); font-weight: 600; }
+
+  /* ── ENV TABLE ── */
+  .env-table td:first-child {
+    font-family: monospace; color: var(--cyan); white-space: nowrap;
+  }
+
+  /* ── DATA FLOW ── */
+  .flow-diagram {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    justify-content: center; padding: 20px 0;
+  }
+  .flow-node {
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; text-align: center;
+    min-width: 100px;
+  }
+  .flow-node h5 { font-size: 13px; color: #fff; }
+  .flow-node p { font-size: 11px; color: var(--text-dim); margin: 0; }
+  .flow-arrow { color: var(--accent); font-size: 20px; padding: 0 6px; }
+  .flow-arrow-down {
+    text-align: center; padding: 6px 0; color: var(--accent); font-size: 20px;
+    width: 100%;
+  }
+
+  /* ── TEAM TABLE ── */
+  .team-table th,
+  .team-table td:nth-child(1),
+  .team-table td:nth-child(2) { white-space: nowrap; }
+  .team-table td:nth-child(2) { font-weight: 600; }
+  .team-table .team-badge { white-space: nowrap; }
+  .team-table .skill-a { color: var(--green); }
+  .team-table .skill-b { color: var(--accent); }
+  .team-table .skill-c { color: var(--yellow); }
+  .team-table .skill-d { color: var(--orange); }
+
+  /* ── SCENARIO CARDS ── */
+  .scenario-list { display: flex; flex-direction: column; gap: 16px; }
+  .scenario-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .scenario-header {
+    padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border); border-left: 4px solid;
+  }
+  .scenario-header h4 { margin: 0; font-size: 16px; color: #fff; }
+  .scenario-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .scenario-body { padding: 20px; }
+  .cascade-chain {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cascade-step {
+    background: var(--surface2); border: 2px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; text-align: center;
+    min-width: 130px; flex: 1; max-width: 200px;
+  }
+  .cascade-step strong { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+
+  /* ── GAUGE DETAIL ── */
+  .gauge-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+  .gauge-card table { width: 100%; margin-top: 8px; }
+  .gauge-card table th { font-size: 13px; padding: 6px 10px; }
+  .gauge-card table td { font-size: 13px; padding: 6px 10px; }
+
+  /* ── WBS ── */
+  .wbs-table td { font-size: 13px; vertical-align: top; line-height: 1.8; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .container { padding: 16px 12px; }
+    .hero h1 { font-size: 28px; }
+    h2 { font-size: 18px; }
+    .arch-boxes { flex-direction: column; }
+    nav { padding: 10px 16px; gap: 12px; }
+    .cascade-chain { flex-direction: column; }
+    .cascade-chain .flow-arrow { transform: rotate(90deg); }
+    .gauge-detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <span class="logo">LifeSync AI</span>
+  <a href="#overview">Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#dataflow">Data Flow</a>
+  <a href="#photo">Photo Pipeline</a>
+  <a href="#voice">Voice Pipeline</a>
+  <a href="#gauges">Gauges</a>
+  <a href="#cascade">Cascade</a>
+  <a href="#folder">Folder Structure</a>
+  <a href="#team">Team</a>
+  <a href="#wbs">WBS</a>
+  <a href="#branch">Git Branch</a>
+  <a href="#deploy">Deploy</a>
+  <a href="#reward">Reward</a>
+  <a href="#setup">Setup Guide</a>
+</nav>
+
+<div class="container">
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <h1><span>LifeSync AI</span></h1>
+  <p class="subtitle">일상 생활 크로스 도메인 통합 관리 에이전트 &mdash; 요리 / 운동 / 건강 / 취미</p>
+  <div class="badges">
+    <span class="badge badge-blue">Python 3.11</span>
+    <span class="badge badge-green">FastAPI</span>
+    <span class="badge badge-magenta">LangGraph</span>
+    <span class="badge badge-orange">GPT-4o-mini</span>
+    <span class="badge badge-cyan">React</span>
+    <span class="badge badge-yellow">PPO (RL)</span>
+    <span class="badge badge-red">ChromaDB</span>
+    <span class="badge badge-teal">WebSocket</span>
+  </div>
+</div>
+
+<!-- ═══════ 1. OVERVIEW ═══════ -->
+<section id="overview">
+  <h2><span class="icon">&#x1F4CB;</span> 프로젝트 개요</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">&#x1F373;</div>
+      <h4>요리 도메인</h4>
+      <p>레시피 추천, 영양 분석, 식재료 인식(YOLO), 음식 위험도 평가</p>
+      <div class="tech">
+        <span class="badge badge-orange">YOLO</span>
+        <span class="badge badge-red">RAG-CLIP</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F3CB;</div>
+      <h4>운동 도메인</h4>
+      <p>운동 추천, 자세 분석(MediaPipe), 부상 방지, 날씨 연동 자동 조정</p>
+      <div class="tech">
+        <span class="badge badge-green">MediaPipe</span>
+        <span class="badge badge-blue">날씨 API</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F3E5;</div>
+      <h4>건강 도메인</h4>
+      <p>건강검진 분석, 활성산소/혈액청정도/탈모위험도 추적, 크로스 도메인 경고</p>
+      <div class="tech">
+        <span class="badge badge-magenta">Bayesian</span>
+        <span class="badge badge-yellow">Timeline</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#x1F3B8;</div>
+      <h4>취미 도메인</h4>
+      <p>취미 추천, 스트레스 해소 효과 측정, 기분-식욕 연쇄 분석</p>
+      <div class="tech">
+        <span class="badge badge-cyan">카탈로그</span>
+        <span class="badge badge-teal">Mood</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 2. ARCHITECTURE ═══════ -->
+<section id="architecture">
+  <h2><span class="icon">&#x1F3D7;</span> 추천 아키텍처 &mdash; 3층 구조</h2>
+
+  <div class="arch-diagram">
+    <!-- Client Layer -->
+    <div class="arch-layer layer-client">
+      <div class="layer-title">&#x1F4BB; 클라이언트 레이어</div>
+      <div class="layer-subtitle">각 팀원 로컬 PC</div>
+      <div class="arch-boxes">
+        <div class="arch-box box-blue">
+          <h5>React 웹</h5>
+          <p>Vercel 배포</p>
+        </div>
+        <div class="arch-box box-green">
+          <h5>VSCode 개발</h5>
+          <p>로컬 FastAPI</p>
+        </div>
+        <div class="arch-box box-magenta">
+          <h5>PPO 학습</h5>
+          <p>로컬 GPU/CPU</p>
+        </div>
+        <div class="arch-box box-orange">
+          <h5>모바일</h5>
+          <p>음성 입력 테스트</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">&#x2195; HTTPS / WSS</div>
+
+    <!-- Backend Layer -->
+    <div class="arch-layer layer-backend">
+      <div class="layer-title">&#x2699; 백엔드 서비스 레이어</div>
+      <div class="layer-subtitle">Railway (무료) &mdash; Git push 하면 자동 배포</div>
+      <div class="arch-boxes">
+        <div class="arch-box box-green">
+          <h5>FastAPI 서버</h5>
+          <p>LangGraph 에이전트<br/>WebSocket + REST</p>
+        </div>
+        <div class="arch-box box-cyan">
+          <h5>음성 API</h5>
+          <p>Whisper STT<br/>Intent 분류기</p>
+        </div>
+        <div class="arch-box box-magenta">
+          <h5>RL 추론 서버</h5>
+          <p>학습된 PPO 모델<br/>추론만 실행</p>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--text-dim); margin-top:10px; text-align:right;">* 학습은 로컬에서</p>
+    </div>
+
+    <div class="arch-arrow">&#x2195; 읽기 / 쓰기</div>
+
+    <!-- Data Layer -->
+    <div class="arch-layer layer-data">
+      <div class="layer-title">&#x1F4BE; 데이터 레이어</div>
+      <div class="layer-subtitle">무료 관리형 서비스 &mdash; 설치/운영 불필요</div>
+      <div class="arch-boxes">
+        <div class="arch-box box-red">
+          <h5>ChromaDB</h5>
+          <p>Railway 볼륨<br/>벡터 DB 영구 저장</p>
+        </div>
+        <div class="arch-box box-blue">
+          <h5>Supabase</h5>
+          <p>PostgreSQL 무료<br/>State 벡터 저장</p>
+        </div>
+        <div class="arch-box box-yellow">
+          <h5>AWS S3</h5>
+          <p>무료 티어 5GB<br/>PPO 모델 파일</p>
+        </div>
+        <div class="arch-box box-teal">
+          <h5>Vercel</h5>
+          <p>React 무료<br/>CDN 배포</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px; text-align:center; background:var(--surface); border-radius:10px; padding:14px; border:1px solid var(--border);">
+    <strong style="color:var(--green);">총 예상 비용:</strong>
+    <span style="color:var(--text-dim);"> Railway 무료 플랜 + Supabase 무료 + Vercel 무료 = <strong style="color:#fff;">월 $0 ~ $5</strong> (트래픽 초과 시 Railway $5/월)</span>
+  </div>
+</section>
+
+<!-- ═══════ 3. DATA FLOW ═══════ -->
+<section id="dataflow">
+  <h2><span class="icon">&#x1F504;</span> 데이터 흐름 (사용자 요청 → 응답)</h2>
+
+  <div class="flow-diagram">
+    <div class="flow-node" style="border-color:var(--accent);">
+      <h5>&#x1F3A4; 사용자</h5>
+      <p>음성 / 텍스트 / 사진</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--cyan);">
+      <h5>&#x1F50A; Voice</h5>
+      <p>STT &#x2192; Intent</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--green);">
+      <h5>&#x1F916; Orchestrator</h5>
+      <p>도메인 라우팅</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--yellow);">
+      <h5>&#x1F9E0; Agent</h5>
+      <p>Food/Exercise/<br/>Health/Hobby</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--magenta);">
+      <h5>&#x1F3AF; RL Engine</h5>
+      <p>PPO + Reward</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--orange);">
+      <h5>&#x1F4CA; Dashboard</h5>
+      <p>6개 계기판</p>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;">
+    <h3>핵심 연결 관계</h3>
+    <table>
+      <tr><th>From</th><th>To</th><th>데이터</th><th>프로토콜</th></tr>
+      <tr><td>Frontend</td><td>Backend (main.py)</td><td>JSON 메시지</td><td>WebSocket / REST</td></tr>
+      <tr><td>Voice (STT)</td><td>IntentClassifier</td><td>인식된 텍스트</td><td>내부 함수 호출</td></tr>
+      <tr><td>IntentClassifier</td><td>Orchestrator</td><td>domain + action</td><td>내부 함수 호출</td></tr>
+      <tr><td>Orchestrator</td><td>4 Agents</td><td>user_state + action</td><td>내부 함수 호출</td></tr>
+      <tr><td>Agents</td><td>Knowledge (ChromaDB)</td><td>query → Top-K 결과</td><td>ChromaDB Client</td></tr>
+      <tr><td>RL Engine</td><td>UserStateManager</td><td>State 벡터 (40차원)</td><td>Supabase PostgreSQL</td></tr>
+      <tr><td>Multimodal</td><td>Agents</td><td>CLIP 임베딩 / YOLO 감지</td><td>내부 함수 호출</td></tr>
+      <tr><td>Environment</td><td>PlanAdjuster</td><td>날씨 / 미세먼지 데이터</td><td>외부 API (HTTP)</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════ 4. PHOTO ANALYSIS PIPELINE ═══════ -->
+<section id="photo">
+  <h2><span class="icon">&#x1F4F8;</span> 사진 분석 파이프라인 &mdash; 5단계</h2>
+
+  <div class="flow-diagram">
+    <div class="flow-node" style="border-color:var(--cyan);">
+      <h5>&#x1F4F7; Step 1</h5>
+      <p>사진 촬영<br/>얼굴/체형 업로드</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--magenta);">
+      <h5>&#x1F9EC; Step 2</h5>
+      <p>CLIP 임베딩<br/>512차원 벡터</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--green);">
+      <h5>&#x1F3E5; Step 3</h5>
+      <p>건강 추정<br/>체형&middot;피부 분석</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--yellow);">
+      <h5>&#x1F3AF; Step 4</h5>
+      <p>Top-5 조언<br/>개선 우선순위</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--accent);">
+      <h5>&#x1F4CB; Step 5</h5>
+      <p>12주 로드맵<br/>맞춤 개선 계획</p>
+    </div>
+  </div>
+
+  <div class="card-grid" style="margin-top:24px;">
+    <div class="card">
+      <h4 style="color:var(--cyan);">Step 1: 사진 촬영</h4>
+      <p>사용자가 얼굴 또는 체형 사진을 업로드합니다. <code>PhotoAnalysis.jsx</code>에서 파일 선택 또는 카메라 캡처를 지원합니다.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--magenta);">Step 2: CLIP 임베딩</h4>
+      <p>OpenCLIP 모델로 이미지를 512차원 벡터로 변환합니다. <code>clip_embedder.py</code>에서 처리하며, 이전 사진과의 유사도 비교가 가능합니다.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--green);">Step 3: 건강 추정</h4>
+      <p><code>photo_analyzer.py</code>가 체형 변화, 피부 상태, 안색 등을 분석하여 건강 지표를 추정합니다. BMI 변화 추이도 추적합니다.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--yellow);">Step 4: Top-5 조언</h4>
+      <p>분석 결과를 기반으로 개선 우선순위 상위 5개 항목을 추천합니다. 식단&middot;운동&middot;수면&middot;스트레스 등 크로스 도메인 조언을 포함합니다.</p>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--accent);">Step 5: 12주 로드맵</h4>
+      <p>Top-5 조언을 기반으로 <code>RoadmapTimeline.jsx</code>에 12주 맞춤형 개선 로드맵을 생성합니다. 주차별 목표와 체크포인트를 포함합니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 5. VOICE PIPELINE ═══════ -->
+<section id="voice">
+  <h2><span class="icon">&#x1F3A4;</span> 음성 파이프라인 &mdash; 5단계</h2>
+
+  <div class="flow-diagram">
+    <div class="flow-node" style="border-color:var(--accent);">
+      <h5>&#x1F399; Step 1</h5>
+      <p>음성 입력<br/>Web Speech API</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--cyan);">
+      <h5>&#x1F4DD; Step 2</h5>
+      <p>STT 변환<br/>Whisper</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--yellow);">
+      <h5>&#x1F9E0; Step 3</h5>
+      <p>Intent 분류<br/>도메인+액션</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--green);">
+      <h5>&#x1F916; Step 4</h5>
+      <p>에이전트 실행<br/>Orchestrator</p>
+    </div>
+    <span class="flow-arrow">&#x2192;</span>
+    <div class="flow-node" style="border-color:var(--magenta);">
+      <h5>&#x1F50A; Step 5</h5>
+      <p>TTS 응답<br/>gTTS 음성 출력</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px;">음성 명령 시나리오 (4가지)</h3>
+  <div class="card-grid">
+    <div class="card" style="border-left:3px solid var(--red);">
+      <h4>&#x1F373; &ldquo;오늘 저녁 뭐 먹을까?&rdquo;</h4>
+      <p>Intent: <code>food / recommend</code></p>
+      <p style="color:var(--text-dim); font-size:13px;">&#x2192; food_agent &#x2192; 냉장고 재료 기반 레시피 추천 &#x2192; 영양 분석 &#x2192; 음성으로 안내</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green);">
+      <h4>&#x1F3C3; &ldquo;러닝 30분 기록해줘&rdquo;</h4>
+      <p>Intent: <code>exercise / log</code></p>
+      <p style="color:var(--text-dim); font-size:13px;">&#x2192; exercise_agent &#x2192; 운동 기록 저장 &#x2192; 칼로리 소모 계산 &#x2192; 주간 달성률 업데이트</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--magenta);">
+      <h4>&#x1F3E5; &ldquo;건강검진 결과 분석해줘&rdquo;</h4>
+      <p>Intent: <code>health / analyze</code></p>
+      <p style="color:var(--text-dim); font-size:13px;">&#x2192; health_agent &#x2192; 검진 데이터 파싱 &#x2192; 위험 지표 경고 &#x2192; 개선 조언 생성</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--cyan);">
+      <h4>&#x1F3B8; &ldquo;스트레스 풀 취미 추천해줘&rdquo;</h4>
+      <p>Intent: <code>hobby / recommend</code></p>
+      <p style="color:var(--text-dim); font-size:13px;">&#x2192; hobby_agent &#x2192; 현재 스트레스 수준 확인 &#x2192; 효과 높은 취미 추천 &#x2192; 시간&middot;장소 안내</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 6. DASHBOARD GAUGES DETAIL ═══════ -->
+<section id="gauges">
+  <h2><span class="icon">&#x1F4CA;</span> 6개 계기판 상세 &mdash; 악화 / 개선 요인</h2>
+
+  <div class="gauge-detail-grid">
+    <div class="card gauge-card">
+      <h4 style="color:var(--red);">&#x1F534; 활성산소 (ROS)</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2191;</th><th style="color:var(--green);">개선 요인 &#x2193;</th></tr>
+        <tr><td>미세먼지 중 야외 운동</td><td>항산화 식단 (비타민C&middot;E)</td></tr>
+        <tr><td>야식 (고지방&middot;고당류)</td><td>충분한 수면 (7h+)</td></tr>
+        <tr><td>흡연 / 음주</td><td>실내 운동 전환</td></tr>
+        <tr><td>과도한 자외선 노출</td><td>녹차&middot;베리류 섭취</td></tr>
+      </table>
+    </div>
+
+    <div class="card gauge-card">
+      <h4 style="color:var(--green);">&#x1F7E2; 혈액 청정도</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2193;</th><th style="color:var(--green);">개선 요인 &#x2191;</th></tr>
+        <tr><td>고지방&middot;고콜레스테롤 식단</td><td>채소 위주 식단</td></tr>
+        <tr><td>음주 (주 3회 이상)</td><td>충분한 수분 섭취 (2L/일)</td></tr>
+        <tr><td>운동 부족 (주 2회 미만)</td><td>유산소 운동 (주 3회+)</td></tr>
+        <tr><td>가공식품 과다 섭취</td><td>오메가3 섭취</td></tr>
+      </table>
+    </div>
+
+    <div class="card gauge-card">
+      <h4 style="color:var(--yellow);">&#x1F7E1; 탈모 위험도</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2191;</th><th style="color:var(--green);">개선 요인 &#x2193;</th></tr>
+        <tr><td>만성 스트레스 (70+)</td><td>스트레스 관리 (취미 30분+)</td></tr>
+        <tr><td>수면 부족 (5h 미만)</td><td>규칙적 수면 패턴</td></tr>
+        <tr><td>영양 불균형 (단백질 부족)</td><td>균형 잡힌 식단</td></tr>
+        <tr><td>두피 자극 (잦은 염색)</td><td>두피 마사지&middot;비오틴 섭취</td></tr>
+      </table>
+    </div>
+
+    <div class="card gauge-card">
+      <h4 style="color:var(--accent);">&#x1F535; 수면 점수</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2193;</th><th style="color:var(--green);">개선 요인 &#x2191;</th></tr>
+        <tr><td>야식 (취침 2시간 내)</td><td>규칙적 취침 시간</td></tr>
+        <tr><td>카페인 (오후 4시 이후)</td><td>취침 전 스트레칭</td></tr>
+        <tr><td>스마트폰 블루라이트</td><td>취미 활동 (독서&middot;명상)</td></tr>
+        <tr><td>불규칙한 수면 패턴</td><td>수면 환경 개선 (온도&middot;소음)</td></tr>
+      </table>
+    </div>
+
+    <div class="card gauge-card">
+      <h4 style="color:var(--orange);">&#x1F7E0; 스트레스</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2191;</th><th style="color:var(--green);">개선 요인 &#x2193;</th></tr>
+        <tr><td>과로 (업무 10h+/일)</td><td>취미 활동 30분+</td></tr>
+        <tr><td>운동 부족</td><td>규칙적 유산소 운동</td></tr>
+        <tr><td>수면 부족</td><td>충분한 수면 (7h+)</td></tr>
+        <tr><td>사회적 고립</td><td>사회적 교류&middot;그룹 활동</td></tr>
+      </table>
+    </div>
+
+    <div class="card gauge-card">
+      <h4 style="color:var(--teal);">&#x1F7E2; 주간 달성률</h4>
+      <table>
+        <tr><th style="color:var(--red); width:50%;">악화 요인 &#x2193;</th><th style="color:var(--green);">개선 요인 &#x2191;</th></tr>
+        <tr><td>일정 미이행 (Skip)</td><td>꾸준한 일정 실천</td></tr>
+        <tr><td>목표 미설정</td><td>주간 목표 설정</td></tr>
+        <tr><td>피드백 무시</td><td>사진 기록 + 피드백 반영</td></tr>
+        <tr><td>급격한 계획 변경</td><td>점진적 난이도 조정</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 7. CROSS-DOMAIN CASCADE ═══════ -->
+<section id="cascade">
+  <h2><span class="icon">&#x26A1;</span> 크로스 도메인 연쇄 시나리오 (5가지)</h2>
+  <p class="subtitle">하나의 행동이 4개 도메인에 연쇄적으로 영향을 미칩니다.</p>
+
+  <div class="scenario-list">
+    <!-- Scenario 1 -->
+    <div class="scenario-card">
+      <div class="scenario-header" style="background:rgba(247,118,142,.1); border-color:var(--red);">
+        <span class="scenario-num">1</span>
+        <h4>&#x1F35C; 야식 라면 (23시)</h4>
+      </div>
+      <div class="scenario-body">
+        <div class="cascade-chain">
+          <div class="cascade-step" style="border-color:var(--red);">
+            <strong>요리</strong>야식 라면 섭취<br/><span class="val" style="color:var(--red);">Penalty -5</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--accent);">
+            <strong>수면</strong>소화 부담<br/><span class="val" style="color:var(--red);">수면 -35%</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--green);">
+            <strong>운동</strong>피로 누적<br/><span class="val" style="color:var(--red);">운동 -20%</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--yellow);">
+            <strong>건강</strong>체중 목표<br/><span class="val" style="color:var(--red);">+2일 지연</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 2 -->
+    <div class="scenario-card">
+      <div class="scenario-header" style="background:rgba(255,158,100,.1); border-color:var(--orange);">
+        <span class="scenario-num">2</span>
+        <h4>&#x26BD; 축구 경기 부상</h4>
+      </div>
+      <div class="scenario-body">
+        <div class="cascade-chain">
+          <div class="cascade-step" style="border-color:var(--green);">
+            <strong>운동</strong>발목 부상 발생<br/><span class="val" style="color:var(--red);">운동 중단 2주</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--red);">
+            <strong>요리</strong>회복 식단 전환<br/><span class="val" style="color:var(--yellow);">단백질&middot;칼슘 &#x2191;</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--cyan);">
+            <strong>취미</strong>대체 활동 추천<br/><span class="val" style="color:var(--green);">상체 스트레칭</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--magenta);">
+            <strong>건강</strong>회복 모니터링<br/><span class="val" style="color:var(--accent);">재활 로드맵</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 3 -->
+    <div class="scenario-card">
+      <div class="scenario-header" style="background:rgba(224,175,104,.1); border-color:var(--yellow);">
+        <span class="scenario-num">3</span>
+        <h4>&#x1F630; 스트레스 70+ 급상승</h4>
+      </div>
+      <div class="scenario-body">
+        <div class="cascade-chain">
+          <div class="cascade-step" style="border-color:var(--orange);">
+            <strong>건강</strong>스트레스 70+ 감지<br/><span class="val" style="color:var(--red);">경고 발령</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--red);">
+            <strong>요리</strong>폭식 위험 경고<br/><span class="val" style="color:var(--red);">고칼로리 차단</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--green);">
+            <strong>운동</strong>가벼운 산책 권장<br/><span class="val" style="color:var(--green);">30분 워킹</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--cyan);">
+            <strong>취미</strong>이완 취미 추천<br/><span class="val" style="color:var(--green);">명상&middot;음악 감상</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 4 -->
+    <div class="scenario-card">
+      <div class="scenario-header" style="background:rgba(125,207,255,.1); border-color:var(--cyan);">
+        <span class="scenario-num">4</span>
+        <h4>&#x1F32B; 미세먼지 나쁨 (PM10 &#x2265; 76)</h4>
+      </div>
+      <div class="scenario-body">
+        <div class="cascade-chain">
+          <div class="cascade-step" style="border-color:var(--teal);">
+            <strong>환경</strong>미세먼지 경보<br/><span class="val" style="color:var(--red);">PM10 &#x2265; 76</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--green);">
+            <strong>운동</strong>실내 운동 전환<br/><span class="val" style="color:var(--yellow);">러닝 &#x2192; 홈트</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--red);">
+            <strong>건강</strong>활성산소 주의<br/><span class="val" style="color:var(--red);">혈액 청정도 &#x2193;</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--orange);">
+            <strong>요리</strong>항산화 식단 강화<br/><span class="val" style="color:var(--green);">비타민C 식단</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario 5 -->
+    <div class="scenario-card">
+      <div class="scenario-header" style="background:rgba(158,206,106,.1); border-color:var(--green);">
+        <span class="scenario-num">5</span>
+        <h4>&#x1F3B8; 기타 연주 30분 (긍정 연쇄)</h4>
+      </div>
+      <div class="scenario-body">
+        <div class="cascade-chain">
+          <div class="cascade-step" style="border-color:var(--cyan);">
+            <strong>취미</strong>기타 연주 30분<br/><span class="val" style="color:var(--green);">Bonus +2</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--orange);">
+            <strong>스트레스</strong>이완 효과<br/><span class="val" style="color:var(--green);">스트레스 -15%</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--red);">
+            <strong>요리</strong>폭식 충동 감소<br/><span class="val" style="color:var(--green);">충동 -40%</span>
+          </div>
+          <span class="flow-arrow">&#x2192;</span>
+          <div class="cascade-step" style="border-color:var(--accent);">
+            <strong>수면</strong>수면 질 향상<br/><span class="val" style="color:var(--green);">수면 +10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 8. FOLDER STRUCTURE ═══════ -->
+<section id="folder">
+  <h2><span class="icon">&#x1F4C2;</span> 폴더 구조</h2>
+  <div class="tree" style="background:var(--surface); padding:24px; border-radius:12px; border:1px solid var(--border); overflow-x:auto;">
+    <ul>
+      <li>
+        <span class="dirname">lifesync-ai/</span>
+        <span class="desc">프로젝트 루트</span>
+        <ul>
+          <li>
+            <span class="dirname">backend/</span> <span class="desc">FastAPI 서버 전체</span>
+            <ul>
+              <li>
+                <span class="dirname">app/</span> <span class="team-badge tb-a">팀장</span>
+                <ul><li><span class="fname">main.py</span> <span class="desc">FastAPI + WebSocket 서버 진입점</span></li></ul>
+              </li>
+              <li>
+                <span class="dirname">agents/</span> <span class="team-badge tb-b">팀원1</span> <span class="desc">LangGraph 4+1 에이전트</span>
+                <ul>
+                  <li><span class="fname">food_agent.py</span> <span class="desc">요리 에이전트 &mdash; 위험 차단·RAG-CLIP</span></li>
+                  <li><span class="fname">exercise_agent.py</span> <span class="desc">운동 에이전트 &mdash; 날씨 연동·자동 재조정</span></li>
+                  <li><span class="fname">health_agent.py</span> <span class="desc">건강 에이전트 &mdash; 활성산소·혈액·탈모</span></li>
+                  <li><span class="fname">hobby_agent.py</span> <span class="desc">취미 에이전트 &mdash; 시너지 추천</span></li>
+                  <li><span class="fname">orchestrator.py</span> <span class="desc">크로스 도메인 연쇄 오케스트레이터</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">voice/</span> <span class="team-badge tb-f">팀원5</span> <span class="team-badge tb-new">신규</span> <span class="desc">음성 인식 파이프라인</span>
+                <ul>
+                  <li><span class="fname">stt_processor.py</span> <span class="desc">Whisper STT &mdash; 음성→텍스트 변환</span></li>
+                  <li><span class="fname">intent_classifier.py</span> <span class="desc">Intent 분류 → 도메인 라우팅</span></li>
+                  <li><span class="fname">tts_responder.py</span> <span class="desc">TTS &mdash; 에이전트 응답을 음성으로</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">rl_engine/</span> <span class="team-badge tb-d">팀원3</span> <span class="desc">PPO 강화학습 엔진</span>
+                <ul>
+                  <li><span class="dirname">env/</span>
+                    <ul><li><span class="fname">life_env.py</span> <span class="desc">Gym Env &mdash; 40+ 차원 State 벡터</span></li></ul>
+                  </li>
+                  <li><span class="fname">ppo_agent.py</span> <span class="desc">PPO 정책 네트워크</span></li>
+                  <li><span class="fname">reward_cross_domain.py</span> <span class="desc">다축 연쇄 보상 함수</span></li>
+                  <li><span class="fname">auto_tuner.py</span> <span class="desc">Optuna 하이퍼파라미터 자동 튜닝</span></li>
+                  <li><span class="fname">retrain_scheduler.py</span> <span class="desc">트리거 기반 자동 재학습</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">risk_engine/</span> <span class="team-badge tb-e">팀원4</span> <span class="desc">Bayesian-Monte Carlo 위험 예측</span>
+                <ul>
+                  <li><span class="fname">food_risk_scorer.py</span> <span class="desc">음식 위험 점수 계산</span></li>
+                  <li><span class="fname">night_meal_penalty.py</span> <span class="desc">야식 패널티 계산기</span></li>
+                  <li><span class="fname">timeline_generator.py</span> <span class="desc">이벤트 타임라인 생성</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">multimodal/</span> <span class="team-badge tb-d">팀원3</span> <span class="desc">CLIP·MediaPipe 비전 파이프라인</span>
+                <ul>
+                  <li><span class="fname">clip_embedder.py</span> <span class="desc">OpenCLIP 512차원 임베딩</span></li>
+                  <li><span class="fname">photo_analyzer.py</span> <span class="desc">얼굴·체형 사진 분석</span></li>
+                  <li><span class="fname">food_recognizer.py</span> <span class="desc">식재료·음식 인식</span></li>
+                  <li><span class="fname">pose_analyzer.py</span> <span class="desc">MediaPipe 자세 분석</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">knowledge/</span> <span class="team-badge tb-e">팀원4</span> <span class="desc">ChromaDB RAG 지식베이스</span>
+                <ul>
+                  <li><span class="fname">chroma_client.py</span> <span class="desc">ChromaDB 공통 클라이언트</span></li>
+                  <li><span class="fname">recipe_db.py</span> <span class="desc">레시피 DB 10만건</span></li>
+                  <li><span class="fname">exercise_db.py</span> <span class="desc">운동·부상 데이터베이스</span></li>
+                  <li><span class="fname">health_guidelines.py</span> <span class="desc">나이별 건강검진 가이드</span></li>
+                  <li><span class="fname">hobby_catalog.py</span> <span class="desc">취미 카탈로그·효과 DB</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">environment/</span> <span class="team-badge tb-e">팀원4</span> <span class="desc">외부 환경 API 연동</span>
+                <ul>
+                  <li><span class="fname">weather_monitor.py</span> <span class="desc">날씨·미세먼지 실시간 모니터</span></li>
+                  <li><span class="fname">plan_adjuster.py</span> <span class="desc">날씨 → 플랜 자동 재조정</span></li>
+                </ul>
+              </li>
+              <li>
+                <span class="dirname">dashboard/</span> <span class="team-badge tb-a">팀장</span> <span class="desc">계기판 데이터 엔진</span>
+                <ul><li><span class="fname">gauge_calculator.py</span> <span class="desc">6개 계기판 지수 계산기</span></li></ul>
+              </li>
+              <li>
+                <span class="dirname">services/</span> <span class="team-badge tb-a">팀장</span> <span class="desc">공통 서비스 레이어</span>
+                <ul>
+                  <li><span class="fname">user_state_manager.py</span> <span class="desc">40+ 차원 State 벡터 관리</span></li>
+                  <li><span class="fname">feedback_collector.py</span> <span class="desc">피드백 → Reward 변환</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <span class="dirname">frontend/</span> <span class="team-badge tb-c">팀원2</span> <span class="desc">React + Recharts 대시보드</span>
+            <ul>
+              <li><span class="dirname">src/components/</span>
+                <ul>
+                  <li><span class="fname">GaugePanel.jsx</span> <span class="desc">6개 계기판 컴포넌트</span></li>
+                  <li><span class="fname">PhotoAnalysis.jsx</span> <span class="desc">사진 업로드 + Top-5 UI</span></li>
+                  <li><span class="fname">RoadmapTimeline.jsx</span> <span class="desc">12주 로드맵 타임라인</span></li>
+                  <li><span class="fname">CascadeAlert.jsx</span> <span class="desc">크로스 도메인 경고 타임라인</span></li>
+                  <li><span class="fname">VoiceControl.jsx</span> <span class="desc">음성 입력 UI + TTS 응답 (신규)</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <span class="dirname">data/</span> <span class="team-badge tb-f">팀원5</span> <span class="desc">원본 데이터·시드 파일</span>
+            <ul>
+              <li><span class="fname">recipes.csv</span> <span class="desc">레시피 원본 10만건</span></li>
+              <li><span class="fname">exercises.json</span> <span class="desc">운동 데이터 (부위·난이도·YouTube)</span></li>
+              <li><span class="fname">health_guidelines.json</span> <span class="desc">건강검진 가이드라인</span></li>
+            </ul>
+          </li>
+          <li>
+            <span class="dirname">tests/</span> <span class="team-badge tb-f">팀원5</span> <span class="desc">E2E + 단위 테스트</span>
+            <ul>
+              <li><span class="fname">test_e2e_scenarios.py</span> <span class="desc">5개 E2E 시나리오 테스트</span></li>
+              <li><span class="fname">test_agents.py</span> <span class="desc">에이전트 단위 테스트</span></li>
+              <li><span class="fname">test_rl_engine.py</span> <span class="desc">RL 엔진 단위 테스트</span></li>
+              <li><span class="fname">test_voice_pipeline.py</span> <span class="desc">음성 파이프라인 테스트 (신규)</span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════ 5. TEAM ═══════ -->
+<section id="team">
+  <h2><span class="icon">&#x1F465;</span> 팀 분업 (폴더 소유권)</h2>
+  <table class="team-table">
+    <tr><th>역할</th><th>이름</th><th>담당 폴더</th><th>핵심 역할</th></tr>
+    <tr>
+      <td><span class="team-badge tb-a">팀장</span></td>
+      <td>YS</td>
+      <td>app/, services/, dashboard/</td>
+      <td>
+        FastAPI + WebSocket 서버 진입점 구축 &amp; 유지보수<br/>
+        Supabase PostgreSQL 스키마 설계 &amp; 40+ 차원 State 벡터 관리<br/>
+        6개 계기판 데이터 엔진 (gauge_calculator) 구현<br/>
+        <strong style="color:var(--yellow);">인프라 총괄:</strong> Docker Compose 환경 구성, Railway 배포 &amp; 모니터링, Vercel 프론트 배포 관리<br/>
+        .env / API 키 / 외부 서비스 연결 (OpenAI, Supabase, AWS S3) 통합 관리<br/>
+        <strong style="color:var(--red);">운영 장애 즉시 대응:</strong> 서버 다운, DB 연결 실패, API 통신 오류 등 실시간 트러블슈팅
+      </td>
+    </tr>
+    <tr>
+      <td><span class="team-badge tb-b">팀원1</span></td>
+      <td>JH</td>
+      <td>agents/ (orchestrator 포함)</td>
+      <td>
+        food / exercise / health / hobby 4개 도메인 에이전트 LangGraph 구현<br/>
+        orchestrator.py 크로스 도메인 연쇄 엔진 &mdash; 도메인 라우팅 &amp; cascade 처리<br/>
+        GPT-4o-mini 프롬프트 설계 &amp; 에이전트 간 State 전달 로직<br/>
+        에이전트 응답 품질 테스트 &amp; 프롬프트 튜닝
+      </td>
+    </tr>
+    <tr>
+      <td><span class="team-badge tb-c">팀원2</span></td>
+      <td>TY</td>
+      <td>frontend/</td>
+      <td>
+        React + Recharts 대시보드 전체 UI/UX 구현<br/>
+        GaugePanel (6개 계기판), PhotoAnalysis (사진 업로드 + Top-5), RoadmapTimeline (12주), CascadeAlert (경고), VoiceControl (음성 UI)<br/>
+        WebSocket 실시간 데이터 바인딩 &amp; 상태 관리<br/>
+        풀스택 역량 활용: 다른 파트 통합 연결 &amp; 프론트-백엔드 간 이슈 해결 지원
+      </td>
+    </tr>
+    <tr>
+      <td><span class="team-badge tb-d">팀원3</span></td>
+      <td>H</td>
+      <td>multimodal/, rl_engine/</td>
+      <td>
+        OpenCLIP 512차원 이미지 임베딩 &amp; 유사도 비교 (clip_embedder)<br/>
+        YOLO 식재료 인식 (food_recognizer), MediaPipe 자세 분석 (pose_analyzer)<br/>
+        사진 분석 파이프라인: 체형&middot;피부 분석 &rarr; 건강 추정 (photo_analyzer)<br/>
+        PPO 강화학습 전체: Gym 환경 (life_env), 정책 네트워크, 보상 함수, Optuna 자동 튜닝<br/>
+        학습된 모델 S3 업로드 &amp; 추론 서버 연동
+      </td>
+    </tr>
+    <tr>
+      <td><span class="team-badge tb-e">팀원4</span></td>
+      <td>JY</td>
+      <td>knowledge/, environment/, risk_engine/</td>
+      <td>
+        ChromaDB 벡터 DB 구축: 레시피 10만건, 운동&middot;부상 DB, 건강검진 가이드라인, 취미 카탈로그<br/>
+        RAG 검색 파이프라인 구현 &amp; 검색 성능 최적화 (Top-K, 캐싱 전략)<br/>
+        AirKorea 미세먼지 + OpenWeather 날씨 API 연동 (weather_monitor)<br/>
+        날씨 &rarr; 플랜 자동 재조정 (plan_adjuster) &mdash; 미세먼지 시 실내 운동 전환 등<br/>
+        음식 위험도 분석 (food_risk_scorer), 야식 패널티 계산, 이벤트 타임라인 생성<br/>
+        데이터 특징 분석을 통한 경량화 모델 성능 최적화 전략 수립
+      </td>
+    </tr>
+    <tr>
+      <td><span class="team-badge tb-f">팀원5</span></td>
+      <td>YJ</td>
+      <td>voice/, tests/, data/</td>
+      <td>
+        Whisper STT 음성&rarr;텍스트 변환 (온라인 OpenAI API / 오프라인 로컬 모델)<br/>
+        Intent 분류기: 음성 텍스트 &rarr; 도메인 + 액션 파싱 &rarr; 에이전트 라우팅<br/>
+        gTTS 응답: 에이전트 결과를 음성으로 변환하여 사용자에게 전달<br/>
+        pytest 기반 단위 테스트 &amp; E2E 시나리오 테스트 작성<br/>
+        시드 데이터 준비: recipes.csv, exercises.json, health_guidelines.json 전처리<br/>
+        CI/CD 파이프라인 (.github/workflows) &amp; README 문서화
+      </td>
+    </tr>
+  </table>
+</section>
+
+<!-- ═══════ WBS: 4-WEEK ROADMAP ═══════ -->
+<section id="wbs">
+  <h2><span class="icon">&#x1F4C5;</span> 4주 실행 로드맵 &amp; WBS</h2>
+
+  <h3>주차별 마일스톤</h3>
+  <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+    <div class="card" style="border-top:3px solid var(--accent);">
+      <h4 style="color:var(--accent);">1주차</h4>
+      <p style="font-weight:600;">골격 구축 + 데이터</p>
+      <ul style="font-size:13px; color:var(--text-dim); padding-left:16px; margin-top:8px;">
+        <li>프로젝트 골격 생성</li>
+        <li>데이터 수집&middot;전처리</li>
+        <li>ChromaDB 시드 데이터</li>
+        <li>Supabase 테이블 설계</li>
+        <li>로컬 개발 환경 세팅</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--green);">
+      <h4 style="color:var(--green);">2주차</h4>
+      <p style="font-weight:600;">핵심 기능 구현</p>
+      <ul style="font-size:13px; color:var(--text-dim); padding-left:16px; margin-top:8px;">
+        <li>4개 에이전트 핵심 로직</li>
+        <li>PPO 학습 파이프라인</li>
+        <li>CLIP/YOLO 비전 연동</li>
+        <li>음성 파이프라인 구현</li>
+        <li>React 대시보드 기본</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--yellow);">
+      <h4 style="color:var(--yellow);">3주차</h4>
+      <p style="font-weight:600;">통합 + 테스트</p>
+      <ul style="font-size:13px; color:var(--text-dim); padding-left:16px; margin-top:8px;">
+        <li>크로스 도메인 연쇄 통합</li>
+        <li>Railway 배포</li>
+        <li>E2E 시나리오 테스트</li>
+        <li>성능 최적화</li>
+        <li>버그 수정&middot;안정화</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--red);">
+      <h4 style="color:var(--red);">4주차</h4>
+      <p style="font-weight:600;">최적화 + 발표</p>
+      <ul style="font-size:13px; color:var(--text-dim); padding-left:16px; margin-top:8px;">
+        <li>PPO 모델 최종 튜닝</li>
+        <li>UI/UX 폴리싱</li>
+        <li>발표 자료 준비</li>
+        <li>데모 시나리오 확정</li>
+        <li>최종 배포 (EC2 선택)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px;">팀원별 주간 WBS</h3>
+  <div style="overflow-x:auto;">
+    <table class="wbs-table">
+      <tr>
+        <th>팀원</th>
+        <th style="color:var(--accent);">1주차</th>
+        <th style="color:var(--green);">2주차</th>
+        <th style="color:var(--yellow);">3주차</th>
+        <th style="color:var(--red);">4주차</th>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-a">팀장 YS</span><br/>서버&middot;인프라 총괄</td>
+        <td>main.py 서버 골격<br/>Docker 환경 구성<br/>Supabase DB 설계<br/>.env&middot;API 키 관리</td>
+        <td>services/ 구현<br/>dashboard/ 구현<br/>Railway 배포 세팅<br/>WebSocket 안정화</td>
+        <td>통합 배포 관리<br/>서버 장애 대응<br/>DB 성능 모니터링<br/>API 통신 최적화</td>
+        <td>운영 안정성 검증<br/>최종 배포 (EC2)<br/>발표 데모 인프라<br/>비용&middot;장애 대응</td>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-b">팀원1 JH</span><br/>에이전트</td>
+        <td>에이전트 구조 설계<br/>food_agent 스텁<br/>orchestrator 골격</td>
+        <td>4개 에이전트 구현<br/>orchestrator 연쇄<br/>에이전트 간 연결</td>
+        <td>크로스 도메인 연쇄<br/>에이전트 통합 테스트<br/>에지 케이스 처리</td>
+        <td>응답 품질 개선<br/>프롬프트 튜닝<br/>발표 시나리오</td>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-c">팀원2 TY</span><br/>프론트엔드</td>
+        <td>React 프로젝트 세팅<br/>디자인 시스템<br/>라우팅 구조</td>
+        <td>GaugePanel 구현<br/>VoiceControl 구현<br/>WebSocket 연결</td>
+        <td>PhotoAnalysis UI<br/>RoadmapTimeline<br/>CascadeAlert<br/>+ 백엔드 통합 지원</td>
+        <td>반응형 디자인<br/>애니메이션<br/>Vercel 배포</td>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-d">팀원3 H</span><br/>멀티모달 + RL</td>
+        <td>CLIP 모델 테스트<br/>PPO 환경 설계<br/>Reward 함수 설계</td>
+        <td>clip_embedder 구현<br/>food_recognizer 구현<br/>PPO 학습 구현<br/>보상 함수 구현</td>
+        <td>photo_analyzer 구현<br/>RL 모델 튜닝<br/>비전&middot;에이전트 연동<br/>정확도 개선</td>
+        <td>Optuna 자동 튜닝<br/>임베딩&middot;추론 최적화<br/>모델 S3 업로드</td>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-e">팀원4 JY</span><br/>RAG + 환경 + 위험</td>
+        <td>ChromaDB 세팅<br/>레시피 데이터 수집<br/>날씨 API 연동</td>
+        <td>recipe_db 10만건<br/>exercise_db 구현<br/>weather_monitor 구현<br/>food_risk_scorer</td>
+        <td>RAG 검색 최적화<br/>plan_adjuster 구현<br/>경량화 전략 수립<br/>health_guidelines</td>
+        <td>검색 성능 튜닝<br/>캐싱 전략<br/>데이터 품질 검증<br/>모델 최적화</td>
+      </tr>
+      <tr>
+        <td><span class="team-badge tb-f">팀원5 YJ</span><br/>음성 + 테스트</td>
+        <td>Whisper 환경 테스트<br/>테스트 프레임워크<br/>데이터 시드 준비</td>
+        <td>STT 구현<br/>Intent 분류기<br/>단위 테스트 작성<br/>데이터 전처리</td>
+        <td>TTS 응답 연동<br/>음성 정밀화<br/>E2E 테스트 구현<br/>통합 테스트</td>
+        <td>음성 UX 개선<br/>최종 문서화<br/>README 작성<br/>배포 검증</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════ 6. GIT BRANCH ═══════ -->
+<section id="branch">
+  <h2><span class="icon">&#x1F33F;</span> 브랜치 전략 &mdash; 간섭을 없애는 핵심</h2>
+  <div class="branch-diagram">
+    <div class="branch-row">
+      <div class="branch-name bn-main">main (배포)</div>
+      <div class="branch-line bl-main">
+        <div class="branch-dot bl-main" style="left:15%;"></div>
+        <div class="branch-dot bl-main" style="left:50%;"></div>
+        <div class="branch-dot bl-main" style="left:90%;"></div>
+      </div>
+      <span style="font-size:12px; color:var(--text-dim); min-width:60px;">v0.1 → v1.0</span>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-dev">dev (통합)</div>
+      <div class="branch-line bl-dev">
+        <div class="branch-dot bl-dev" style="left:20%;"></div>
+        <div class="branch-dot bl-dev" style="left:55%;"></div>
+        <div class="branch-dot bl-dev" style="left:80%;"></div>
+      </div>
+      <span style="font-size:12px; color:var(--text-dim); min-width:60px;">PR + Review</span>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-feat-a">feature/팀장-server-infra</div>
+      <div class="branch-line bl-feat-a" style="max-width:40%;"></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-feat-b">feature/팀원1-agents</div>
+      <div class="branch-line bl-feat-b" style="max-width:50%; margin-left:10%;"></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-feat-c">feature/팀원2-frontend</div>
+      <div class="branch-line bl-feat-c" style="max-width:55%; margin-left:5%;"></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-feat-d">feature/팀원3-multimodal-rl</div>
+      <div class="branch-line bl-feat-d" style="max-width:45%; margin-left:15%;"></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-feat-e">feature/팀원4-rag-data</div>
+      <div class="branch-line bl-feat-e" style="max-width:40%; margin-left:25%;"></div>
+    </div>
+    <div class="branch-row">
+      <div class="branch-name bn-docs">feature/팀원5-voice-test</div>
+      <div class="branch-line bl-docs" style="max-width:50%; margin-left:20%;"></div>
+    </div>
+
+    <div class="branch-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div> main (배포)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div> dev (통합)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div> feature/* (개인 작업)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange);"></div> docs/* (문서·테스트)</div>
+    </div>
+    <div class="branch-flow">
+      feature/* &#x2192; dev (PR + 1인 리뷰) &#x2192; main (팀장 단독 merge, 주 1회 릴리즈)
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 7. DEPLOY COMPARISON ═══════ -->
+<section id="deploy">
+  <h2><span class="icon">&#x1F680;</span> 배포 전략 비교</h2>
+  <div style="overflow-x:auto;">
+    <table class="compare-table">
+      <tr>
+        <th>항목</th>
+        <th>EC2 (직접 운영)</th>
+        <th class="rec">Railway / Render</th>
+        <th>로컬 + Ngrok</th>
+      </tr>
+      <tr>
+        <td><strong>월비용</strong></td>
+        <td>$15~40 (t3.small)</td>
+        <td class="rec">무료 ~ $5 (무료 플랜)</td>
+        <td>무료 (Ngrok 무료 플랜)</td>
+      </tr>
+      <tr>
+        <td><strong>설정 난이도</strong></td>
+        <td>높음 (보안·네트워크)</td>
+        <td class="rec">낮음 (Git push = 자동 배포)</td>
+        <td>매우 낮음 (영어 1분)</td>
+      </tr>
+      <tr>
+        <td><strong>ChromaDB</strong></td>
+        <td>완전 지원 (영구 볼륨)</td>
+        <td class="rec">제한적 (재배포 시 초기화 주의)</td>
+        <td>완전 지원 (로컬 파일)</td>
+      </tr>
+      <tr>
+        <td><strong>PPO 학습</strong></td>
+        <td>가능 (CPU 한계, t3.small 느림)</td>
+        <td class="rec">어려움 (긴 작업 타임아웃)</td>
+        <td>로컬 GPU 활용 (가장 빠름)</td>
+      </tr>
+      <tr>
+        <td><strong>WebSocket</strong></td>
+        <td>완전 지원</td>
+        <td class="rec">Railway 지원 / Render 제한적</td>
+        <td>Ngrok으로 지원</td>
+      </tr>
+      <tr>
+        <td><strong>팀 공유 URL</strong></td>
+        <td>고정 IP·도메인 (가장 안정)</td>
+        <td class="rec">고정 URL 제공 (무료도 가능)</td>
+        <td>Ngrok URL (재시작마다 변경)</td>
+      </tr>
+      <tr>
+        <td><strong>4주 적합도</strong></td>
+        <td style="color:var(--yellow);">보통 &mdash; 설정 비용</td>
+        <td class="rec" style="color:var(--green);"><strong>높음 &mdash; 추천</strong></td>
+        <td style="color:var(--cyan);">최고 &mdash; 데모용</td>
+      </tr>
+    </table>
+  </div>
+  <div style="margin-top:16px; background:var(--surface); border:2px solid var(--green); border-radius:10px; padding:16px; text-align:center;">
+    <strong style="color:var(--green); font-size:16px;">권장 전략: 로컬 개발 + Railway 배포 + ChromaDB 로컬 파일</strong><br/>
+    <span style="color:var(--text-dim); font-size:13px;">EC2는 발표용 안정 서버가 필요한 4주차에만 선택적으로 고려</span>
+  </div>
+
+  <h3 style="margin-top:24px;">배포 타임라인</h3>
+  <table>
+    <tr><th>주차</th><th>환경</th><th>목적</th></tr>
+    <tr><td>1~2주차</td><td>로컬 개발 + Ngrok</td><td>팀원 간 API 공유, 빠른 이터레이션</td></tr>
+    <tr><td>3주차</td><td>Railway 배포</td><td>통합 테스트용 공유 URL</td></tr>
+    <tr><td>4주차</td><td>Railway 유지 + EC2 (선택)</td><td>발표 당일 안정 서버 (t3.micro 프리 티어)</td></tr>
+  </table>
+</section>
+
+<!-- ═══════ 8. REWARD FUNCTION ═══════ -->
+<section id="reward">
+  <h2><span class="icon">&#x1F3AF;</span> 보상 함수 핵심 로직</h2>
+
+  <div class="formula-box">
+    <span class="fn">R(s, a, t)</span> = <span class="var">w1</span>·<span class="pos">r_taste</span>
+    + <span class="var">w2</span>·<span class="pos">r_health</span>
+    + <span class="var">w3</span>·<span class="pos">r_fitness</span>
+    + <span class="var">w4</span>·<span class="pos">r_mood</span>
+    + <span class="var">w5</span>·<span class="pos">r_habit</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="neg">- penalty_night</span>
+    <span class="neg">- penalty_risk</span>
+    <span class="neg">- penalty_skip</span>
+    + <span class="pos">bonus_photo_goal</span>
+  </div>
+
+  <div class="penalty-bonus-grid">
+    <div>
+      <h3 style="color:var(--red);">Penalties (감점)</h3>
+      <div class="pb-card penalty" style="margin-bottom:8px;">
+        <h4>&#x1F35C; 야식 라면 (23시) <span class="val" style="color:var(--red);">-5</span></h4>
+        <div class="cascade">&#x2192; 수면 -35% &#x2192; 운동 -20% &#x2192; 체중 목표 +2일 지연</div>
+      </div>
+      <div class="pb-card penalty" style="margin-bottom:8px;">
+        <h4>&#x1F357; 튀김 치킨 <span class="val" style="color:var(--red);">-4</span></h4>
+        <div class="cascade">&#x2192; 콜레스테롤 위험 +12%</div>
+      </div>
+      <div class="pb-card penalty">
+        <h4>&#x1F32B; 미세먼지 러닝 (PM10 ≥ 76) <span class="val" style="color:var(--red);">-4</span></h4>
+        <div class="cascade">&#x2192; 활성산소 증가 &#x2192; 혈액 청정도 하락</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--green);">Bonuses (가점)</h3>
+      <div class="pb-card bonus" style="margin-bottom:8px;">
+        <h4>&#x1F373; 에어프라이어 수용 <span class="val" style="color:var(--green);">+2</span></h4>
+        <div class="cascade">&#x2192; 칼로리 -40%</div>
+      </div>
+      <div class="pb-card bonus" style="margin-bottom:8px;">
+        <h4>&#x1F3B8; 기타 연주 30분 <span class="val" style="color:var(--green);">+2</span></h4>
+        <div class="cascade">&#x2192; 스트레스 -15% &#x2192; 폭식 충동 -40%</div>
+      </div>
+      <div class="pb-card bonus" style="margin-bottom:8px;">
+        <h4>&#x1F3E5; 건강검진 이행 <span class="val" style="color:var(--green);">+4</span></h4>
+        <div class="cascade">&#x2192; 불안감 감소 &#x2192; 전체 안정</div>
+      </div>
+      <div class="pb-card bonus">
+        <h4>&#x1F4F8; 사진 목표 50% 달성 <span class="val" style="color:var(--green);">+3</span></h4>
+        <div class="cascade">&#x2192; 시각적 동기부여 &#x2192; 습관 강화</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px;">가중치 설정 (Configurable)</h3>
+  <table>
+    <tr><th>가중치</th><th>항목</th><th>기본값</th><th>설명</th></tr>
+    <tr><td><code style="color:var(--cyan);">w1</code></td><td>r_taste (맛 만족도)</td><td>0.15</td><td>사용자 맛 선호 반영</td></tr>
+    <tr><td><code style="color:var(--cyan);">w2</code></td><td>r_health (건강 기여도)</td><td>0.30</td><td>영양&middot;건강 지표 개선 비중 (최대)</td></tr>
+    <tr><td><code style="color:var(--cyan);">w3</code></td><td>r_fitness (운동 효과)</td><td>0.25</td><td>운동 목표 달성 기여도</td></tr>
+    <tr><td><code style="color:var(--cyan);">w4</code></td><td>r_mood (기분 효과)</td><td>0.15</td><td>스트레스 해소&middot;기분 개선</td></tr>
+    <tr><td><code style="color:var(--cyan);">w5</code></td><td>r_habit (습관 형성)</td><td>0.15</td><td>꾸준한 실천&middot;루틴 정착</td></tr>
+  </table>
+  <p style="font-size:13px; color:var(--text-dim); margin-top:8px;">* 가중치 합계 = 1.0 &nbsp;|&nbsp; Optuna 자동 튜닝으로 사용자별 최적값 탐색</p>
+
+  <h3 style="margin-top:28px;">State 벡터 (40+ 차원) 주요 구성</h3>
+  <div style="overflow-x:auto;">
+    <table>
+      <tr><th>#</th><th>차원</th><th>범위</th><th>도메인</th><th>설명</th></tr>
+      <tr><td>1</td><td><code>bmi</code></td><td>15~40</td><td>건강</td><td>체질량지수</td></tr>
+      <tr><td>2</td><td><code>body_fat_pct</code></td><td>5~50</td><td>건강</td><td>체지방률 (%)</td></tr>
+      <tr><td>3</td><td><code>muscle_mass</code></td><td>20~80</td><td>운동</td><td>골격근량 (kg)</td></tr>
+      <tr><td>4</td><td><code>sleep_hours</code></td><td>0~12</td><td>건강</td><td>일일 수면 시간</td></tr>
+      <tr><td>5</td><td><code>sleep_quality</code></td><td>0~100</td><td>건강</td><td>수면 질 점수</td></tr>
+      <tr><td>6</td><td><code>stress_level</code></td><td>0~100</td><td>건강</td><td>스트레스 지수</td></tr>
+      <tr><td>7</td><td><code>calorie_intake</code></td><td>0~5000</td><td>요리</td><td>일일 칼로리 섭취 (kcal)</td></tr>
+      <tr><td>8</td><td><code>calorie_burned</code></td><td>0~3000</td><td>운동</td><td>일일 칼로리 소모 (kcal)</td></tr>
+      <tr><td>9</td><td><code>reactive_oxygen</code></td><td>0~100</td><td>건강</td><td>활성산소 수치</td></tr>
+      <tr><td>10</td><td><code>blood_purity</code></td><td>0~100</td><td>건강</td><td>혈액 청정도</td></tr>
+      <tr><td>11</td><td><code>hair_loss_risk</code></td><td>0~100</td><td>건강</td><td>탈모 위험도</td></tr>
+      <tr><td>12</td><td><code>weekly_achievement</code></td><td>0~100</td><td>전체</td><td>주간 달성률</td></tr>
+      <tr><td>13</td><td><code>hobby_duration</code></td><td>0~180</td><td>취미</td><td>일일 취미 시간 (분)</td></tr>
+      <tr><td>14</td><td><code>exercise_duration</code></td><td>0~180</td><td>운동</td><td>일일 운동 시간 (분)</td></tr>
+      <tr><td>15</td><td><code>pm10_level</code></td><td>0~300</td><td>환경</td><td>미세먼지 농도 (&mu;g/m&sup3;)</td></tr>
+      <tr><td colspan="5" style="text-align:center; color:var(--text-dim); font-style:italic;">… 나머지 25+ 차원 (영양소 세부, 운동 부위별, 감정 세부, 환경 변수 등)</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════ 9. SETUP GUIDE ═══════ -->
+<section id="setup">
+  <h2><span class="icon">&#x1F6E0;</span> 사전 준비 가이드 (회원가입 + 설치)</h2>
+
+  <h3>&#x2705; 필수 설치 (로컬 PC)</h3>
+  <div class="setup-steps">
+    <div class="setup-step">
+      <h4>Python 3.11 설치</h4>
+      <p><a href="https://www.python.org/downloads/" target="_blank">python.org/downloads</a> &mdash; 3.11.x 버전 다운로드</p>
+      <p>설치 시 <code>Add Python to PATH</code> 반드시 체크</p>
+    </div>
+    <div class="setup-step">
+      <h4>Node.js 18+ 설치</h4>
+      <p><a href="https://nodejs.org/" target="_blank">nodejs.org</a> &mdash; LTS 버전 권장</p>
+      <p>프론트엔드 React 빌드에 필요</p>
+    </div>
+    <div class="setup-step">
+      <h4>Git 설치</h4>
+      <p><a href="https://git-scm.com/downloads" target="_blank">git-scm.com/downloads</a></p>
+      <p>설치 후 <code>git config --global user.name "이름"</code> 및 <code>git config --global user.email "이메일"</code> 설정</p>
+    </div>
+    <div class="setup-step">
+      <h4>Docker Desktop 설치</h4>
+      <p><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a></p>
+      <p>docker-compose로 백엔드 + ChromaDB를 한 번에 실행 가능</p>
+      <p>Windows: WSL2 백엔드 활성화 필요</p>
+    </div>
+    <div class="setup-step">
+      <h4>VS Code 설치 + 익스텐션</h4>
+      <p><a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a></p>
+      <p>프로젝트 열면 권장 익스텐션 자동 안내됨 (<code>.vscode/extensions.json</code>)</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px;">&#x1F310; 서비스 회원가입 (무료)</h3>
+  <div class="setup-steps">
+    <div class="setup-step">
+      <h4>OpenAI API <span class="badge badge-orange">필수</span></h4>
+      <p><a href="https://platform.openai.com/signup" target="_blank">platform.openai.com/signup</a> &mdash; 회원가입 후 API Key 발급</p>
+      <p>GPT-4o-mini + Whisper STT 사용 &mdash; 초기 <span class="free">$5 무료 크레딧</span> 제공</p>
+      <p>발급된 키를 <code>.env</code> 파일의 <code>OPENAI_API_KEY</code>에 입력</p>
+    </div>
+    <div class="setup-step">
+      <h4>Supabase <span class="badge badge-blue">필수</span></h4>
+      <p><a href="https://supabase.com/" target="_blank">supabase.com</a> &mdash; GitHub 계정으로 가입</p>
+      <p>New Project 생성 → Settings → Database → Connection string 복사</p>
+      <p><span class="free">무료 플랜:</span> 500MB DB, 1GB 전송, 2개 프로젝트</p>
+      <p>복사한 URL을 <code>.env</code>의 <code>DATABASE_URL</code>에 입력</p>
+    </div>
+    <div class="setup-step">
+      <h4>Railway <span class="badge badge-green">배포용</span></h4>
+      <p><a href="https://railway.app/" target="_blank">railway.app</a> &mdash; GitHub 계정으로 가입</p>
+      <p>GitHub 레포 연결 → Git push 시 자동 배포</p>
+      <p><span class="free">무료 플랜:</span> 월 $5 크레딧, 500시간 실행</p>
+    </div>
+    <div class="setup-step">
+      <h4>Vercel <span class="badge badge-cyan">프론트 배포</span></h4>
+      <p><a href="https://vercel.com/" target="_blank">vercel.com</a> &mdash; GitHub 계정으로 가입</p>
+      <p>frontend/ 폴더를 연결하면 자동 빌드·배포</p>
+      <p><span class="free">무료 플랜:</span> 무제한 배포, 100GB 전송</p>
+    </div>
+    <div class="setup-step">
+      <h4>AWS (S3) <span class="badge badge-yellow">모델 저장</span></h4>
+      <p><a href="https://aws.amazon.com/free/" target="_blank">aws.amazon.com/free</a> &mdash; 프리 티어 가입</p>
+      <p>S3 버킷 생성: <code>lifesync-models</code></p>
+      <p><span class="free">프리 티어:</span> 5GB 저장, 20K GET, 2K PUT (12개월)</p>
+      <p>IAM에서 Access Key / Secret Key 발급 → <code>.env</code>에 입력</p>
+    </div>
+    <div class="setup-step">
+      <h4>AirKorea (공공데이터) <span class="badge badge-teal">날씨</span></h4>
+      <p><a href="https://www.data.go.kr/" target="_blank">data.go.kr</a> &mdash; 공공데이터포털 회원가입</p>
+      <p>"한국환경공단_에어코리아_대기오염정보" 검색 → 활용 신청</p>
+      <p><span class="free">무료</span> (일 1,000건 호출)</p>
+    </div>
+    <div class="setup-step">
+      <h4>OpenWeather <span class="badge badge-teal">날씨</span></h4>
+      <p><a href="https://openweathermap.org/api" target="_blank">openweathermap.org/api</a> &mdash; 회원가입</p>
+      <p><span class="free">무료 플랜:</span> 분당 60건 호출, Current Weather + Forecast</p>
+    </div>
+    <div class="setup-step">
+      <h4>Ngrok <span class="badge badge-magenta">로컬 공유</span></h4>
+      <p><a href="https://ngrok.com/" target="_blank">ngrok.com</a> &mdash; 회원가입 후 authtoken 발급</p>
+      <p>로컬 서버를 외부에 공유: <code>ngrok http 8000</code></p>
+      <p><span class="free">무료 플랜:</span> 1개 터널, 랜덤 URL</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px;">&#x1F4DD; 환경변수 설정 (.env)</h3>
+  <p style="margin-bottom:12px;">프로젝트 루트에 <code>.env.example</code>을 복사하여 <code>.env</code> 생성 후 값을 채우세요:</p>
+  <table class="env-table">
+    <tr><th>변수명</th><th>설명</th><th>발급처</th></tr>
+    <tr><td>OPENAI_API_KEY</td><td>GPT-4o-mini + Whisper API 키</td><td>OpenAI Platform</td></tr>
+    <tr><td>DATABASE_URL</td><td>Supabase PostgreSQL 연결 문자열</td><td>Supabase Dashboard</td></tr>
+    <tr><td>CHROMA_PATH</td><td>ChromaDB 영구 저장 경로</td><td>로컬: ./data/chroma</td></tr>
+    <tr><td>AIRKOREA_API_KEY</td><td>에어코리아 대기오염 API 키</td><td>공공데이터포털</td></tr>
+    <tr><td>OPENWEATHER_API_KEY</td><td>OpenWeather API 키</td><td>OpenWeather</td></tr>
+    <tr><td>AWS_ACCESS_KEY_ID</td><td>AWS IAM Access Key</td><td>AWS Console</td></tr>
+    <tr><td>AWS_SECRET_ACCESS_KEY</td><td>AWS IAM Secret Key</td><td>AWS Console</td></tr>
+    <tr><td>S3_BUCKET_NAME</td><td>모델 파일 저장 버킷 이름</td><td>lifesync-models</td></tr>
+  </table>
+
+  <h3 style="margin-top:32px;">&#x26A1; 빠른 시작 (로컬)</h3>
+  <div class="formula-box" style="font-size:13px; line-height:2.2;">
+    <span style="color:var(--text-dim);"># 1. 프로젝트 클론</span><br/>
+    <span class="fn">git clone</span> &lt;repo-url&gt; && <span class="fn">cd</span> MOMA/lifesync-ai<br/><br/>
+    <span style="color:var(--text-dim);"># 2. 환경변수 설정</span><br/>
+    <span class="fn">cp</span> .env.example .env<br/>
+    <span style="color:var(--text-dim);"># .env 파일 편집하여 API 키 입력</span><br/><br/>
+    <span style="color:var(--text-dim);"># 3. 백엔드 실행</span><br/>
+    <span class="fn">python</span> -m venv .venv<br/>
+    <span class="fn">source</span> .venv/bin/activate &nbsp;&nbsp;<span style="color:var(--text-dim);"># Windows: .venv\Scripts\activate</span><br/>
+    <span class="fn">pip install</span> -r requirements.txt<br/>
+    <span class="fn">uvicorn</span> backend.app.main:app --reload --port 8000<br/><br/>
+    <span style="color:var(--text-dim);"># 4. 프론트엔드 실행 (새 터미널)</span><br/>
+    <span class="fn">cd</span> frontend<br/>
+    <span class="fn">npm install</span><br/>
+    <span class="fn">npm run dev</span><br/><br/>
+    <span style="color:var(--text-dim);"># 5. Docker로 전체 실행 (선택)</span><br/>
+    <span class="fn">docker-compose</span> up --build
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<div style="text-align:center; padding:40px 0 20px; border-top:1px solid var(--border); margin-top:40px;">
+  <p style="color:var(--text-dim); font-size:13px;">
+    LifeSync AI &mdash; KDT-FT Team3 Chainers &mdash; 4주 프로젝트<br/>
+    6명 &middot; Python 3.11 &middot; FastAPI &middot; React &middot; PPO RL &middot; ChromaDB
+  </p>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>

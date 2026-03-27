@@ -1,0 +1,21 @@
+# LifeSync AI — Code Owners
+
+/backend/agents/       @teamA
+/backend/dashboard/    @teamA
+/backend/services/     @teamA
+/backend/agents/orchestrator.py @teamA
+
+/backend/rl_engine/    @teamB
+/backend/voice/        @teamB
+
+/backend/multimodal/   @teamC
+
+/backend/knowledge/    @teamD
+/backend/environment/  @teamD
+
+/frontend/             @teamE
+
+/tests/                @teamF
+/data/                 @teamF
+/README.md             @teamF
+/.github/              @teamF

@@ -1,0 +1,46 @@
+# Environment & secrets
+.env
+.env.*
+*/.env
+*/.env.*
+**/.env
+**/.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# Android build
+*.apk
+*.aab
+*.keystore
+*.jks
+.gradle/
+**/android/app/build/
+**/android/build/
+**/android/.idea/
+
+# Data
+data/chroma/
+*.zip
+uploads/
+
+# IDE & OS
+.DS_Store
+.idea/
+*.swp
+*.swo
+
+# Sensitive
+*.pem
+*.key
+test_db.py
+
+# Claude
+.claude/

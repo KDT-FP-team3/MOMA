@@ -1,0 +1,305 @@
+/**
+ * SimulatorPage — 가상 인물 건강 시뮬레이터
+ *
+ * 긍정/부정 선택에 따라 가상 인물의 건강 상태가 실시간 변화하는 것을 시각화.
+ * PPO 강화학습 환경(LifeEnv)을 API로 호출하여 시뮬레이션.
+ */
+import { useState, useEffect, useCallback } from "react";
+import { RadialBarChart, RadialBar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { Play, RotateCcw, TrendingUp, TrendingDown, Minus, User, Zap, AlertTriangle } from "lucide-react";
+import axios from "axios";
+import Layout from "../components/layout/Layout";
+import CharacterCard from "../components/CharacterCard";
+import SimulationAnimation from "../components/SimulationAnimation";
+import { useAppState } from "../context/AppStateContext";
+
+// 행동별 이모지 + 색상
+const ACTION_STYLES = {
+  healthy_meal:      { emoji: "🥗", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강한 식사" },
+  unhealthy_meal:    { emoji: "🍔", color: "text-red-400",    bg: "bg-red-500/10",   border: "border-red-500/30",   label: "불건강한 식사" },
+  skip_meal:         { emoji: "🚫", color: "text-gray-400",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "식사 건너뛰기" },
+  cardio_exercise:   { emoji: "🏃", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "유산소 운동" },
+  strength_exercise: { emoji: "🏋️", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "근력 운동" },
+  skip_exercise:     { emoji: "😴", color: "text-gray-400",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "운동 건너뛰기" },
+  health_check:      { emoji: "🏥", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강 체크" },
+  sleep_optimize:    { emoji: "🌙", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "수면 최적화" },
+  hobby_activity:    { emoji: "🎸", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "취미 활동" },
+  rest:              { emoji: "☕", color: "text-yellow-400",  bg: "bg-yellow-500/10",border: "border-yellow-500/30",label: "휴식" },
+};
+
+const GAUGE_CONFIG = [
+  { key: "sleep_score",   label: "수면",     color: "#748ffc" },
+  { key: "stress_level",  label: "스트레스",  color: "#ff922b", invert: true },
+  { key: "mood_score",    label: "기분",     color: "#20c997" },
+];
+
+const STAT_KEYS = [
+  { key: "weight_kg",      label: "체중",     unit: "kg",    color: "#ff6b6b" },
+  { key: "bmi",            label: "BMI",      unit: "",      color: "#ffd43b" },
+  { key: "calorie_intake", label: "칼로리섭취", unit: "kcal",  color: "#ff922b" },
+  { key: "calorie_burned", label: "칼로리소모", unit: "kcal",  color: "#51cf66" },
+];
+
+export default function SimulatorPage() {
+  const { state: appState, updateState: updateAppState } = useAppState();
+  const saved = appState.simulatorState || {};
+
+  const [started, setStarted] = useState(() => saved.started || false);
+  const [state, setState] = useState(() => saved.healthState || null);
+  const [gauges, setGauges] = useState(() => saved.gauges || {});
+  const [step, setStep] = useState(() => saved.step || 0);
+  const [week, setWeek] = useState(() => saved.week || 1);
+  const [day, setDay] = useState(() => saved.day || 1);
+  const [history, setHistory] = useState(() => saved.history || []);
+  const [lastReward, setLastReward] = useState(() => saved.lastReward || null);
+  const [lastCascade, setLastCascade] = useState(() => saved.lastCascade || null);
+  const [terminated, setTerminated] = useState(() => saved.terminated || false);
+  const [loading, setLoading] = useState(false);
+  const [totalReward, setTotalReward] = useState(() => saved.totalReward || 0);
+  const [showAnimation, setShowAnimation] = useState(false);
+
+  // Save simulator state to global context + localStorage whenever it changes
+  useEffect(() => {
+    updateAppState("simulatorState", {
+      started, healthState: state, gauges, step, week, day,
+      history, lastReward, lastCascade, terminated, totalReward,
+    });
+  }, [started, state, gauges, step, week, day, history, lastReward, lastCascade, terminated, totalReward, updateAppState]);
+
+  const reset = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/simulation/reset?session_id=sim1");
+      setState(res.data.health_state);
+      setGauges(res.data.gauges);
+      setStep(0);
+      setWeek(1);
+      setDay(1);
+      setHistory([{ step: 0, ...res.data.health_state }]);
+      setLastReward(null);
+      setLastCascade(null);
+      setTerminated(false);
+      setStarted(true);
+      setTotalReward(0);
+      setShowAnimation(true);
+      setTimeout(() => setShowAnimation(false), 3000);
+    } catch (e) {
+      console.error("시뮬레이션 초기화 실패:", e);
+      alert("백엔드 서버 연결 실패! 서버가 실행 중인지 확인하세요.\n\n오류: " + (e.message || e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const takeAction = async (actionId) => {
+    if (terminated || loading) return;
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/simulation/step", {
+        session_id: "sim1",
+        action_id: actionId,
+      });
+      setState(res.data.health_state);
+      setGauges(res.data.gauges);
+      setStep(res.data.step);
+      setWeek(res.data.week);
+      setDay(res.data.day);
+      setLastReward(res.data.reward);
+      setLastCascade(res.data.cascade_message);
+      setTerminated(res.data.terminated);
+      setTotalReward((prev) => prev + res.data.reward);
+      setHistory((prev) => [
+        ...prev,
+        { step: res.data.step, action: res.data.action.description, ...res.data.health_state },
+      ].slice(-30));
+    } catch (e) {
+      console.error("시뮬레이션 스텝 실패:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 시작 전 화면
+  if (!started) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen p-6">
+          <div className="max-w-lg text-center space-y-6">
+            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <User size={48} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">
+              건강 <span className="text-cyan-400">시뮬레이터</span>
+            </h1>
+            <p className="text-gray-400 leading-relaxed">
+              가상의 인물을 생성하고, 매일의 선택(식사, 운동, 취미 등)에 따라
+              <br />
+              건강 상태가 어떻게 변화하는지 <strong className="text-white">12주간 시뮬레이션</strong>합니다.
+              <br />
+              <span className="text-cyan-400">PPO 강화학습 환경</span>이 보상과 패널티를 계산합니다.
+            </p>
+            <button
+              onClick={reset}
+              disabled={loading}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-500/25"
+            >
+              <Play size={20} />
+              시뮬레이션 시작
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
+        {/* 상단 바 */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-xl font-bold">
+              건강 시뮬레이터
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                {week}주차 {day}일 (Day {step}/84)
+              </span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className={`text-sm font-bold ${totalReward >= 0 ? "text-green-400" : "text-red-400"}`}>
+              총 보상: {totalReward >= 0 ? "+" : ""}{totalReward.toFixed(1)}
+            </div>
+            <button onClick={reset} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+              <RotateCcw size={14} />
+              초기화
+            </button>
+          </div>
+        </div>
+
+        {/* 종료 배너 */}
+        {terminated && (
+          <div className="bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border border-cyan-700/30 rounded-xl p-5 text-center">
+            <h2 className="text-lg font-bold text-cyan-400">12주 시뮬레이션 완료!</h2>
+            <p className="text-gray-400 mt-1">총 보상: <strong className={totalReward >= 0 ? "text-green-400" : "text-red-400"}>{totalReward.toFixed(1)}</strong></p>
+            <p className="text-sm text-gray-500 mt-1">
+              체중: {state?.weight_kg}kg | BMI: {state?.bmi} | 수면: {state?.sleep_score} | 스트레스: {state?.stress_level}
+            </p>
+            <button onClick={reset} className="mt-3 px-5 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-medium transition-colors">
+              다시 시작
+            </button>
+          </div>
+        )}
+
+        {/* 시뮬레이션 시작 애니메이션 */}
+        <SimulationAnimation active={showAnimation} onComplete={() => setShowAnimation(false)}>
+          <div className="text-center text-cyan-400 text-lg font-semibold">시뮬레이션 초기화 중...</div>
+        </SimulationAnimation>
+
+        {/* 가상 인물 + 게이지 */}
+        {!showAnimation && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* 가상 인물 카드 (CharacterCard) */}
+          <CharacterCard
+            profile={{
+              level: Math.floor(step / 12) + 1,
+              exp: step % 12,
+              nextLevelExp: 12,
+              title: terminated ? "시뮬레이션 완료" : `${week}주차 ${day}일`,
+              badges: totalReward >= 10 ? ["건강 달인"] : [],
+              streak: step,
+            }}
+            stats={{
+              bmi: state?.bmi || 0,
+              mood: state?.mood_score || 0,
+              energy: 100 - (state?.stress_level || 0),
+              stress: state?.stress_level || 0,
+              sleep: state?.sleep_score || 0,
+              health: Math.round(((state?.sleep_score || 0) + (state?.mood_score || 0) + (100 - (state?.stress_level || 0))) / 3),
+            }}
+          />
+
+          {/* 행동 선택 패널 */}
+          <div className="lg:col-span-2 bg-gray-800 border border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-gray-400 mb-3">
+              오늘의 선택 <span className="text-cyan-400">— 행동을 클릭하세요</span>
+            </h3>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {Object.entries(ACTION_STYLES).map(([name, style], idx) => (
+                <button
+                  key={name}
+                  onClick={() => takeAction(idx)}
+                  disabled={terminated || loading}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border ${style.border} ${style.bg} hover:brightness-125 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
+                >
+                  <span className="text-2xl">{style.emoji}</span>
+                  <span className={`text-xs font-medium ${style.color}`}>{style.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* 마지막 행동 결과 */}
+            {lastCascade && (
+              <div className={`mt-4 border rounded-xl p-4 ${
+                lastCascade.severity === "positive" ? "border-green-500/30 bg-green-500/5" :
+                lastCascade.severity === "medium" ? "border-yellow-500/30 bg-yellow-500/5" :
+                "border-red-500/30 bg-red-500/5"
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {lastReward >= 0 ? <TrendingUp size={16} className="text-green-400" /> :
+                   lastReward > -3 ? <Minus size={16} className="text-yellow-400" /> :
+                   <TrendingDown size={16} className="text-red-400" />}
+                  <span className="font-medium text-sm">{lastCascade.action_name}</span>
+                  <span className={`text-sm font-bold ml-auto ${lastReward >= 0 ? "text-green-400" : "text-red-400"}`}>
+                    보상 {lastReward >= 0 ? "+" : ""}{lastReward}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {lastCascade.effects?.map((eff, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="text-gray-600">→</span>
+                      <span>{eff.impact}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        )}
+
+        {/* 건강 변화 그래프 */}
+        {history.length > 1 && (
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-gray-400 mb-3">건강 상태 변화 추이</h3>
+            <div className="h-52">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={history}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="step" tick={{ fill: "#6b7280", fontSize: 10 }} />
+                  <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#1f2937", border: "1px solid #374151", borderRadius: 8, fontSize: 12 }}
+                    labelFormatter={(v) => `Day ${v}`}
+                  />
+                  <Line type="monotone" dataKey="weight_kg" stroke="#ff6b6b" strokeWidth={2} dot={false} name="체중(kg)" />
+                  <Line type="monotone" dataKey="sleep_score" stroke="#748ffc" strokeWidth={2} dot={false} name="수면" />
+                  <Line type="monotone" dataKey="stress_level" stroke="#ff922b" strokeWidth={2} dot={false} name="스트레스" />
+                  <Line type="monotone" dataKey="mood_score" stroke="#20c997" strokeWidth={2} dot={false} name="기분" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex gap-4 mt-2 justify-center">
+              {[["체중", "#ff6b6b"], ["수면", "#748ffc"], ["스트레스", "#ff922b"], ["기분", "#20c997"]].map(([l, c]) => (
+                <div key={l} className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: c }} />
+                  {l}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}

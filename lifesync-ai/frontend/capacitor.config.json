@@ -1,0 +1,8 @@
+{
+  "appId": "com.chainers.lifesync",
+  "appName": "LifeSync AI",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}
