@@ -127,29 +127,51 @@ function CustomBarTooltip({ active, payload, label }) {
   );
 }
 
-/* ── 주간 트렌드 신뢰구간 데이터 ── */
-const weeklyTrendData = DAYS.map((day, i) => {
-  const uncertainty = Math.sqrt((i + 1) / 7);
-  const baseWeight = 74.5 - i * 0.1;
-  const baseSleep = 55 + i * 2;
-  const baseStress = 60 - i * 2.5;
-  const baseMood = 50 + i * 3;
-  return {
-    day,
-    weight_kg: +baseWeight.toFixed(1),
-    weight_lower: +(baseWeight - 0.3 * uncertainty).toFixed(1),
-    weight_upper: +(baseWeight + 0.3 * uncertainty).toFixed(1),
-    sleep_score: Math.round(baseSleep),
-    sleep_lower: Math.max(0, Math.round(baseSleep - 5 * uncertainty)),
-    sleep_upper: Math.min(100, Math.round(baseSleep + 5 * uncertainty)),
-    stress_level: Math.round(baseStress),
-    stress_lower: Math.max(0, Math.round(baseStress - 7 * uncertainty)),
-    stress_upper: Math.min(100, Math.round(baseStress + 7 * uncertainty)),
-    mood_score: Math.round(baseMood),
-    mood_lower: Math.max(0, Math.round(baseMood - 6 * uncertainty)),
-    mood_upper: Math.min(100, Math.round(baseMood + 6 * uncertainty)),
-  };
-});
+/* ── 주간 트렌드 신뢰구간 데이터 (12주, 실제 날짜 사용) ── */
+const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+function generateTrendData() {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const startDay = new Date(now);
+  // 과거 42일(6주) + 미래 42일(6주) = 총 84일(12주, 오늘 중심)
+  startDay.setDate(now.getDate() - 42);
+  const data = [];
+  for (let i = 0; i < 84; i++) {
+    const d = new Date(startDay);
+    d.setDate(startDay.getDate() + i);
+    const month = d.getMonth() + 1;
+    const date = d.getDate();
+    const dow = d.getDay(); // 0=일, 6=토
+    const dayLabel = `${month}/${date}(${DAY_NAMES[dow]})`;
+    const isPast = d <= now;
+    const daysFromNow = (d - now) / 86400000;
+    const uncertainty = isPast ? 0.3 : 0.3 + Math.abs(daysFromNow) * 0.15;
+    const baseWeight = 74.5 - i * 0.05 + Math.sin(i * 0.5) * 0.3;
+    const baseSleep = 55 + i * 0.8 + (dow === 0 || dow === 6 ? 5 : 0);
+    const baseStress = 60 - i * 0.7 + (dow === 1 ? 5 : 0);
+    const baseMood = 50 + i * 0.9 + (dow === 0 || dow === 6 ? 3 : -1);
+    data.push({
+      day: dayLabel,
+      date: d.toISOString().slice(0, 10),
+      month,
+      dow,
+      weight_kg: +baseWeight.toFixed(1),
+      weight_lower: +(baseWeight - uncertainty).toFixed(1),
+      weight_upper: +(baseWeight + uncertainty).toFixed(1),
+      sleep_score: Math.min(100, Math.max(0, Math.round(baseSleep))),
+      sleep_lower: Math.max(0, Math.round(baseSleep - 5 * uncertainty)),
+      sleep_upper: Math.min(100, Math.round(baseSleep + 5 * uncertainty)),
+      stress_level: Math.min(100, Math.max(0, Math.round(baseStress))),
+      stress_lower: Math.max(0, Math.round(baseStress - 7 * uncertainty)),
+      stress_upper: Math.min(100, Math.round(baseStress + 7 * uncertainty)),
+      mood_score: Math.min(100, Math.max(0, Math.round(baseMood))),
+      mood_lower: Math.max(0, Math.round(baseMood - 6 * uncertainty)),
+      mood_upper: Math.min(100, Math.round(baseMood + 6 * uncertainty)),
+    });
+  }
+  return data;
+}
+const weeklyTrendData = generateTrendData();
 
 const weeklyTrendMetrics = [
   { key: "weight_kg", label: "체중(kg)", color: "#f59e0b", lowerKey: "weight_lower", upperKey: "weight_upper" },
@@ -281,16 +303,30 @@ export default function ReportPage() {
 
         {/* 주간 트렌드 신뢰구간 차트 */}
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">
-            {"📉"} 주간 건강 트렌드 (신뢰구간)
+          <h2 className="text-lg font-semibold text-white mb-2">
+            {"📉"} 건강 트렌드 (신뢰구간)
           </h2>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-gray-400 mb-1">
             미래로 갈수록 불확실성이 커지는 예측 밴드를 보여줍니다.
           </p>
+          <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-4">
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-4 h-0.5 bg-blue-400 opacity-50" style={{borderTop: "2px dashed #3b82f6"}} /> 토요일
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-4 h-0.5 bg-red-400 opacity-50" style={{borderTop: "2px dashed #ef4444"}} /> 일요일
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm" style={{background: "rgba(59,130,246,0.15)"}} /> 홀수 월
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm" style={{background: "rgba(139,92,246,0.15)"}} /> 짝수 월
+            </span>
+          </div>
           <ErrorBarChart
             data={weeklyTrendData}
             metrics={weeklyTrendMetrics}
-            height={300}
+            height={380}
           />
         </div>
 

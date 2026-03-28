@@ -30,13 +30,16 @@ function PageLoader() {
 }
 
 export default function App() {
-  // 앱 시작 시 모델 자동 동기화 (백그라운드)
+  // 앱 시작 시 모델 자동 동기화 (백그라운드, 5초 지연)
   useEffect(() => {
-    import("./services/offlineEngine").then(({ syncAllModels }) => {
-      syncAllModels().then((results) => {
-        console.info("[ModelSync]", results);
-      });
-    }).catch(() => {});
+    const timer = setTimeout(() => {
+      import("./services/offlineEngine").then(({ syncAllModels }) => {
+        syncAllModels().then((results) => {
+          console.info("[ModelSync]", results);
+        });
+      }).catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

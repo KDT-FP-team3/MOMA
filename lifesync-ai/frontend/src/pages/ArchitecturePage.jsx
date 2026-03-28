@@ -18,41 +18,41 @@ const STATUS_META = {
 };
 
 const NODES = [
-  { id: "frontend",      emoji: "\u269B\uFE0F",  label: "Frontend (React)",            status: "active",  col: 0, row: 0, desc: "React 18 대시보드 + 시뮬레이터", path: "frontend/src/", features: ["6개 페이지", "WebSocket 실시간", "음성 입력"] },
-  { id: "whisper",        emoji: "\uD83C\uDF99\uFE0F", label: "Whisper STT",             status: "pending", col: 0, row: 1, desc: "음성→텍스트 변환", path: "backend/voice/stt_processor.py", features: ["한국어 지원", "실시간 처리"] },
-  { id: "gtts",           emoji: "\uD83D\uDD0A",  label: "gTTS Response",               status: "pending", col: 0, row: 2, desc: "텍스트→음성 응답", path: "backend/voice/tts_responder.py", features: ["한국어 TTS", "MP3 생성"] },
+  { id: "frontend",      emoji: "\u269B\uFE0F",  label: "Frontend (React)",            status: "active",  col: 0, row: 0, desc: "React 18 대시보드 + 시뮬레이터", path: "frontend/src/", features: ["11개 페이지", "WebSocket 실시간", "코드 스플리팅"], role: "사용자 인터페이스", pros: "React.lazy 빠른 로딩, Tailwind 일관된 디자인", cons: "SSR 미지원, 대형 페이지 존재", reason: "건강 데이터를 시각화하고 의사결정하는 핵심 접점" },
+  { id: "whisper",        emoji: "\uD83C\uDF99\uFE0F", label: "Whisper STT",             status: "pending", col: 0, row: 1, desc: "음성→텍스트 변환", path: "backend/voice/stt_processor.py", features: ["한국어 지원", "실시간 처리"], role: "음성 인식", pros: "높은 한국어 정확도", cons: "스텁 상태 (미구현)", reason: "요리/운동 중 손을 못 쓸 때 음성 입력 필수" },
+  { id: "gtts",           emoji: "\uD83D\uDD0A",  label: "gTTS Response",               status: "pending", col: 0, row: 2, desc: "텍스트→음성 응답", path: "backend/voice/tts_responder.py", features: ["한국어 TTS", "MP3 생성"], role: "음성 출력", pros: "무료, 한국어 지원", cons: "스텁 상태, 기계적 음질", reason: "시각 장애 접근성, 운동 중 화면 못 볼 때" },
 
-  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket 서버", path: "backend/app/main.py", features: ["25+ 엔드포인트", "CORS", "파일 업로드"] },
-  { id: "websocket",      emoji: "\uD83D\uDD0C",  label: "WebSocket",                   status: "active",  col: 1, row: 1, desc: "실시간 양방향 통신", path: "backend/app/main.py", features: ["실시간 상태 동기화", "이벤트 스트리밍"] },
-  { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "active",  col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드", "ChromaDB", "프론트엔드"] },
-  { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "active",  col: 1, row: 3, desc: "클라우드 배포 플랫폼 ($5/월)", path: "railway.toml", features: ["자동 배포", "볼륨 마운트", "Health check"] },
+  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket 서버 (Router 분리)", path: "backend/app/main.py", features: ["main.py 180줄 (미들웨어만)", "ai_router.py (그룹A)", "api_router.py (그룹B)", "30+ 엔드포인트"], role: "중앙 API 서버", pros: "Router 분리로 팀 간 충돌 제거, 비동기, Swagger", cons: "라우터 간 서비스 중복 초기화", reason: "프론트와 AI/ML을 연결하는 유일한 통로. Router 패턴으로 3그룹 동시 개발 가능" },
+  { id: "websocket",      emoji: "\uD83D\uDD0C",  label: "WebSocket",                   status: "active",  col: 1, row: 1, desc: "실시간 양방향 통신", path: "backend/app/routers/api_router.py", features: ["게이지 실시간 업데이트", "JWT 토큰 인증", "echo/voice/query/feedback/subscribe"], role: "실시간 통신", pros: "HTTP 폴링 대비 지연 90% 감소", cons: "서버 재시작 시 연결 끊김", reason: "대시보드 게이지가 실시간 변해야 행동 효과 즉시 확인" },
+  { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "active",  col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드+ChromaDB+프론트", "한 명령 실행"], role: "환경 일관성", pros: "'내 PC에서는 되는데' 문제 해결", cons: "Docker Desktop 설치 필요", reason: "6명 팀원 동일 개발환경 보장, Railway 배포 필수" },
+  { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "active",  col: 1, row: 3, desc: "클라우드 배포 ($5/월)", path: "railway.toml", features: ["GitHub 자동 배포", "볼륨 마운트", "Health check"], role: "백엔드 배포", pros: "$5/월 24시간 운영, 설정 간편", cons: "GPU 미지원, 콜드 스타트", reason: "로컬 설치 없이 서비스를 사용할 수 있는 공유 URL" },
 
-  { id: "orchestrator",   emoji: "\uD83D\uDD04",  label: "Orchestrator (LangGraph)",    status: "active",  col: 2, row: 0, desc: "조건 분기 + 대화 메모리 LangGraph 엔진", path: "backend/agents/orchestrator.py", features: ["조건 분기", "멀티도메인", "대화 메모리 50턴", "평가 노드"] },
-  { id: "simulator",      emoji: "\u23F0",        label: "Schedule Simulator",          status: "active",  col: 2, row: 1, desc: "24시간 스케줄 시뮬레이터", path: "backend/rl_engine/schedule_simulator.py", features: ["장기 예측", "건강 변화 추적", "리듬 분석"] },
-  { id: "risk",           emoji: "\u26A0\uFE0F",  label: "Risk Engine",                 status: "active",  col: 2, row: 2, desc: "음식 위험도 + 야식 패널티", path: "backend/risk_engine/", features: ["베이지안 위험도", "야식 -5 패널티", "타임라인"] },
+  { id: "orchestrator",   emoji: "\uD83D\uDD04",  label: "Orchestrator (LangGraph)",    status: "active",  col: 2, row: 0, desc: "조건 분기 + 대화 메모리 엔진", path: "backend/agents/orchestrator.py", features: ["조건 분기", "멀티도메인", "대화 메모리 50턴", "평가 노드"], role: "요청 라우팅 + 연쇄 효과", pros: "LangGraph로 복잡한 워크플로우 선언적 관리", cons: "직렬 실행 (병렬 미지원)", reason: "'라면 먹었다'→건강 위험+추가 운동 권장+수면 영향 예측" },
+  { id: "simulator",      emoji: "\u23F0",        label: "Schedule Simulator",          status: "active",  col: 2, row: 1, desc: "24시간 스케줄 N일 시뮬레이션", path: "backend/rl_engine/schedule_simulator.py", features: ["15개 활동 유형", "시간대 패널티", "종합 분석"], role: "장기 건강 예측", pros: "오프라인 JS 버전도 동작", cons: "결정론적 (확률 변동 없음)", reason: "'이 스케줄로 한 달 살면?'을 미리 확인" },
+  { id: "risk",           emoji: "\u26A0\uFE0F",  label: "Risk Engine",                 status: "active",  col: 2, row: 2, desc: "음식 위험도 + 야식 패널티", path: "backend/risk_engine/", features: ["베이지안 위험도", "야식 -5 패널티", "타임라인"], role: "위험 경고", pros: "시간대 기반 동적 위험도 계산", cons: "규칙 기반으로 새 패턴 적응 못 함", reason: "튀김의 콜레스테롤, 야식의 수면 영향 등 구체적 경고" },
 
-  { id: "food",           emoji: "\uD83C\uDF73",  label: "Food Agent (LangChain)",      status: "active",  col: 3, row: 0, desc: "RAG 기반 레시피 추천 + 영양 분석", path: "backend/agents/food_agent.py", features: ["레시피 검색", "위험도 평가", "영양 분석"] },
-  { id: "exercise",       emoji: "\uD83C\uDFCB\uFE0F", label: "Exercise Agent (LangChain)", status: "active", col: 3, row: 1, desc: "운동 추천 + 부상 위험 평가", path: "backend/agents/exercise_agent.py", features: ["미세먼지 연동", "부상 위험도", "실내 대체 운동"] },
-  { id: "health",         emoji: "\uD83C\uDFE5",  label: "Health Agent (LangChain)",     status: "active",  col: 3, row: 2, desc: "건강검진 분석 + 건강 플랜", path: "backend/agents/health_agent.py", features: ["검진 분석", "위험도 분류", "맞춤 플랜"] },
-  { id: "hobby",          emoji: "\uD83C\uDFB8",  label: "Hobby Agent (LangChain)",      status: "active",  col: 3, row: 3, desc: "취미 추천 + 스트레스 해소 계산", path: "backend/agents/hobby_agent.py", features: ["스트레스 기반 추천", "시너지 계산", "감소율 모델링"] },
-  { id: "ppo",            emoji: "\uD83C\uDFAF",  label: "PPO Reinforcement Learning",  status: "active",  col: 3, row: 4, desc: "PPO 강화학습 정책", path: "backend/rl_engine/ppo_agent.py", features: ["40차원 상태", "Stable-Baselines3", "자동 재학습"] },
-  { id: "retrain",        emoji: "\uD83D\uDD01",  label: "Retrain Scheduler",           status: "active",  col: 3, row: 5, desc: "피드백 기반 자동 재학습 트리거", path: "backend/rl_engine/retrain_scheduler.py", features: ["6시간 주기", "보상 하락 감지", "사용자 가중치"] },
-  { id: "optuna",         emoji: "\uD83D\uDD2C",  label: "Optuna AutoTuner",            status: "active",  col: 3, row: 6, desc: "하이퍼파라미터 자동 최적화", path: "backend/rl_engine/auto_tuner.py", features: ["100 trial", "lr/gamma/batch 탐색", "베이지안 최적화"] },
+  { id: "food",           emoji: "\uD83C\uDF73",  label: "Food Agent (LangChain)",      status: "active",  col: 3, row: 0, desc: "RAG 기반 레시피 추천", path: "backend/agents/food_agent.py", features: ["쿼리 확장+리랭킹", "위험도 평가", "영양 분석"], role: "개인화 식단 추천", pros: "10만건 레시피에서 RAG 검색 + LLM 설명", cons: "LLM API 비용, 응답 2-5초", reason: "BMI/목표에 따라 개인화된 식단 추천" },
+  { id: "exercise",       emoji: "\uD83C\uDFCB\uFE0F", label: "Exercise Agent (LangChain)", status: "active", col: 3, row: 1, desc: "운동 추천 + 부상 위험 평가", path: "backend/agents/exercise_agent.py", features: ["미세먼지 연동", "부상 위험도", "실내 대체 운동"], role: "안전한 운동 추천", pros: "환경+개인 상태 고려한 추천", cons: "날씨 API 미연동", reason: "부상 이력, 미세먼지 등 고려한 안전한 운동" },
+  { id: "health",         emoji: "\uD83C\uDFE5",  label: "Health Agent (LangChain)",     status: "active",  col: 3, row: 2, desc: "건강검진 분석 + 플랜", path: "backend/agents/health_agent.py", features: ["메트릭 분석", "위험도 분류", "맞춤 플랜"], role: "건강 해석 + 플랜", pros: "검진 숫자를 알기 쉬운 자연어로 해석", cons: "의료 면허 없는 AI 한계", reason: "검진 결과의 의미를 모르는 사용자에게 가이드" },
+  { id: "hobby",          emoji: "\uD83C\uDFB8",  label: "Hobby Agent (LangChain)",      status: "active",  col: 3, row: 3, desc: "스트레스 해소 취미 추천", path: "backend/agents/hobby_agent.py", features: ["스트레스 기반", "크로스 도메인 시너지", "감소율 모델링"], role: "정신건강 관리", pros: "기타 30분→스트레스 -15% 등 연쇄 효과", cons: "취미 카탈로그 제한적", reason: "건강 관리 = 식단+운동+정신건강 → 지속 가능" },
+  { id: "ppo",            emoji: "\uD83C\uDFAF",  label: "PPO Reinforcement Learning",  status: "active",  col: 3, row: 4, desc: "PPO 강화학습 정책", path: "backend/rl_engine/ppo_agent.py", features: ["40차원 상태", "10개 행동", "84스텝 에피소드"], role: "최적 행동 학습", pros: "피드백으로 지속 개선, 다축 보상 균형", cons: "CPU 학습 느림, 초기 데이터 부족", reason: "규칙 기반은 개인차 미반영 → RL로 개인별 최적 전략" },
+  { id: "retrain",        emoji: "\uD83D\uDD01",  label: "Retrain Scheduler",           status: "active",  col: 3, row: 5, desc: "피드백 기반 자동 재학습", path: "backend/rl_engine/retrain_scheduler.py", features: ["6시간 주기", "보상 하락 감지", "사용자별 가중치"], role: "자동 모델 개선", pros: "수동 개입 없이 자동 개선", cons: "서버 리소스 소모", reason: "'이 추천은 별로' 피드백 → 다음에 더 나은 추천" },
+  { id: "optuna",         emoji: "\uD83D\uDD2C",  label: "Optuna AutoTuner",            status: "active",  col: 3, row: 6, desc: "하이퍼파라미터 자동 최적화", path: "backend/rl_engine/auto_tuner.py", features: ["100 trial", "lr/gamma/batch 탐색", "베이지안 최적화"], role: "RL 성능 최적화", pros: "수동 튜닝 대비 체계적 탐색", cons: "연산 시간 (GPU 권장)", reason: "RL 성능은 하이퍼파라미터에 극도로 민감" },
 
-  { id: "gpt4o",          emoji: "\uD83E\uDD16",  label: "GPT-4o-mini",                 status: "active",  col: 4, row: 0, desc: "OpenAI LLM 추론 엔진", path: ".env (OPENAI_API_KEY)", features: ["자연어 생성", "분석", "추천", "개인화 조언"] },
-  { id: "chromadb",       emoji: "\uD83D\uDCDA",  label: "ChromaDB (RAG)",              status: "active",  col: 4, row: 1, desc: "벡터 DB + 쿼리 확장 + 리랭킹", path: "backend/knowledge/", features: ["다중 쿼리 검색", "컨텍스트 부스트", "리랭킹"] },
-  { id: "supabase",       emoji: "\uD83D\uDC18",  label: "Supabase PostgreSQL",         status: "active",  col: 4, row: 2, desc: "PostgreSQL 사용자 상태 저장", path: "backend/services/user_state_manager.py", features: ["40차원 State 벡터", "UPSERT", "pg8000 연결"] },
-  { id: "s3",             emoji: "\u2601\uFE0F",  label: "AWS S3 Model Storage",        status: "active",  col: 4, row: 3, desc: "모델 가중치 저장 + 버전 관리", path: "backend/services/model_registry.py", features: ["SHA256 체크섬", "버전 관리", "자동 동기화"] },
-  { id: "yolo",           emoji: "\uD83D\uDCF7",  label: "YOLO Food Recognition",       status: "partial", col: 4, row: 4, desc: "YOLOv8 식재료 인식", path: "backend/multimodal/food_recognizer.py", features: ["객체 감지", "신뢰도 필터링", "바운딩 박스"] },
-  { id: "openclip",       emoji: "\uD83D\uDDBC\uFE0F", label: "OpenCLIP Embedding",     status: "partial", col: 4, row: 5, desc: "512차원 이미지 임베딩 + LLM 개인화", path: "backend/multimodal/photo_analyzer.py", features: ["얼굴/체형 분석", "LLM 개인화 조언", "Top-K 생성"] },
-  { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 6, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["자세 교정", "관절 각도", "운동 폼 분석"] },
+  { id: "gpt4o",          emoji: "\uD83E\uDD16",  label: "GPT-4o-mini",                 status: "active",  col: 4, row: 0, desc: "OpenAI LLM 추론 엔진", path: ".env (OPENAI_API_KEY)", features: ["자연어 생성", "분석", "추천", "개인화 조언"], role: "자연어 이해/생성", pros: "한국어 우수, 맥락 이해, 창의적 추천", cons: "API 비용, 할루시네이션 가능", reason: "'왜 이 레시피인지' 자연어 설명 생성" },
+  { id: "chromadb",       emoji: "\uD83D\uDCDA",  label: "ChromaDB (RAG)",              status: "active",  col: 4, row: 1, desc: "벡터 DB + 쿼리 확장 + 리랭킹", path: "backend/knowledge/", features: ["4개 컬렉션", "다중 쿼리", "컨텍스트 부스트"], role: "지식 검색 엔진", pros: "무료, persistent, 한국어 multilingual", cons: "대규모(100만건+) 성능 저하", reason: "LLM만으로는 최신 레시피 모름 → RAG로 지식 주입" },
+  { id: "supabase",       emoji: "\uD83D\uDC18",  label: "Supabase PostgreSQL",         status: "active",  col: 4, row: 2, desc: "사용자 상태 영속 저장", path: "backend/services/user_state_manager.py", features: ["40차원 State 벡터", "UPSERT", "인메모리 폴백"], role: "상태 저장소", pros: "무료 500MB, REST API 자동 제공", cons: "연결 수 제한, timeout 발생", reason: "앱 종료 후 다시 와도 이전 건강 상태 유지" },
+  { id: "s3",             emoji: "\u2601\uFE0F",  label: "AWS S3 Model Storage",        status: "active",  col: 4, row: 3, desc: "모델 가중치 + 버전 관리", path: "backend/services/model_registry.py", features: ["SHA256 체크섬", "버전 관리", "클라이언트 동기화"], role: "모델 중앙 저장소", pros: "내구성 99.999999999%, 글로벌 접근", cons: "AWS 계정 필요", reason: "GPU 학습 모델을 서버/클라이언트가 공유" },
+  { id: "yolo",           emoji: "\uD83D\uDCF7",  label: "YOLO Food Recognition",       status: "partial", col: 4, row: 4, desc: "YOLOv8 식재료 인식", path: "backend/multimodal/food_recognizer.py", features: ["객체 감지", "CPU ~100ms", "80+ 카테고리"], role: "식재료 자동 인식", pros: "실시간 추론, 높은 정확도", cons: "한국 음식 특화 안 됨", reason: "식단 사진으로 자동 칼로리/영양소 추정" },
+  { id: "openclip",       emoji: "\uD83D\uDDBC\uFE0F", label: "OpenCLIP Embedding",     status: "partial", col: 4, row: 5, desc: "512차원 이미지/텍스트 임베딩", path: "backend/multimodal/photo_analyzer.py", features: ["얼굴/체형 분석", "LLM 개인화 조언", "Top-K"], role: "이미지 AI 분석", pros: "이미지+텍스트 크로스 모달 검색", cons: "ViT-B-32 정확도 한계 (GPU시 ViT-L-14)", reason: "사진 한 장으로 건강 상태 추정 + 맞춤 조언" },
+  { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 6, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["어깨/척추 정렬", "자세 점수", "운동 폼 교정"], role: "자세 교정 AI", pros: "무료, CPU 실시간, 높은 정확도", cons: "정적 이미지만 (실시간 비디오 미구현)", reason: "잘못된 운동 자세 → 부상 → AI 교정으로 안전" },
 
   // Layer 5: 배포 + 오프라인
-  { id: "offline",        emoji: "\uD83D\uDCF1",  label: "Offline Engine (JS)",          status: "active",  col: 0, row: 3, desc: "오프라인 추론 + 모델 동기화", path: "frontend/src/services/offlineEngine.js", features: ["IndexedDB 캐싱", "smartSimulate", "자동 동기화"] },
-  { id: "capacitor",      emoji: "\uD83D\uDCF2",  label: "Capacitor (Android APK)",     status: "active",  col: 0, row: 4, desc: "Android APK 빌드 + 네이티브 기능", path: "frontend/capacitor.config.json", features: ["카메라", "파일시스템", "오프라인 모드"] },
-  { id: "vercel",         emoji: "\u25B2",        label: "Vercel (Frontend Deploy)",    status: "active",  col: 1, row: 4, desc: "프론트엔드 CDN 배포", path: "frontend/vercel.json", features: ["자동 배포", "SPA Rewrite", "글로벌 CDN"] },
-  { id: "jwt",            emoji: "\uD83D\uDD10",  label: "JWT Auth + Rate Limit",       status: "active",  col: 1, row: 5, desc: "인증 미들웨어 + API 보안", path: "backend/app/main.py", features: ["Bearer 토큰", "분당 60회 제한", "Kakao OAuth"] },
-  { id: "gpu_train",      emoji: "\uD83D\uDDA5\uFE0F", label: "GPU Training Pipeline",  status: "active",  col: 2, row: 3, desc: "로컬 GPU 학습 → S3 업로드", path: "scripts/train_and_upload.py", features: ["PPO 학습", "Optuna 최적화", "서버 업로드"] },
+  { id: "offline",        emoji: "\uD83D\uDCF1",  label: "Offline Engine (JS)",          status: "active",  col: 0, row: 3, desc: "오프라인 추론 + 모델 동기화", path: "frontend/src/services/offlineEngine.js", features: ["IndexedDB 캐싱", "smartSimulate", "5초 지연 동기화"], role: "오프라인 폴백", pros: "네트워크 없이 핵심 기능 사용", cons: "LLM 추천은 오프라인 불가", reason: "지하철/비행기 등 오프라인이 빈번 → 앱 멈추면 안 됨" },
+  { id: "capacitor",      emoji: "\uD83D\uDCF2",  label: "Capacitor (Android APK)",     status: "active",  col: 0, row: 4, desc: "Android APK 빌드", path: "frontend/capacitor.config.json", features: ["카메라", "파일시스템", "오프라인 모드"], role: "모바일 앱 변환", pros: "웹+앱 하나의 코드베이스, 네이티브 API", cons: "iOS 별도 추가 필요", reason: "핸드폰 직접 설치 요구사항 충족" },
+  { id: "vercel",         emoji: "\u25B2",        label: "Vercel (Frontend Deploy)",    status: "active",  col: 1, row: 4, desc: "프론트엔드 CDN 배포", path: "frontend/vercel.json", features: ["자동 배포", "SPA Rewrite", "글로벌 CDN"], role: "프론트 배포", pros: "완전 무료, 전 세계 빠른 로딩", cons: "서버 사이드 로직 불가", reason: "프론트엔드는 CDN이 훨씬 빠르고 저렴" },
+  { id: "jwt",            emoji: "\uD83D\uDD10",  label: "JWT Auth + Rate Limit",       status: "active",  col: 1, row: 5, desc: "인증 + API 보안 미들웨어", path: "backend/app/main.py", features: ["Bearer 토큰", "분당 60회 제한", "Kakao OAuth"], role: "보안 게이트", pros: "사용자별 데이터 격리, DDoS 방어", cons: "refresh token 미구현", reason: "건강 데이터는 민감 → 인증 없는 접근 차단 필수" },
+  { id: "gpu_train",      emoji: "\uD83D\uDDA5\uFE0F", label: "GPU Training Pipeline",  status: "active",  col: 2, row: 3, desc: "로컬 GPU 학습 → S3 업로드", path: "scripts/train_and_upload.py", features: ["PPO 학습", "Optuna 최적화", "서버 업로드"], role: "모델 학습 파이프라인", pros: "클라우드 GPU 비용 절감", cons: "로컬 GPU 필요, 수동 실행", reason: "RL 학습은 연산 집약적 → 로컬 GPU 활용" },
 ];
 
 // Connection categories with distinct colors
@@ -119,8 +119,8 @@ const CONNECTIONS = [
 
 const NODE_W = 210;
 const NODE_H = 56;
-const POPUP_W = 210;
-const POPUP_H = 170;
+const POPUP_W = 260;
+const POPUP_H = 280;
 
 // Tree layout: hand-tuned positions for maximum clarity
 // Structure: Frontend (root) → Backend → branches fan out
@@ -152,10 +152,10 @@ const TREE_POS = {
   gpt4o:        { x: 1400, y: 40 },
   chromadb:     { x: 1400, y: 200 },
   supabase:     { x: 1400, y: 360 },
-  yolo:         { x: 1400, y: 520 },
-  openclip:     { x: 1400, y: 680 },
-  mediapipe:    { x: 1400, y: 840 },
   s3:           { x: 1400, y: 520 },
+  yolo:         { x: 1400, y: 680 },
+  openclip:     { x: 1400, y: 840 },
+  mediapipe:    { x: 1400, y: 1000 },
 
   // RL 확장
   retrain:      { x: 1040, y: 840 },
@@ -269,22 +269,38 @@ function InlinePopup({ node, expanded, pinned }) {
 
   return (
     <foreignObject x={popupX} y={popupY} width={POPUP_W} height={POPUP_H} className="pointer-events-none overflow-visible">
-      <div className="bg-gray-800/95 border border-gray-600 rounded-lg shadow-xl p-3 backdrop-blur-sm"
-        style={{ borderLeftColor: s.color, borderLeftWidth: 3, width: POPUP_W, maxHeight: POPUP_H, overflow: "hidden", fontSize: 11 }}
+      <div className="bg-gray-800/95 border border-gray-600 rounded-lg shadow-xl p-2.5 backdrop-blur-sm"
+        style={{ borderLeftColor: s.color, borderLeftWidth: 3, width: POPUP_W, maxHeight: POPUP_H, overflow: "hidden", fontSize: 10, lineHeight: 1.4 }}
       >
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <span className={`font-bold ${s.text}`} style={{ fontSize: 12 }}>{s.label}</span>
-          <span className="text-blue-400 font-mono truncate" style={{ fontSize: 10 }}>{node.path}</span>
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className={`font-bold ${s.text}`} style={{ fontSize: 11 }}>{s.label}</span>
+          {node.role && <span className="text-cyan-400 font-medium" style={{ fontSize: 9 }}>{node.role}</span>}
         </div>
-        <p className="text-gray-300 leading-snug mb-1.5">{node.desc}</p>
-        <div className="flex flex-wrap gap-1 mb-1.5">
+        <p className="text-gray-300 mb-1">{node.desc}</p>
+        <div className="text-blue-400 font-mono truncate mb-1" style={{ fontSize: 9 }}>{node.path}</div>
+        <div className="flex flex-wrap gap-0.5 mb-1">
           {node.features.map((f, i) => (
-            <span key={i} className="px-1.5 py-0.5 rounded bg-gray-700/60 text-gray-400" style={{ fontSize: 10 }}>{f}</span>
+            <span key={i} className="px-1 py-0.5 rounded bg-gray-700/60 text-gray-400" style={{ fontSize: 9 }}>{f}</span>
           ))}
         </div>
+        {node.pros && (
+          <div className="text-emerald-400 mb-0.5" style={{ fontSize: 9 }}>
+            <span className="text-emerald-500 font-bold">+</span> {node.pros}
+          </div>
+        )}
+        {node.cons && (
+          <div className="text-red-400 mb-0.5" style={{ fontSize: 9 }}>
+            <span className="text-red-500 font-bold">-</span> {node.cons}
+          </div>
+        )}
+        {node.reason && (
+          <div className="text-yellow-300 mb-0.5" style={{ fontSize: 9 }}>
+            <span className="text-yellow-400 font-bold">!</span> {node.reason}
+          </div>
+        )}
         {connected.length > 0 && (
-          <div className="text-gray-500 truncate" style={{ fontSize: 10 }}>
-            연결: {connected.slice(0, 3).join(", ")}{connected.length > 3 ? ` +${connected.length - 3}` : ""}
+          <div className="text-gray-500 truncate" style={{ fontSize: 9 }}>
+            {connected.slice(0, 4).join(", ")}{connected.length > 4 ? ` +${connected.length - 4}` : ""}
           </div>
         )}
       </div>

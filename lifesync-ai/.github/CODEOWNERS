@@ -1,21 +1,31 @@
-# LifeSync AI — Code Owners
+# LifeSync AI — 3그룹 Code Owners
+# 그룹 A (AI/ML): @member1 @member2
+# 그룹 B (백엔드/인프라): @member3 @member4
+# 그룹 C (프론트/모바일): @member5 @member6
+# ※ GitHub 아이디로 교체하세요
 
-/backend/agents/       @teamA
-/backend/dashboard/    @teamA
-/backend/services/     @teamA
-/backend/agents/orchestrator.py @teamA
+# 그룹 A: AI/ML 엔진
+/backend/app/routers/ai_router.py  @group-ai
+/backend/rl_engine/          @group-ai
+/backend/multimodal/         @group-ai
+/backend/knowledge/          @group-ai
+/backend/risk_engine/        @group-ai
+/scripts/                    @group-ai
+/data/                       @group-ai
 
-/backend/rl_engine/    @teamB
-/backend/voice/        @teamB
+# 그룹 B: 백엔드/인프라
+/backend/app/main.py         @group-backend
+/backend/app/routers/api_router.py  @group-backend
+/backend/agents/             @group-backend
+/backend/services/           @group-backend
+/backend/voice/              @group-backend
+/backend/dashboard/          @group-backend
+/backend/environment/        @group-backend
+/Dockerfile                  @group-backend
+/docker-compose.yml          @group-backend
+/railway.toml                @group-backend
+/requirements*.txt           @group-backend
 
-/backend/multimodal/   @teamC
-
-/backend/knowledge/    @teamD
-/backend/environment/  @teamD
-
-/frontend/             @teamE
-
-/tests/                @teamF
-/data/                 @teamF
-/README.md             @teamF
-/.github/              @teamF
+# 그룹 C: 프론트엔드/모바일
+/frontend/                   @group-frontend
+/tests/                      @group-frontend

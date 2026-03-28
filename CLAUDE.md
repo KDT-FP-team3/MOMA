@@ -114,15 +114,52 @@ MOMA/
     └── README.md
 ```
 
-## 팀 분업 (폴더 소유권)
-| 역할   | 능력 | 담당 폴더 | 핵심 역할 |
-|--------|------|-----------|-----------|
-| 팀장   | A    | backend/app/, backend/services/, backend/dashboard/ | 서버·인프라 총괄 (Docker, Railway, Supabase, API 통신, 운영 장애 대응) |
-| 팀원1  | B    | backend/agents/ (orchestrator 포함) | 4개 도메인 에이전트, 크로스 도메인 오케스트레이션 |
-| 팀원2  | A    | frontend/ | React 대시보드, UI/UX, 풀스택 통합 지원 |
-| 팀원3  | S    | backend/multimodal/, backend/rl_engine/ | CLIP·MediaPipe·YOLO 비전 + PPO 강화학습 |
-| 팀원4  | A    | backend/knowledge/, backend/environment/, backend/risk_engine/ | ChromaDB RAG, 날씨 API, 데이터 경량화·최적화 |
-| 팀원5  | B+   | backend/voice/, tests/, data/ | 음성 파이프라인, 테스트, 데이터 준비 |
+## 팀 분업 (3그룹 — Router 기반 충돌 방지)
+
+### 아키텍처: main.py → Router 분리 패턴
+```
+main.py (공통 — 팀장만 수정. 미들웨어+라우터 등록만)
+  ├→ routers/ai_router.py    ← 그룹 A 전담
+  ├→ routers/api_router.py   ← 그룹 B 전담
+  └→ frontend/src/           ← 그룹 C 전담
+```
+
+### 그룹 A: AI/ML 엔진 (2명)
+| 담당 파일 | 역할 |
+|-----------|------|
+| backend/app/routers/ai_router.py | AI 엔드포인트 (사진분석, 시뮬레이션, 모델동기화) |
+| backend/rl_engine/ | PPO, 보상함수, Optuna, 스케줄 시뮬레이터 |
+| backend/multimodal/ | CLIP, YOLO, MediaPipe, 사진분석 |
+| backend/knowledge/ | ChromaDB RAG, 레시피/운동/건강 DB |
+| backend/risk_engine/ | 위험도 분석, 야식 패널티 |
+| scripts/, data/ | GPU 학습 스크립트, 데이터 |
+
+### 그룹 B: 백엔드/인프라 (2명)
+| 담당 파일 | 역할 |
+|-----------|------|
+| backend/app/routers/api_router.py | API 엔드포인트 (쿼리, 인증, 대시보드, WebSocket) |
+| backend/agents/ | Orchestrator + 4개 도메인 에이전트 (LangGraph) |
+| backend/voice/ | STT, Intent 분류, TTS |
+| backend/services/ | 사용자 상태, 피드백, 인증, 게이미피케이션 |
+| backend/dashboard/ | 게이지 계산기 |
+| backend/environment/ | 날씨 API, 플랜 조정 |
+| Dockerfile, railway.toml, requirements*.txt | 배포 설정 |
+
+### 그룹 C: 프론트엔드/모바일 (2명)
+| 담당 파일 | 역할 |
+|-----------|------|
+| frontend/src/pages/ | 11개 페이지 컴포넌트 |
+| frontend/src/components/ | 공통 UI 컴포넌트 |
+| frontend/src/context/ | 상태 관리 (AppState, Theme) |
+| frontend/src/services/ | 오프라인 엔진, API 클라이언트 |
+| frontend/android/ | Capacitor APK 빌드 |
+| frontend/package.json, vite.config.js | 빌드 설정 |
+
+### 충돌 방지 규칙
+1. **그룹 A는 ai_router.py만, 그룹 B는 api_router.py만 수정** → main.py 충돌 없음
+2. **새 엔드포인트 필요 시 자기 router에 추가** → 다른 그룹 파일 건드리지 않음
+3. **main.py 수정 필요 시 팀장에게 PR 요청** → 미들웨어/공통 설정만 담당
+4. **각 그룹은 자기 브랜치에서 작업 → PR로 main 병합**
 
 ## 코드 컨벤션
 - Python: Black 포맷터, 타입 힌트 필수, docstring Google 스타일
