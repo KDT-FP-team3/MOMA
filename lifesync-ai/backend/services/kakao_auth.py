@@ -22,13 +22,22 @@ KAKAO_AUTH_URL = "https://kauth.kakao.com"
 KAKAO_API_URL = "https://kapi.kakao.com"
 
 # JWT 비밀키 — .env에서 반드시 설정
+import logging as _logging
+_logger = _logging.getLogger(__name__)
+
 SECRET_KEY = os.getenv("JWT_SECRET", "")
 if not SECRET_KEY:
-    # 개발 환경 자동 생성 (경고 출력)
+    if os.getenv("ENV") == "production":
+        # 프로덕션에서 JWT_SECRET 없으면 서버 시작 거부
+        raise RuntimeError(
+            "JWT_SECRET 환경변수가 설정되지 않았습니다. "
+            "프로덕션에서는 반드시 설정하세요: python -c \"import secrets; print(secrets.token_urlsafe(64))\""
+        )
+    # 개발 환경: 임시 키 자동 생성 (서버 재시작 시 세션 무효화됨)
     SECRET_KEY = secrets.token_urlsafe(64)
-    import logging
-    logging.getLogger(__name__).warning(
-        "JWT_SECRET 미설정 — 임시 키 생성됨. 프로덕션에서는 반드시 .env에 설정하세요."
+    _logger.warning(
+        "JWT_SECRET 미설정 — 개발용 임시 키 생성됨. "
+        "서버 재시작 시 기존 토큰이 무효화됩니다."
     )
 
 

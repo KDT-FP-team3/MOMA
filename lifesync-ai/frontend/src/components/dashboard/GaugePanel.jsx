@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
+import { useAppState } from "../../context/AppStateContext";
 
 const GAUGE_CONFIG = [
   { key: "reactive_oxygen", label: "활성산소", unit: "/100", color: "#ff6b6b", statusKey: "caution" },
@@ -23,14 +24,18 @@ function getStatus(value, invert) {
 }
 
 export default function GaugePanel() {
-  const [gauges, setGauges] = useState({
-    reactive_oxygen: 62,
-    blood_purity: 78,
-    hair_loss_risk: 23,
-    sleep_score: 71,
-    stress_level: 45,
-    weekly_achievement: 67,
+  const { state, updateState } = useAppState();
+
+  // 전역 상태의 gauges를 로컬에서도 사용 (WebSocket 업데이트 반영)
+  const [gauges, setGauges] = useState(state.gauges || {
+    reactive_oxygen: 62, blood_purity: 78, hair_loss_risk: 23,
+    sleep_score: 71, stress_level: 45, weekly_achievement: 67,
   });
+
+  // 전역 상태 변경 시 로컬에 반영
+  useEffect(() => {
+    if (state.gauges) setGauges((prev) => ({ ...prev, ...state.gauges }));
+  }, [state.gauges]);
 
   const [ws, setWs] = useState(null);
 
@@ -46,7 +51,9 @@ export default function GaugePanel() {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === "gauge_update" && msg.data) {
+          // 로컬 + 전역 모두 업데이트
           setGauges((prev) => ({ ...prev, ...msg.data }));
+          updateState("gauges", (prev) => ({ ...prev, ...msg.data }));
         }
       } catch { /* ignore */ }
     };

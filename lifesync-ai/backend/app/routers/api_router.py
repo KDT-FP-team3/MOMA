@@ -38,6 +38,20 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Backend API"])
 
+# ============================================================
+# 입력 검증 헬퍼
+# ============================================================
+
+import re
+_USER_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]{1,100}$")
+
+
+def _validate_user_id(user_id: str) -> str:
+    """user_id 형식 검증. 영문/숫자/언더스코어/하이픈만 허용 (1~100자)."""
+    if not _USER_ID_PATTERN.match(user_id):
+        raise HTTPException(status_code=400, detail="잘못된 user_id 형식 (영문/숫자만)")
+    return user_id
+
 
 # ============================================================
 # 서비스 초기화 (그룹 B 담당 서비스만)
@@ -83,6 +97,65 @@ class FeedbackRequest(BaseModel):
     """피드백 요청 모델."""
     user_id: str = "default"
     feedback: dict[str, Any]
+
+
+# ============================================================
+# 온보딩 → LifeEnv 초기화 (연결 2)
+# ============================================================
+
+class OnboardingRequest(BaseModel):
+    """온보딩 데이터 모델."""
+    age: str = "30s"
+    height: float = 170
+    weight: float = 65
+    activity: str = "moderate"
+    sleep: str = "normal"
+    stress: str = "medium"
+    goals: list[str] = []
+
+
+@router.post("/api/onboarding")
+async def onboarding(req: OnboardingRequest):
+    """온보딩 데이터 → Supabase 저장 + LifeEnv 초기 상태 계산.
+
+    흐름: OnboardingPage → POST → Supabase → 초기 게이지 반환
+    """
+    # BMI 계산
+    height_m = req.height / 100
+    bmi = round(req.weight / (height_m ** 2), 1) if height_m > 0 else 22.0
+
+    # 스트레스/수면 → 초기 게이지 매핑
+    stress_map = {"low": 20, "medium": 45, "high": 70, "very_high": 90}
+    sleep_map = {"night_owl": 55, "normal": 75, "morning": 85}
+    activity_map = {"sedentary": 30, "moderate": 55, "active": 75, "very_active": 90}
+
+    initial_gauges = {
+        "reactive_oxygen": max(10, 100 - activity_map.get(req.activity, 55)),
+        "blood_purity": max(40, 90 - stress_map.get(req.stress, 45) // 3),
+        "hair_loss_risk": min(80, stress_map.get(req.stress, 45)),
+        "sleep_score": sleep_map.get(req.sleep, 75),
+        "stress_level": stress_map.get(req.stress, 45),
+        "weekly_achievement": 0,
+    }
+
+    # Supabase에 프로필 저장 (가능하면)
+    user_id = "default"
+    if state_manager:
+        try:
+            state_manager.update_state(user_id, {
+                "bmi": bmi, "weight": req.weight, "height": req.height,
+                "stress": initial_gauges["stress_level"],
+                "sleep": initial_gauges["sleep_score"],
+            })
+        except Exception:
+            logger.warning("Supabase 프로필 저장 실패 — 로컬 모드")
+
+    return {
+        "user_id": user_id,
+        "bmi": bmi,
+        "bmi_category": "저체중" if bmi < 18.5 else "정상" if bmi < 25 else "과체중" if bmi < 30 else "비만",
+        "initial_gauges": initial_gauges,
+    }
 
 
 # ============================================================
@@ -134,9 +207,19 @@ async def query_endpoint(request: QueryRequest) -> dict[str, Any]:
     if orchestrator is None:
         raise HTTPException(status_code=503, detail="오케스트레이터 서비스가 초기화되지 않았습니다.")
     try:
-        return orchestrator.run_chain(
+        result = orchestrator.run_chain(
             user_id=request.user_id, domain=request.domain, action=request.action,
         )
+        # ── 연결: cascade_effects → 게이지 업데이트 계산 ──
+        # Orchestrator 결과에 업데이트된 게이지를 추가하여
+        # 프론트엔드가 대시보드를 즉시 갱신할 수 있게 한다.
+        if gauge_calculator and state_manager:
+            try:
+                user_state = state_manager.to_dict(request.user_id)
+                result["updated_gauges"] = gauge_calculator.calculate_all(user_state)
+            except Exception:
+                pass
+        return result
     except ValueError:
         raise HTTPException(status_code=400, detail="요청 처리 중 오류가 발생했습니다.")
     except Exception as e:
@@ -166,6 +249,7 @@ async def cascade_preview(request: QueryRequest) -> dict[str, Any]:
 @router.get("/api/dashboard/{user_id}")
 async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
     """대시보드 6개 게이지 점수."""
+    _validate_user_id(user_id)
     if state_manager is None or gauge_calculator is None:
         raise HTTPException(status_code=503, detail="대시보드 서비스가 비활성 상태입니다.")
     user_state = state_manager.to_dict(user_id)
@@ -176,6 +260,7 @@ async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
 @router.put("/api/state/{user_id}")
 async def update_state(user_id: str, delta: dict[str, float]) -> dict[str, Any]:
     """사용자 상태 벡터 업데이트."""
+    _validate_user_id(user_id)
     if state_manager is None:
         raise HTTPException(status_code=503, detail="상태 관리 서비스가 비활성 상태입니다.")
     state_manager.update_state(user_id, delta)
@@ -237,6 +322,7 @@ def _background_retrain(user_id: str) -> None:
 @router.get("/api/roadmap/{user_id}")
 async def roadmap_endpoint(user_id: str) -> dict[str, Any]:
     """12주 로드맵 생성."""
+    _validate_user_id(user_id)
     if timeline_generator is None:
         raise HTTPException(status_code=503, detail="로드맵 서비스가 비활성 상태입니다.")
     goals = [
@@ -264,16 +350,21 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     """
     ws_user_id = "default"
     if os.getenv("ENV") != "development":
+        # 프로덕션: 토큰 필수 — 없으면 연결 거부
         token = websocket.query_params.get("token", "")
-        if token:
-            payload = verify_token(token)
-            if not payload:
-                await websocket.close(code=4001, reason="Invalid token")
-                return
-            ws_user_id = payload.get("user_id", "default")
+        if not token:
+            await websocket.close(code=4001, reason="Token required")
+            logger.warning("WebSocket 연결 거부: 토큰 없음 (IP=%s)", websocket.client.host if websocket.client else "?")
+            return
+        payload = verify_token(token)
+        if not payload:
+            await websocket.close(code=4001, reason="Invalid token")
+            logger.warning("WebSocket 인증 실패 (IP=%s)", websocket.client.host if websocket.client else "?")
+            return
+        ws_user_id = payload.get("user_id", "default")
 
     await websocket.accept()
-    logger.info("WebSocket 연결: user=%s", ws_user_id)
+    logger.info("WebSocket 연결 성공: user=%s", ws_user_id)
 
     try:
         while True:

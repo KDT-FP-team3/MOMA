@@ -111,6 +111,11 @@ const CONNECTIONS = [
   { from: "fastapi",   to: "jwt",          label: "인증 + Rate Limit",    cat: "api" },
   // 멀티모달 LLM 연결
   { from: "openclip",  to: "gpt4o",        label: "LLM 개인화 조언 생성",  cat: "llm" },
+  // ── v0.3.0 데이터 흐름 연결 (5개 연결) ──
+  { from: "frontend",  to: "orchestrator", label: "채팅 → 게이지 자동 업데이트", cat: "agent" },
+  { from: "orchestrator", to: "supabase",  label: "연쇄효과 → 상태 영속 저장",  cat: "data" },
+  { from: "frontend",  to: "supabase",     label: "온보딩 → 초기 상태 저장",    cat: "data" },
+  { from: "ppo",       to: "simulator",    label: "PPO 최적 행동 추천",        cat: "rl" },
 ];
 
 /* ------------------------------------------------------------------ */

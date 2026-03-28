@@ -1,29 +1,35 @@
-# LifeSync AI 아키텍처 보고서
+# LifeSync AI 아키텍처 보고서 (v0.3.0)
 
 > 각 컴포넌트의 역할, 기능, 관계, 장단점, 필요한 이유를 설명합니다.
+> v0.3.0: Router 분리 패턴 + 5개 데이터 흐름 연결 + 보안 강화 반영.
 
 ---
 
 ## 전체 아키텍처 개요
 
 ```
-사용자 (웹/앱)
+사용자 (웹/앱/APK)
     ↓ HTTP/WebSocket
-Frontend (React + Capacitor)  ←→  Offline Engine (IndexedDB)
+Frontend (React 18 + Capacitor)  ←→  Offline Engine (IndexedDB)
     ↓ Vite Proxy / HTTPS
-FastAPI Backend (JWT + Rate Limit)
-    ↓ 라우팅
-Orchestrator (LangGraph 조건 분기)
-    ↓ 도메인별 분배
-┌─────────┬─────────┬─────────┬─────────┐
-│Food Agent│Exercise │Health   │Hobby    │ ← LangChain LCEL
-└────┬────┴────┬────┴────┬────┴────┬────┘
-     ↓         ↓         ↓         ↓
-  GPT-4o-mini (LLM)  +  ChromaDB (RAG)
+main.py (180줄: 미들웨어 + 라우터 등록만)
+    ├→ ai_router.py (그룹 A: 사진/시뮬/모델)
+    ├→ api_router.py (그룹 B: 쿼리/인증/대시보드/WS)
+    └→ 보안: JWT + RateLimit(60/분) + 보안헤더 + 입력검증
+         ↓ 라우팅
+Orchestrator (LangGraph 8-node DAG)
+    ↓ 도메인별 분배 + CASCADE_RULES
+┌──────────┬──────────┬──────────┬──────────┐
+│FoodAgent │Exercise  │Health    │Hobby     │ ← LangChain + RAG
+└────┬─────┴────┬─────┴────┬─────┴────┬─────┘
+     ↓          ↓          ↓          ↓
+  GPT-4o-mini (LLM)  +  ChromaDB (4 컬렉션 RAG)
+     ↓                        ↓
+  updated_gauges → AppState → 대시보드 즉시 반영 (v0.3.0 연결)
      ↓
-Reward Function → PPO Agent → Retrain Scheduler → Optuna
+Reward Function → PPO Agent → Retrain → Optuna
      ↓
-Supabase (상태 저장) / S3 (모델 저장)
+Supabase (상태) / S3 (모델) / Railway / Vercel / Capacitor
 ```
 
 ---

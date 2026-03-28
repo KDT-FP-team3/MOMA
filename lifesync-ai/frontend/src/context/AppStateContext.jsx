@@ -23,8 +23,24 @@ const DEFAULT_STATE = {
   // OnboardingPage
   onboardingData: null,
   onboardingStep: 0,
-  // DashboardPage
+  // DashboardPage — 6개 게이지 + 4개 도메인 요약
   dashboardData: null,
+  gauges: {
+    reactive_oxygen: 62,
+    blood_purity: 78,
+    hair_loss_risk: 23,
+    sleep_score: 71,
+    stress_level: 45,
+    weekly_achievement: 67,
+  },
+  domainSummary: {
+    food: { value: "0 kcal", sub: "오늘 섭취" },
+    exercise: { value: "0분", sub: "오늘 활동" },
+    health: { value: "-", sub: "종합 상태" },
+    hobby: { value: "0분", sub: "오늘 활동" },
+  },
+  // 최근 연쇄 효과 (채팅/사진 분석 결과)
+  lastCascade: null,
   // User
   userProfile: null,
   userId: "default",

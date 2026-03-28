@@ -9,6 +9,8 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import AvatarBody from "../components/AvatarBody";
+import { useAppState } from "../context/AppStateContext";
+import axios from "axios";
 
 const AGE_OPTIONS = [
   { label: "10대", emoji: "", value: "10s" },
@@ -96,6 +98,7 @@ function SliderField({ label, value, min, max, step, unit, onChange }) {
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const { updateState } = useAppState();
   const [step, setStep] = useState(1);
 
   // Step 1
@@ -323,7 +326,18 @@ export default function OnboardingPage() {
             ) : (
               <button
                 type="button"
-                onClick={() => navigate("/avatar")}
+                onClick={async () => {
+                  // ── 연결: 온보딩 데이터 → 백엔드 → LifeEnv 초기화 ──
+                  const profile = { age, height, weight, activity, sleep, stress, goals };
+                  updateState("onboardingData", profile);
+                  updateState("userProfile", profile);
+                  try {
+                    const res = await axios.post("/api/onboarding", profile);
+                    if (res.data.user_id) updateState("userId", res.data.user_id);
+                    if (res.data.initial_gauges) updateState("gauges", res.data.initial_gauges);
+                  } catch { /* 오프라인이면 로컬만 저장 */ }
+                  navigate("/avatar");
+                }}
                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold transition-all ml-auto shadow-lg shadow-blue-500/25"
               >
                 시작하기

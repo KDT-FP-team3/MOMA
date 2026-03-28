@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Mic, MicOff, Bot, User, AlertCircle, RefreshCw } from "lucide-react";
 import axios from "axios";
+import { useAppState } from "../../context/AppStateContext";
 
 const DOMAIN_CONFIG = {
   food:     { label: "요리", emoji: "🍳", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
@@ -67,6 +68,7 @@ function formatResponse(domain, result, cascade) {
 }
 
 export default function QuickChat() {
+  const { updateState } = useAppState();
   const [messages, setMessages] = useState([
     {
       role: "ai",
@@ -148,6 +150,15 @@ export default function QuickChat() {
         ...prev,
         { role: "ai", text: responseText, domain: resDomain, cascade },
       ]);
+
+      // ── 연결: cascade_effects → 대시보드 게이지 업데이트 ──
+      if (cascade?.effects) {
+        updateState("lastCascade", cascade);
+        // cascade.gauge_updates가 있으면 게이지에 반영
+        if (res.data.updated_gauges) {
+          updateState("gauges", (prev) => ({ ...prev, ...res.data.updated_gauges }));
+        }
+      }
     } catch (err) {
       const detail = err.response?.data?.detail || err.message || "알 수 없는 오류";
       setError(detail);

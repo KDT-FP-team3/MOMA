@@ -100,6 +100,7 @@ app.add_middleware(
 PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
+    "/api/onboarding",
 }
 
 
@@ -118,8 +119,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if path in PUBLIC_PATHS or request.method == "OPTIONS" or path.startswith("/ws"):
             return await call_next(request)
 
-        # 개발 환경 → 인증 생략
-        if os.getenv("ENV") == "development":
+        # 개발 환경 → 인증 생략 (명시적으로 "development"만 허용)
+        if os.getenv("ENV", "production") == "development":
             return await call_next(request)
 
         # Bearer 토큰 검증
@@ -128,11 +129,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         if not token:
             from starlette.responses import JSONResponse
+            client_ip = request.client.host if request.client else "?"
+            logger.warning("인증 실패: 토큰 없음 (IP=%s, path=%s)", client_ip, path)
             return JSONResponse(status_code=401, content={"detail": "인증 토큰이 필요합니다."})
 
         payload = verify_token(token)
         if not payload:
             from starlette.responses import JSONResponse
+            client_ip = request.client.host if request.client else "?"
+            logger.warning("인증 실패: 유효하지 않은 토큰 (IP=%s, path=%s)", client_ip, path)
             return JSONResponse(status_code=401, content={"detail": "유효하지 않은 토큰입니다."})
 
         request.state.user = payload

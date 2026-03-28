@@ -1,20 +1,50 @@
 /**
  * DashboardPage — 메인 대시보드 허브
+ *
+ * 데이터 흐름:
+ *   마운트 → GET /api/dashboard/default → gauges + domainSummary 초기화
+ *   채팅 입력 → QuickChat → /api/query → cascade_effects → gauges 업데이트
+ *   WebSocket → gauge_update 메시지 → 실시간 반영
  */
+import { useEffect, useMemo } from "react";
 import Layout from "../components/layout/Layout";
 import GaugePanel from "../components/dashboard/GaugePanel";
 import QuickChat from "../components/dashboard/QuickChat";
 import CascadeAlert from "../components/cascade/CascadeAlert";
+import { useAppState } from "../context/AppStateContext";
 import { Activity, TrendingUp, Utensils, Dumbbell, Heart, Palette } from "lucide-react";
+import axios from "axios";
 
-const DOMAIN_SUMMARY = [
-  { icon: Utensils, label: "요리", value: "1,850 kcal", sub: "오늘 섭취", color: "text-orange-400", bg: "bg-orange-500/10" },
-  { icon: Dumbbell, label: "운동", value: "45분", sub: "오늘 활동", color: "text-blue-400", bg: "bg-blue-500/10" },
-  { icon: Heart, label: "건강", value: "양호", sub: "종합 상태", color: "text-green-400", bg: "bg-green-500/10" },
-  { icon: Palette, label: "취미", value: "30분", sub: "기타 연주", color: "text-purple-400", bg: "bg-purple-500/10" },
-];
+const DOMAIN_ICONS = {
+  food: { icon: Utensils, label: "요리", color: "text-orange-400", bg: "bg-orange-500/10" },
+  exercise: { icon: Dumbbell, label: "운동", color: "text-blue-400", bg: "bg-blue-500/10" },
+  health: { icon: Heart, label: "건강", color: "text-green-400", bg: "bg-green-500/10" },
+  hobby: { icon: Palette, label: "취미", color: "text-purple-400", bg: "bg-purple-500/10" },
+};
 
 export default function DashboardPage() {
+  const { state, updateState } = useAppState();
+
+  // 마운트 시 대시보드 데이터 로드
+  useEffect(() => {
+    axios.get(`/api/dashboard/${state.userId || "default"}`)
+      .then((res) => {
+        if (res.data.gauges) updateState("gauges", res.data.gauges);
+        if (res.data.domain_summary) updateState("domainSummary", res.data.domain_summary);
+      })
+      .catch(() => { /* 오프라인이면 기존 상태 유지 */ });
+  }, []);
+
+  // 4개 도메인 요약 카드 데이터
+  const domainCards = useMemo(() => {
+    const ds = state.domainSummary || {};
+    return Object.entries(DOMAIN_ICONS).map(([key, cfg]) => ({
+      ...cfg,
+      value: ds[key]?.value || "-",
+      sub: ds[key]?.sub || "",
+    }));
+  }, [state.domainSummary]);
+
   return (
     <Layout>
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
@@ -30,9 +60,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 도메인 요약 카드 */}
+        {/* 도메인 요약 카드 — API 데이터 연동 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {DOMAIN_SUMMARY.map(({ icon: Icon, label, value, sub, color, bg }) => (
+          {domainCards.map(({ icon: Icon, label, value, sub, color, bg }) => (
             <div
               key={label}
               className="bg-gray-800 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-colors"

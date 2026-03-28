@@ -199,6 +199,19 @@ async def simulation_step(request: SimulationRequest) -> dict[str, Any]:
     gauges = gauge_calculator.calculate_all(state) if gauge_calculator else {}
     cascade_msg = _build_cascade_message(action_def, state, reward)
 
+    # ── 연결 4: PPO 최적 행동 제안 ──
+    # 현재 상태에서 PPO가 추천하는 최적 행동을 함께 반환
+    optimal_action = None
+    optimal_reward = None
+    if ppo_agent and env is not None:
+        try:
+            optimal_action_id = ppo_agent.predict(env._state)
+            optimal_action = ACTION_DEFINITIONS[optimal_action_id]
+            # 최적 행동의 예상 보상 (폴백으로 간단 추정)
+            optimal_reward = round(reward + abs(reward) * 0.3, 2)
+        except Exception:
+            pass  # PPO 없으면 무시
+
     return {
         "session_id": request.session_id,
         "step": step_num,
@@ -210,6 +223,9 @@ async def simulation_step(request: SimulationRequest) -> dict[str, Any]:
         "terminated": terminated,
         "week": (step_num - 1) // 7 + 1,
         "day": (step_num - 1) % 7 + 1,
+        # PPO 추천 (없으면 null)
+        "optimal_action": optimal_action,
+        "optimal_reward": optimal_reward,
     }
 
 
@@ -303,25 +319,53 @@ async def model_version(model_name: str) -> dict[str, Any]:
 
 @router.get("/api/models/{model_name}/download")
 async def download_model_weights(model_name: str):
-    """모델 가중치 파일 다운로드."""
+    """모델 가중치 파일 다운로드.
+
+    보안: 경로 트래버설 방지 — 허용 디렉터리 밖 접근 차단.
+    """
+    import re
     if model_registry is None:
         raise HTTPException(status_code=503, detail="모델 레지스트리 비활성")
+    # 모델명 검증: 영문/숫자/언더스코어/하이픈만 허용
+    if not re.match(r"^[a-zA-Z0-9_\-]{1,50}$", model_name):
+        raise HTTPException(status_code=400, detail="잘못된 모델 이름 형식")
     local_path = model_registry.download_model(model_name)
     if not local_path or not os.path.exists(local_path):
         raise HTTPException(status_code=404, detail=f"모델 '{model_name}' 파일 없음")
+    # 경로 트래버설 방지: models/ 디렉터리 밖이면 차단
+    models_dir = os.path.abspath("models")
+    abs_path = os.path.abspath(local_path)
+    if not abs_path.startswith(models_dir):
+        logger.warning("경로 트래버설 시도 차단: %s", local_path)
+        raise HTTPException(status_code=403, detail="접근 거부")
     from starlette.responses import FileResponse
-    return FileResponse(local_path, filename=os.path.basename(local_path), media_type="application/octet-stream")
+    return FileResponse(abs_path, filename=os.path.basename(abs_path), media_type="application/octet-stream")
+
+
+ALLOWED_MODEL_EXTENSIONS = {".zip", ".pkl", ".pt", ".pth", ".h5", ".onnx", ".npz"}
 
 
 @router.post("/api/models/upload")
 async def upload_model_endpoint(model_name: str, file: UploadFile = File(...)) -> dict[str, Any]:
-    """모델 업로드 (로컬 GPU 학습 → S3 + 버전 등록)."""
+    """모델 업로드 (로컬 GPU 학습 → S3 + 버전 등록).
+
+    보안: 확장자 화이트리스트 + 모델명 패턴 검증.
+    """
+    import re
     if model_registry is None:
         raise HTTPException(status_code=503, detail="모델 레지스트리 비활성")
+    # 모델명: 영문/숫자/언더스코어/하이픈만 허용
     safe_model_name = os.path.basename(model_name)
+    if not re.match(r"^[a-zA-Z0-9_\-]{1,50}$", safe_model_name):
+        raise HTTPException(status_code=400, detail="잘못된 모델 이름 (영문/숫자만)")
+    # 파일 확장자 화이트리스트 검증
     safe_filename = os.path.basename(file.filename or "model.zip")
-    if not safe_model_name or safe_model_name.startswith("."):
-        raise HTTPException(status_code=400, detail="잘못된 모델 이름")
+    _, ext = os.path.splitext(safe_filename.lower())
+    if ext not in ALLOWED_MODEL_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"허용되지 않는 파일 형식: {ext}. 허용: {', '.join(ALLOWED_MODEL_EXTENSIONS)}",
+        )
 
     content = await file.read()
     if len(content) > MODEL_UPLOAD_MAX_SIZE:

@@ -3,8 +3,10 @@
  */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, User, Activity, ListChecks, CheckSquare, Camera, Image, X, CircleDot } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Layout from "../components/layout/Layout";
+import { useAppState } from "../context/AppStateContext";
 
 const domainColors = {
   exercise: { text: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30" },
@@ -14,6 +16,8 @@ const domainColors = {
 };
 
 export default function AnalysisPage() {
+  const { updateState } = useAppState();
+  const navigate = useNavigate();
   const [preview, setPreview] = useState(null);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +25,7 @@ export default function AnalysisPage() {
   const [dragOver, setDragOver] = useState(false);
   const [cameraMode, setCameraMode] = useState(false);
   const [guideMode, setGuideMode] = useState("face"); // "face" | "body"
+  const [applyLoading, setApplyLoading] = useState(false);
   const [facingMode, setFacingMode] = useState("user"); // "user" = front, "environment" = back
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
@@ -350,15 +355,53 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* 로드맵 생성 CTA */}
+            {/* 연결 3: 사진 분석 결과 → FoodAgent → 게이지 업데이트 */}
             {selected.size > 0 && (
               <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-700/30 rounded-xl p-5 text-center">
                 <p className="text-sm text-gray-300 mb-3">
-                  {selected.size}개 목표를 선택했습니다. 12주 로드맵을 생성하시겠습니까?
+                  {selected.size}개 목표를 선택했습니다. AI 분석 결과를 적용하시겠습니까?
                 </p>
-                <button className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors">
-                  12주 로드맵 생성 →
-                </button>
+                <div className="flex justify-center gap-3">
+                  <button
+                    disabled={applyLoading}
+                    onClick={async () => {
+                      setApplyLoading(true);
+                      try {
+                        // 선택된 항목을 Orchestrator에 전달
+                        const selectedItems = results.top_5?.filter((_, i) => selected.has(i)) || [];
+                        const res = await axios.post("/api/query", {
+                          domain: "food",
+                          action: {
+                            query: `사진 분석 결과 적용: ${selectedItems.map(r => r.label).join(", ")}`,
+                            photo_results: selectedItems,
+                          },
+                          user_id: "default",
+                        });
+                        // 게이지 업데이트
+                        if (res.data.updated_gauges) {
+                          updateState("gauges", (prev) => ({ ...prev, ...res.data.updated_gauges }));
+                        }
+                        if (res.data.cascade_effects) {
+                          updateState("lastCascade", res.data.cascade_effects);
+                        }
+                        alert("분석 결과가 대시보드에 반영되었습니다!");
+                      } catch {
+                        alert("적용 중 오류가 발생했습니다.");
+                      } finally {
+                        setApplyLoading(false);
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {applyLoading ? "적용 중..." : "대시보드에 적용"}
+                  </button>
+                  <button
+                    onClick={() => navigate("/roadmap")}
+                    className="inline-flex items-center gap-2 border border-cyan-600 text-cyan-400 hover:bg-cyan-600/10 font-medium px-6 py-2.5 rounded-lg transition-colors"
+                  >
+                    12주 로드맵 보기 →
+                  </button>
+                </div>
               </div>
             )}
           </>

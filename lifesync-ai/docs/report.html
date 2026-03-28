@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeSync AI v0.3.0 — System Architecture Report</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--accent:#06b6d4;--text:#e2e8f0;--muted:#cbd5e1;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--purple:#a78bfa;--blue:#3b82f6;--pink:#ec4899;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+.container{max-width:1200px;margin:0 auto;padding:20px;}
+h1{font-size:2.2em;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+h2{font-size:1.5em;color:var(--accent);margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--accent);}
+h3{font-size:1.15em;color:var(--orange);margin:24px 0 10px;}
+h4{font-size:1em;color:var(--purple);margin:16px 0 6px;}
+p{margin-bottom:12px;color:var(--text);}
+.subtitle{font-size:1.1em;color:var(--muted);margin-bottom:30px;}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.75em;font-weight:600;margin-right:6px;}
+.badge-green{background:#10b98120;color:var(--green);border:1px solid #10b98140;}
+.badge-orange{background:#f59e0b20;color:var(--orange);border:1px solid #f59e0b40;}
+.badge-red{background:#ef444420;color:var(--red);border:1px solid #ef444440;}
+.badge-blue{background:#3b82f620;color:var(--blue);border:1px solid #3b82f640;}
+.badge-purple{background:#a78bfa20;color:var(--purple);border:1px solid #a78bfa40;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:12px 0;}
+.card-title{font-weight:700;color:var(--text);margin-bottom:6px;}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.9em;}
+th{background:#1e3a5f;color:#fff;padding:10px 12px;text-align:left;font-weight:600;}
+td{padding:8px 12px;border-bottom:1px solid var(--border);}
+tr:hover td{background:#ffffff08;}
+code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;font-size:1em;font-weight:600;}
+.flow-container{overflow-x:auto;margin:20px 0;background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;}
+.toc{column-count:2;column-gap:30px;}
+.toc a{color:var(--accent);text-decoration:none;display:block;padding:3px 0;font-size:.95em;}
+.toc a:hover{text-decoration:underline;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:768px){.grid2,.grid3{grid-template-columns:1fr;}.toc{column-count:1;}}
+.file-tree{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;line-height:1.8;}
+.file-tree .folder{color:var(--orange);font-weight:600;}
+.file-tree .file{color:var(--muted);}
+.file-tree .desc{color:#64748b;font-style:italic;}
+.glossary-term{color:var(--accent);font-weight:700;}
+.glossary-desc{margin-left:20px;margin-bottom:8px;color:var(--text);}
+.stat-number{font-size:2em;font-weight:800;color:var(--accent);}
+.stat-label{font-size:.85em;color:var(--text);}
+.connection-line{stroke-width:2;fill:none;marker-end:url(#arrowhead);}
+.node-box{rx:8;ry:8;stroke-width:2;}
+.print-btn{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;z-index:100;}
+@media print{.print-btn{display:none;} body{background:#fff;color:#333;} .card{border:1px solid #ccc;} h2{color:#0891b2;}}
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">PDF / Print</button>
+
+<div class="container">
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header style="text-align:center;padding:40px 0 20px;">
+  <h1>LifeSync AI</h1>
+  <p class="subtitle">일상 생활 크로스 도메인 통합 관리 AI 에이전트 — 시스템 아키텍처 보고서 v0.3.0</p>
+  <div>
+    <span class="badge badge-green">11개 페이지</span>
+    <span class="badge badge-blue">30+ API</span>
+    <span class="badge badge-purple">5개 AI 모델</span>
+    <span class="badge badge-orange">4개 도메인</span>
+  </div>
+  <p style="margin-top:12px;font-size:.85em;">KDT-FT-team3-Chainers | 2026-03-28</p>
+</header>
+
+<!-- ═══════════════════════════════ TOC ═══════════════════════════════ -->
+<h2 id="toc">목차</h2>
+<div class="toc card">
+  <a href="#overview">1. 프로젝트 개요</a>
+  <a href="#flow">2. 전체 데이터 흐름 순서도</a>
+  <a href="#architecture">3. 시스템 아키텍처</a>
+  <a href="#orchestrator">4. Orchestrator (LangGraph)</a>
+  <a href="#agents">5. 도메인 에이전트 (LangChain)</a>
+  <a href="#rl">6. 강화학습 엔진</a>
+  <a href="#multimodal">7. 멀티모달 AI</a>
+  <a href="#rag">8. RAG 파이프라인</a>
+  <a href="#security">9. 보안 아키텍처</a>
+  <a href="#deploy">10. 배포 구조</a>
+  <a href="#offline">11. 오프라인 지원</a>
+  <a href="#team">12. 팀 분업</a>
+  <a href="#files">13. 전체 파일/폴더 설명</a>
+  <a href="#glossary">14. 용어 사전</a>
+</div>
+
+<!-- ═══════════════════════════════ 1. OVERVIEW ═══════════════════════════════ -->
+<h2 id="overview">1. 프로젝트 개요</h2>
+<div class="grid3">
+  <div class="card" style="text-align:center;"><div class="stat-number">4</div><div class="stat-label">도메인 (요리/운동/건강/취미)</div></div>
+  <div class="card" style="text-align:center;"><div class="stat-number">92+</div><div class="stat-label">사용자 기능</div></div>
+  <div class="card" style="text-align:center;"><div class="stat-number">253</div><div class="stat-label">프로젝트 파일</div></div>
+</div>
+<div class="card">
+  <p>LifeSync AI는 4개 도메인(요리/운동/건강/취미)을 <strong>하나의 유기체</strong>로 통합 관리하는 AI 에이전트입니다.</p>
+  <p>핵심 가치: <strong>"한 가지 선택이 모든 영역에 연쇄 효과를 만든다"</strong></p>
+  <p>예: '야식 라면' → 수면 품질 -35% → 다음 날 운동 성능 -20% → 체중 목표 +2일 지연</p>
+</div>
+
+<h3>기술 스택</h3>
+<table>
+<tr><th>영역</th><th>기술</th></tr>
+<tr><td>Backend</td><td>Python 3.11, FastAPI, WebSocket, LangGraph, LangChain</td></tr>
+<tr><td>AI/ML</td><td>GPT-4o-mini, OpenCLIP(ViT-B-32), MediaPipe, YOLOv8, PPO(Stable-Baselines3), Optuna</td></tr>
+<tr><td>Database</td><td>ChromaDB (Vector), Supabase PostgreSQL (State)</td></tr>
+<tr><td>Frontend</td><td>React 18, Recharts, Tailwind CSS, Capacitor (Android APK)</td></tr>
+<tr><td>Infra</td><td>Railway ($5/월), Vercel (무료 CDN), AWS S3, Docker Compose</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 2. FLOW DIAGRAM ═══════════════════════════════ -->
+<h2 id="flow">2. 전체 데이터 흐름 순서도</h2>
+<p>v0.3.0에서 5개 데이터 흐름을 연결하여 모든 모듈이 하나의 흐름으로 동작합니다.</p>
+
+<div class="flow-container" style="padding:30px;overflow-x:auto;">
+<svg viewBox="0 0 1400 1130" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:1000px;height:auto;">
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#06b6d4"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#10b981"/></marker>
+    <marker id="ap" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#a78bfa"/></marker>
+    <marker id="ao" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f59e0b"/></marker>
+    <marker id="ak" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ec4899"/></marker>
+    <marker id="ab" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b82f6"/></marker>
+    <marker id="ar" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f43f5e"/></marker>
+  </defs>
+
+  <!-- ═══ LAYER BACKGROUNDS (확장된 여백) ═══ -->
+  <rect x="0" y="0" width="1400" height="230" fill="#0e7490" opacity="0.06" rx="8"/>
+  <rect x="0" y="245" width="1400" height="350" fill="#3b82f6" opacity="0.05" rx="8"/>
+  <rect x="0" y="610" width="1400" height="260" fill="#ec4899" opacity="0.04" rx="8"/>
+  <rect x="0" y="885" width="1400" height="130" fill="#10b981" opacity="0.04" rx="8"/>
+
+  <!-- ═══ LAYER LABELS ═══ -->
+  <text x="15" y="25" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 1 — FRONTEND (React 18)</text>
+  <text x="15" y="265" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 2 — BACKEND (FastAPI + Router)</text>
+  <text x="15" y="630" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 3 — AI/ML ENGINE</text>
+  <text x="15" y="905" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 4 — DATA / INFRA</text>
+
+  <!-- ═══ FRONTEND NODES (넓은 간격) ═══ -->
+  <rect x="30" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="115" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">온보딩</text>
+  <text x="115" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">3단계 위저드</text>
+
+  <rect x="230" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="315" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">대시보드</text>
+  <text x="315" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">6개 게이지 + 4도메인</text>
+
+  <rect x="430" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="515" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">AI 채팅</text>
+  <text x="515" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">QuickChat + 음성</text>
+
+  <rect x="630" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="715" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">사진 분석</text>
+  <text x="715" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">카메라 + 업로드</text>
+
+  <rect x="830" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="915" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">시뮬레이터</text>
+  <text x="915" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">10개 행동 + PPO</text>
+
+  <rect x="1030" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="1115" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">리포트</text>
+  <text x="1115" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">주간 + 로드맵</text>
+
+  <!-- Sub-frontend (Row 2) -->
+  <rect x="30" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="115" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">오프라인 엔진</text>
+  <text x="115" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">IndexedDB + smartSim</text>
+
+  <rect x="230" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="315" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">WebSocket</text>
+  <text x="315" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">실시간 게이지 동기화</text>
+
+  <rect x="430" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="515" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">AppState</text>
+  <text x="515" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">전역 상태 (gauges)</text>
+
+  <!-- ═══ BACKEND NODES (Row 1: 라우터) ═══ -->
+  <rect x="30" y="290" width="190" height="65" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="125" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">main.py</text>
+  <text x="125" y="340" fill="#93c5fd" text-anchor="middle" font-size="11">미들웨어 + 라우터 등록</text>
+
+  <rect x="260" y="290" width="210" height="65" rx="10" fill="#3b1f6e" stroke="#a78bfa" stroke-width="2"/>
+  <text x="365" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">Orchestrator</text>
+  <text x="365" y="340" fill="#c4b5fd" text-anchor="middle" font-size="11">LangGraph 8-node DAG</text>
+
+  <rect x="510" y="290" width="210" height="65" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="615" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">api_router.py</text>
+  <text x="615" y="340" fill="#93c5fd" text-anchor="middle" font-size="11">그룹 B: 쿼리/인증/WS</text>
+
+  <rect x="760" y="290" width="210" height="65" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="865" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">ai_router.py</text>
+  <text x="865" y="340" fill="#93c5fd" text-anchor="middle" font-size="11">그룹 A: 사진/시뮬/모델</text>
+
+  <rect x="1010" y="290" width="190" height="65" rx="10" fill="#5c1540" stroke="#f472b6" stroke-width="2"/>
+  <text x="1105" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">보안 미들웨어</text>
+  <text x="1105" y="340" fill="#f9a8d4" text-anchor="middle" font-size="11">JWT + Rate + CORS + XSS</text>
+
+  <!-- Agent Cards (Row 2: 에이전트 — 여백 넓힘) -->
+  <rect x="50" y="400" width="150" height="55" rx="8" fill="#5c3d0a" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="125" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="600">FoodAgent</text>
+  <text x="125" y="443" fill="#fcd34d" text-anchor="middle" font-size="9">레시피 RAG</text>
+
+  <rect x="230" y="400" width="150" height="55" rx="8" fill="#0c3644" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="305" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="600">ExerciseAgent</text>
+  <text x="305" y="443" fill="#67e8f9" text-anchor="middle" font-size="9">날씨+부상 고려</text>
+
+  <rect x="410" y="400" width="150" height="55" rx="8" fill="#0d3b2e" stroke="#34d399" stroke-width="1.5"/>
+  <text x="485" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="600">HealthAgent</text>
+  <text x="485" y="443" fill="#6ee7b7" text-anchor="middle" font-size="9">검진 분석</text>
+
+  <rect x="590" y="400" width="150" height="55" rx="8" fill="#3b2d6e" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="665" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="600">HobbyAgent</text>
+  <text x="665" y="443" fill="#ddd6fe" text-anchor="middle" font-size="9">스트레스 해소</text>
+
+  <!-- Cascade Box (Row 2 우측) -->
+  <rect x="790" y="400" width="230" height="55" rx="8" fill="#451a03" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="905" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="600">CASCADE RULES</text>
+  <text x="905" y="443" fill="#fcd34d" text-anchor="middle" font-size="10">food->health, exercise->mood ...</text>
+
+  <!-- Gauge Update (Row 2 맨 우측) -->
+  <rect x="1060" y="400" width="190" height="55" rx="8" fill="#065f46" stroke="#10b981" stroke-width="2"/>
+  <text x="1155" y="425" fill="white" text-anchor="middle" font-size="14" font-weight="700">updated_gauges</text>
+  <text x="1155" y="443" fill="#6ee7b7" text-anchor="middle" font-size="10">v0.3.0 연결 핵심</text>
+
+  <!-- Voice (Row 3) -->
+  <rect x="50" y="490" width="150" height="50" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="125" y="515" fill="white" text-anchor="middle" font-size="13" font-weight="600">Voice (STT/TTS)</text>
+  <text x="125" y="532" fill="#a5b4fc" text-anchor="middle" font-size="9">Whisper + gTTS</text>
+
+  <!-- ═══ AI/ML ENGINE (Row 1) ═══ -->
+  <rect x="30" y="660" width="180" height="60" rx="10" fill="#5c1525" stroke="#fb7185" stroke-width="2"/>
+  <text x="120" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">PPO 강화학습</text>
+  <text x="120" y="707" fill="#fda4af" text-anchor="middle" font-size="11">40D 상태 / 10 행동</text>
+
+  <rect x="240" y="660" width="180" height="60" rx="10" fill="#5c1525" stroke="#fb7185" stroke-width="2"/>
+  <text x="330" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">보상 함수</text>
+  <text x="330" y="707" fill="#fda4af" text-anchor="middle" font-size="11">다축 보상 + 패널티</text>
+
+  <rect x="450" y="660" width="180" height="60" rx="10" fill="#5c3d0a" stroke="#fbbf24" stroke-width="2"/>
+  <text x="540" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">GPT-4o-mini</text>
+  <text x="540" y="707" fill="#fcd34d" text-anchor="middle" font-size="11">LLM 추론 엔진</text>
+
+  <rect x="660" y="660" width="170" height="60" rx="10" fill="#5c1525" stroke="#fb7185" stroke-width="2"/>
+  <text x="745" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">OpenCLIP</text>
+  <text x="745" y="707" fill="#fda4af" text-anchor="middle" font-size="11">ViT-B-32 512D</text>
+
+  <rect x="860" y="660" width="150" height="60" rx="10" fill="#5c1525" stroke="#fb7185" stroke-width="2"/>
+  <text x="935" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">YOLO v8</text>
+  <text x="935" y="707" fill="#fda4af" text-anchor="middle" font-size="11">식재료 감지</text>
+
+  <rect x="1040" y="660" width="160" height="60" rx="10" fill="#5c1525" stroke="#fb7185" stroke-width="2"/>
+  <text x="1120" y="687" fill="white" text-anchor="middle" font-size="15" font-weight="700">MediaPipe</text>
+  <text x="1120" y="707" fill="#fda4af" text-anchor="middle" font-size="11">자세 33pts</text>
+
+  <!-- AI/ML Row 2 -->
+  <rect x="450" y="760" width="180" height="55" rx="8" fill="#5c1540" stroke="#f472b6" stroke-width="1.5"/>
+  <text x="540" y="785" fill="white" text-anchor="middle" font-size="14" font-weight="600">Optuna</text>
+  <text x="540" y="803" fill="#f9a8d4" text-anchor="middle" font-size="10">100 trial Bayesian</text>
+
+  <rect x="670" y="760" width="200" height="55" rx="8" fill="#5c1540" stroke="#f472b6" stroke-width="1.5"/>
+  <text x="770" y="785" fill="white" text-anchor="middle" font-size="14" font-weight="600">Retrain Scheduler</text>
+  <text x="770" y="803" fill="#f9a8d4" text-anchor="middle" font-size="10">6h 주기 + 보상하락 감지</text>
+
+  <!-- ═══ DATA LAYER ═══ -->
+  <rect x="30" y="930" width="190" height="60" rx="10" fill="#0d3b2e" stroke="#34d399" stroke-width="2"/>
+  <text x="125" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">ChromaDB</text>
+  <text x="125" y="977" fill="#6ee7b7" text-anchor="middle" font-size="11">4 컬렉션 RAG 검색</text>
+
+  <rect x="250" y="930" width="190" height="60" rx="10" fill="#0c3644" stroke="#22d3ee" stroke-width="2"/>
+  <text x="345" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">Supabase</text>
+  <text x="345" y="977" fill="#67e8f9" text-anchor="middle" font-size="11">PostgreSQL 상태 저장</text>
+
+  <rect x="470" y="930" width="190" height="60" rx="10" fill="#0c3644" stroke="#22d3ee" stroke-width="2"/>
+  <text x="565" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">AWS S3</text>
+  <text x="565" y="977" fill="#67e8f9" text-anchor="middle" font-size="11">모델 가중치 저장</text>
+
+  <rect x="700" y="930" width="170" height="60" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="785" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">Railway</text>
+  <text x="785" y="977" fill="#93c5fd" text-anchor="middle" font-size="11">백엔드 $5/월</text>
+
+  <rect x="900" y="930" width="150" height="60" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="975" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">Vercel</text>
+  <text x="975" y="977" fill="#93c5fd" text-anchor="middle" font-size="11">프론트 CDN 무료</text>
+
+  <rect x="1080" y="930" width="160" height="60" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
+  <text x="1160" y="957" fill="white" text-anchor="middle" font-size="15" font-weight="700">Capacitor</text>
+  <text x="1160" y="977" fill="#93c5fd" text-anchor="middle" font-size="11">Android APK</text>
+
+  <!-- ═══ CONNECTIONS (새 좌표 기준 곡선 화살표) ═══ -->
+
+  <!-- 연결 1: 온보딩 → main.py (초록) -->
+  <path d="M115 110 C115 210,125 250,125 290" stroke="#10b981" stroke-width="2.5" fill="none" marker-end="url(#ag)"/>
+  <text x="60" y="210" fill="#10b981" font-size="11" font-weight="600">POST /api/onboarding</text>
+
+  <!-- 연결 2: 대시보드 → api_router (파란) -->
+  <path d="M315 110 C315 190,615 220,615 290" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#ab)"/>
+  <text x="420" y="180" fill="#3b82f6" font-size="11" font-weight="600">GET /api/dashboard/{uid}</text>
+
+  <!-- 연결 3: AI채팅 → Orchestrator (보라) -->
+  <path d="M515 110 C515 220,365 240,365 290" stroke="#a78bfa" stroke-width="2.5" fill="none" marker-end="url(#ap)"/>
+  <text x="465" y="230" fill="#a78bfa" font-size="11" font-weight="600">POST /api/query</text>
+
+  <!-- 연결 4: 사진분석 → ai_router (주황) -->
+  <path d="M715 110 C715 200,865 230,865 290" stroke="#f59e0b" stroke-width="2.5" fill="none" marker-end="url(#ao)"/>
+  <text x="760" y="195" fill="#f59e0b" font-size="11" font-weight="600">POST /api/photo/upload</text>
+
+  <!-- 연결 5: 시뮬레이터 → ai_router (핑크) -->
+  <path d="M915 110 C915 200,890 240,880 290" stroke="#ec4899" stroke-width="2.5" fill="none" marker-end="url(#ak)"/>
+  <text x="940" y="215" fill="#ec4899" font-size="11" font-weight="600">POST /api/simulation/step</text>
+
+  <!-- WebSocket 양방향 (점선) -->
+  <path d="M315 200 C315 240,615 255,615 290" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="6,4" opacity="0.5"/>
+  <text x="430" y="252" fill="white" font-size="10" opacity="0.6">WebSocket /ws</text>
+
+  <!-- Orchestrator → 4 Agents (보라) — 넓은 간격 -->
+  <path d="M310 355 C310 380,125 380,125 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
+  <path d="M340 355 C340 375,305 375,305 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
+  <path d="M390 355 C390 375,485 375,485 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
+  <path d="M420 355 C420 380,665 380,665 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
+
+  <!-- Agents → CASCADE → updated_gauges -->
+  <path d="M740 428 C760 428,790 428,790 428" stroke="#f59e0b" stroke-width="1.5" fill="none" marker-end="url(#ao)"/>
+  <path d="M1020 428 C1040 428,1060 428,1060 428" stroke="#10b981" stroke-width="2" fill="none" marker-end="url(#ag)"/>
+
+  <!-- Agents → LLM (주황 곡선 — 텍스트 아래 배치) -->
+  <path d="M125 455 C125 570,540 610,540 660" stroke="#f59e0b" stroke-width="1.5" fill="none" marker-end="url(#ao)"/>
+  <text x="270" y="590" fill="#f59e0b" font-size="10">LLM 추론 요청 (GPT-4o-mini)</text>
+
+  <!-- Agents → ChromaDB RAG (초록 — 왼쪽 여백 활용) -->
+  <path d="M70 455 C20 600,20 850,125 930" stroke="#10b981" stroke-width="1.5" fill="none" marker-end="url(#ag)"/>
+  <text x="10" y="750" fill="#10b981" font-size="10" transform="rotate(-80,10,750)">RAG 검색</text>
+
+  <!-- ai_router → Vision models (빨간 — 간격 넓게) -->
+  <path d="M830 355 C830 580,745 610,745 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <path d="M870 355 C870 570,935 610,935 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <path d="M910 355 C950 570,1120 610,1120 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+
+  <!-- ai_router → PPO (핑크 곡선 — 하단 경유) -->
+  <path d="M770 355 C770 560,200 590,120 660" stroke="#ec4899" stroke-width="2" fill="none" marker-end="url(#ak)"/>
+  <text x="400" y="575" fill="#ec4899" font-size="10" font-weight="600">PPO optimal_action 추천 (v0.3.0)</text>
+
+  <!-- PPO ← 보상함수 -->
+  <path d="M240 690 C220 690,210 690,210 690" stroke="#ec4899" stroke-width="1.5" fill="none" marker-end="url(#ak)"/>
+
+  <!-- Backend → Supabase (시안 곡선) -->
+  <path d="M125 355 C80 600,345 860,345 930" stroke="#06b6d4" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+  <!-- PPO → S3 -->
+  <path d="M120 720 C120 850,565 870,565 930" stroke="#06b6d4" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <text x="300" y="860" fill="#67e8f9" font-size="10">모델 업로드/다운로드</text>
+
+  <!-- Retrain → PPO (점선) -->
+  <path d="M670 788 C400 800,200 750,170 720" stroke="#ec4899" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#ak)"/>
+  <text x="380" y="780" fill="#f9a8d4" font-size="9">자동 재학습 트리거</text>
+
+  <!-- Optuna → PPO (점선) -->
+  <path d="M450 788 C300 800,180 750,150 720" stroke="#ec4899" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>
+
+  <!-- updated_gauges → AppState (초록 점선 — 상단 경유) -->
+  <path d="M1155 400 C1300 350,1300 180,600 172 C560 172,515 172,515 172" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
+  <text x="1050" y="230" fill="#10b981" font-size="10" font-weight="600">gauges 전역 상태 업데이트</text>
+
+  <!-- ═══ LEGEND (하단 고정) ═══ -->
+  <rect x="30" y="1030" width="1340" height="75" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+  <text x="50" y="1055" fill="white" font-size="13" font-weight="700">연결 범례</text>
+
+  <line x1="50" y1="1080" x2="110" y2="1080" stroke="#10b981" stroke-width="3"/>
+  <text x="118" y="1085" fill="white" font-size="11">데이터 저장/RAG</text>
+
+  <line x1="260" y1="1080" x2="320" y2="1080" stroke="#a78bfa" stroke-width="3"/>
+  <text x="328" y="1085" fill="white" font-size="11">에이전트 라우팅</text>
+
+  <line x1="470" y1="1080" x2="530" y2="1080" stroke="#f59e0b" stroke-width="3"/>
+  <text x="538" y="1085" fill="white" font-size="11">LLM 추론</text>
+
+  <line x1="620" y1="1080" x2="680" y2="1080" stroke="#ec4899" stroke-width="3"/>
+  <text x="688" y="1085" fill="white" font-size="11">강화학습</text>
+
+  <line x1="770" y1="1080" x2="830" y2="1080" stroke="#f43f5e" stroke-width="3"/>
+  <text x="838" y="1085" fill="white" font-size="11">비전/멀티모달</text>
+
+  <line x1="960" y1="1080" x2="1020" y2="1080" stroke="white" stroke-width="2" stroke-dasharray="6,4" opacity="0.6"/>
+  <text x="1028" y="1085" fill="white" font-size="11">WebSocket/비동기</text>
+</svg>
+</div>
+
+<!-- ═══════════════════════════════ 3. ARCHITECTURE ═══════════════════════════════ -->
+<h2 id="architecture">3. 시스템 아키텍처 (Router 분리 패턴)</h2>
+<div class="card">
+  <p><strong>핵심 원칙:</strong> main.py(180줄)는 미들웨어와 라우터 등록만 담당. 실제 로직은 라우터에 분리.</p>
+  <p>이 구조로 3그룹이 동시에 개발해도 <strong>git 충돌이 발생하지 않습니다</strong>.</p>
+</div>
+
+<table>
+<tr><th>파일</th><th>담당</th><th>엔드포인트</th></tr>
+<tr><td><code>main.py</code></td><td>팀장 (공통)</td><td>미들웨어: 보안헤더, CORS, JWT, RateLimit</td></tr>
+<tr><td><code>ai_router.py</code></td><td>그룹 A (AI/ML)</td><td>/api/photo/*, /api/simulation/*, /api/models/*, /api/rl/*</td></tr>
+<tr><td><code>api_router.py</code></td><td>그룹 B (백엔드)</td><td>/api/query, /api/dashboard, /api/auth, /api/onboarding, /ws</td></tr>
+<tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>11개 페이지, 컴포넌트, 오프라인 엔진</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 4-11 (Summarized) ═══════════════════════════════ -->
+<h2 id="orchestrator">4. Orchestrator (LangGraph)</h2>
+<div class="card">
+  <p class="card-title">실행 흐름: classify_intent → route_to_agent → [food|exercise|health|hobby] → merge → cascade → evaluate</p>
+  <p>'치킨 먹었어' → food 분류 → FoodAgent → 칼로리 분석 → CASCADE: 수면-35%, 운동-20% → <strong>게이지 즉시 반영 (v0.3.0 연결)</strong></p>
+</div>
+<table>
+<tr><th>출발</th><th>영향</th><th>연쇄 효과</th></tr>
+<tr><td>food</td><td>health</td><td>영양 점수 x 0.3 → 건강 지표 변화</td></tr>
+<tr><td>food</td><td>exercise</td><td>칼로리 x 0.1 → 운동 에너지 변화</td></tr>
+<tr><td>exercise</td><td>health</td><td>운동 강도 x 0.5 → 체력 변화</td></tr>
+<tr><td>exercise</td><td>mood</td><td>운동 시간 x 0.2 → 기분 변화</td></tr>
+<tr><td>hobby</td><td>health</td><td>스트레스 감소 → 폭식 충동 -40%</td></tr>
+</table>
+
+<h2 id="agents">5. 도메인 에이전트 (LangChain)</h2>
+<div class="grid2">
+  <div class="card"><h4>FoodAgent</h4><p>GPT-4o-mini (temp=0.7) + ChromaDB 10만건 RAG → 3개 레시피 추천</p></div>
+  <div class="card"><h4>ExerciseAgent</h4><p>미세먼지/부상 고려 운동 추천. 실내 자동 전환.</p></div>
+  <div class="card"><h4>HealthAgent</h4><p>GPT-4o-mini (temp=0.3, 보수적) → 건강검진 3줄 요약 + 위험도</p></div>
+  <div class="card"><h4>HobbyAgent</h4><p>스트레스/기분 기반 취미 추천. 기타 30분 → 스트레스 -15%</p></div>
+</div>
+
+<h2 id="rl">6. 강화학습 엔진</h2>
+<div class="card">
+  <p><strong>LifeEnv:</strong> 40차원 상태, 10개 행동, 84스텝(12주)</p>
+  <p><strong>보상:</strong> R = w1*taste + w2*health + w3*fitness + w4*mood + w5*habit - penalties + bonuses</p>
+  <p><strong>v0.3.0 연결:</strong> 시뮬레이터에서 사용자 행동 시 PPO가 <strong>최적 행동을 함께 추천</strong>합니다.</p>
+</div>
+<table>
+<tr><th>행동</th><th>보상</th><th>연쇄 효과</th></tr>
+<tr><td>야식 라면 (23시)</td><td style="color:var(--red)">-5</td><td>수면 -35% → 운동 -20% → 체중 +2일</td></tr>
+<tr><td>에어프라이어 수용</td><td style="color:var(--green)">+2</td><td>칼로리 -40%</td></tr>
+<tr><td>기타 연주 30분</td><td style="color:var(--green)">+2</td><td>스트레스 -15% → 폭식 -40%</td></tr>
+<tr><td>건강검진 이행</td><td style="color:var(--green)">+4</td><td>불안감 감소 → 전체 안정</td></tr>
+</table>
+
+<h2 id="multimodal">7. 멀티모달 AI</h2>
+<div class="grid3">
+  <div class="card"><h4>OpenCLIP</h4><p>ViT-B-32 512차원 임베딩. 얼굴/체형 분석 → LLM 개인화 조언</p></div>
+  <div class="card"><h4>YOLO v8</h4><p>식재료 감지. CPU ~100ms. 80+ 카테고리. <strong>v0.3.0: FoodAgent 자동 연결</strong></p></div>
+  <div class="card"><h4>MediaPipe</h4><p>33 랜드마크 자세 분석. 어깨/척추 정렬. 운동 폼 교정.</p></div>
+</div>
+
+<h2 id="rag">8. RAG 파이프라인 (ChromaDB)</h2>
+<table>
+<tr><th>컬렉션</th><th>데이터</th><th>용도</th></tr>
+<tr><td>recipe_db</td><td>10만건 레시피</td><td>FoodAgent RAG 검색</td></tr>
+<tr><td>exercise_db</td><td>운동 + 부상 데이터</td><td>ExerciseAgent RAG</td></tr>
+<tr><td>health_guidelines</td><td>건강검진 가이드</td><td>HealthAgent RAG</td></tr>
+<tr><td>hobby_catalog</td><td>취미 카탈로그</td><td>HobbyAgent RAG</td></tr>
+</table>
+
+<h2 id="security">9. 보안 아키텍처</h2>
+<table>
+<tr><th>요소</th><th>구현</th></tr>
+<tr><td>JWT 인증</td><td>Kakao OAuth → JWT 발급 → Bearer 토큰 (AuthMiddleware)</td></tr>
+<tr><td>Rate Limiting</td><td>IP별 60회/분 + X-RateLimit 헤더</td></tr>
+<tr><td>보안 헤더</td><td>XSS, Clickjacking, HSTS 방어</td></tr>
+<tr><td>파일 검증</td><td>이미지: jpeg/png/webp/gif + 10MB. 모델: zip/pkl/pt/h5/onnx 화이트리스트</td></tr>
+<tr><td>경로 트래버설</td><td>models/ 디렉터리 밖 접근 차단 + 모델명 정규식 검증</td></tr>
+<tr><td>입력 검증</td><td>user_id: 영문/숫자/_ /- 만 허용 (1~100자)</td></tr>
+<tr><td>환경변수</td><td>.env 분리 + .gitignore. git 히스토리 노출 없음 확인 완료</td></tr>
+</table>
+
+<h2 id="deploy">10. 배포 구조</h2>
+<table>
+<tr><th>서비스</th><th>플랫폼</th><th>비용</th><th>설명</th></tr>
+<tr><td>백엔드</td><td>Railway</td><td>$5/월</td><td>FastAPI + Docker, GitHub 자동배포</td></tr>
+<tr><td>프론트</td><td>Vercel</td><td>무료</td><td>React SPA, 글로벌 CDN</td></tr>
+<tr><td>모바일</td><td>Capacitor</td><td>무료</td><td>Android APK 빌드</td></tr>
+<tr><td>모델</td><td>AWS S3</td><td>종량제</td><td>PPO 모델 가중치, SHA256</td></tr>
+</table>
+
+<h2 id="offline">11. 오프라인 지원</h2>
+<div class="card">
+  <p><strong>offlineEngine.js:</strong> IndexedDB 캐싱 + smartSimulate 함수</p>
+  <p><strong>모델 동기화:</strong> 서버 버전 체크 → 차이 시 다운로드 → IndexedDB 저장</p>
+  <p><strong>오프라인 모드:</strong> 네트워크 없을 때 내장 모델로 추론 (LLM 추천은 캐시 반환)</p>
+</div>
+
+<h2 id="team">12. 팀 분업 (3그룹)</h2>
+<table>
+<tr><th>그룹</th><th>라우터</th><th>담당 모듈</th></tr>
+<tr><td>A (AI/ML) 2명</td><td>ai_router.py</td><td>rl_engine, multimodal, knowledge, risk_engine, scripts</td></tr>
+<tr><td>B (백엔드) 2명</td><td>api_router.py</td><td>agents, voice, services, dashboard, environment</td></tr>
+<tr><td>C (프론트) 2명</td><td>frontend/src/</td><td>pages, components, context, services, android</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 13. FILES ═══════════════════════════════ -->
+<h2 id="files">13. 전체 파일/폴더 설명</h2>
+<p>프로젝트의 모든 파일과 폴더에 대한 설명입니다.</p>
+
+<h3>루트 설정 파일</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>.env</code></td><td>환경변수 (API 키, DB URL 등). git에 포함하지 않음.</td></tr>
+<tr><td><code>.env.example</code></td><td>환경변수 템플릿. 팀원이 복사하여 사용.</td></tr>
+<tr><td><code>.gitignore</code></td><td>git이 추적하지 않을 파일/폴더 목록.</td></tr>
+<tr><td><code>.cursorrules</code></td><td>Cursor AI 전역 제약 (코드 컨벤션).</td></tr>
+<tr><td><code>.dockerignore</code></td><td>Docker 빌드 시 제외할 파일.</td></tr>
+<tr><td><code>Dockerfile</code></td><td>백엔드 Docker 이미지 빌드 설정.</td></tr>
+<tr><td><code>docker-compose.yml</code></td><td>백엔드 + ChromaDB + 프론트를 한 번에 실행.</td></tr>
+<tr><td><code>railway.toml</code></td><td>Railway 배포 설정 (빌드 명령, 포트).</td></tr>
+<tr><td><code>nixpacks.toml</code></td><td>Railway Nixpacks 빌드 설정.</td></tr>
+<tr><td><code>Procfile</code></td><td>프로세스 실행 명령 (uvicorn).</td></tr>
+<tr><td><code>requirements.txt</code></td><td>Python 전체 의존성 (로컬 개발용).</td></tr>
+<tr><td><code>requirements-railway.txt</code></td><td>Railway용 경량 의존성 (ML 패키지 제외).</td></tr>
+<tr><td><code>README.md</code></td><td>프로젝트 소개 문서.</td></tr>
+<tr><td><code>test_db.py</code></td><td>Supabase 연결 테스트 스크립트.</td></tr>
+</table>
+
+<h3>backend/app/ — FastAPI 진입점</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>main.py</code></td><td><strong>180줄.</strong> FastAPI 앱 생성, 4개 미들웨어(보안헤더/CORS/JWT/RateLimit) 등록, 2개 라우터 include. 팀장만 수정.</td></tr>
+<tr><td><code>routers/ai_router.py</code></td><td><strong>그룹 A 전담.</strong> 사진분석(/api/photo), 시뮬레이션(/api/simulation), 모델동기화(/api/models), RL 상태(/api/rl). CLIP, YOLO, PPO, ScheduleSimulator 사용.</td></tr>
+<tr><td><code>routers/api_router.py</code></td><td><strong>그룹 B 전담.</strong> 도메인쿼리(/api/query→Orchestrator), 온보딩(/api/onboarding), 대시보드, 피드백, 카카오 인증, WebSocket.</td></tr>
+</table>
+
+<h3>backend/agents/ — LangChain 도메인 에이전트</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>orchestrator.py</code></td><td>LangGraph StateGraph. 8노드 DAG: classify→route→[food|exercise|health|hobby]→merge→cascade→evaluate. CASCADE_RULES 정의.</td></tr>
+<tr><td><code>food_agent.py</code></td><td>GPT-4o-mini + ChromaDB RAG. RECOMMEND_PROMPT(3개 레시피 JSON), NUTRITION_PROMPT(영양소 추출). 쿼리 확장+리랭킹.</td></tr>
+<tr><td><code>exercise_agent.py</code></td><td>운동 추천. exercise_db + plan_adjuster(날씨) 주입. 미세먼지 높으면 실내 전환.</td></tr>
+<tr><td><code>health_agent.py</code></td><td>GPT-4o-mini (temp=0.3, 보수적). 건강검진 3줄 요약 + 메트릭별 위험도 분류.</td></tr>
+<tr><td><code>hobby_agent.py</code></td><td>스트레스/기분 기반 취미 추천. 크로스 도메인 시너지 계산.</td></tr>
+</table>
+
+<h3>backend/rl_engine/ — 강화학습</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>env/life_env.py</code></td><td>Gymnasium Env. 40차원 상태(BMI, 수면, 스트레스 등), 10개 행동, 84스텝 에피소드.</td></tr>
+<tr><td><code>ppo_agent.py</code></td><td>Stable-Baselines3 PPO. train/predict/save/load. GPU 학습 → S3 업로드.</td></tr>
+<tr><td><code>reward_cross_domain.py</code></td><td>다축 보상: R = w1*taste + w2*health + ... - penalty_night - penalty_risk + bonus.</td></tr>
+<tr><td><code>auto_tuner.py</code></td><td>Optuna 100 trial Bayesian 하이퍼파라미터 탐색 (lr, gamma, batch_size).</td></tr>
+<tr><td><code>retrain_scheduler.py</code></td><td>6시간 주기 또는 보상 하락 감지 시 자동 재학습 트리거.</td></tr>
+<tr><td><code>schedule_simulator.py</code></td><td>24시간 스케줄 N일 시뮬레이션. 15개 활동 유형, 시간대 패널티.</td></tr>
+<tr><td><code>uncertainty_estimator.py</code></td><td>예측 불확실성 추정. 미래로 갈수록 커지는 신뢰구간.</td></tr>
+</table>
+
+<h3>backend/multimodal/ — 멀티모달 AI</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>clip_embedder.py</code></td><td>OpenCLIP ViT-B-32. 이미지/텍스트를 512차원 벡터로 변환. 코사인 유사도 검색.</td></tr>
+<tr><td><code>photo_analyzer.py</code></td><td>CLIP + MediaPipe 통합. 얼굴 분석 + 체형 추정 → LLM 개인화 조언.</td></tr>
+<tr><td><code>food_recognizer.py</code></td><td>YOLOv8. 식재료 객체 감지 + 분류. CPU ~100ms. 80+ 카테고리.</td></tr>
+<tr><td><code>pose_analyzer.py</code></td><td>MediaPipe Pose. 33 랜드마크 자세 분석. 어깨/척추 정렬 점수.</td></tr>
+</table>
+
+<h3>backend/knowledge/ — RAG 지식 베이스</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>chroma_client.py</code></td><td>ChromaDB 공통 클라이언트. persistent 저장. sentence-transformer 임베딩.</td></tr>
+<tr><td><code>recipe_db.py</code></td><td>10만건 레시피 컬렉션. 쿼리 확장 + 컨텍스트 부스트 리랭킹.</td></tr>
+<tr><td><code>exercise_db.py</code></td><td>운동 + 부상 데이터 컬렉션.</td></tr>
+<tr><td><code>health_guidelines.py</code></td><td>건강검진 가이드라인 컬렉션.</td></tr>
+<tr><td><code>hobby_catalog.py</code></td><td>취미 카탈로그 컬렉션.</td></tr>
+</table>
+
+<h3>backend/risk_engine/ — 위험도 분석</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>food_risk_scorer.py</code></td><td>베이지안 음식 위험도 계산. 콜레스테롤, 나트륨 등.</td></tr>
+<tr><td><code>night_meal_penalty.py</code></td><td>야식 패널티 계산. 시간대별 가중치 (23시: -5).</td></tr>
+<tr><td><code>timeline_generator.py</code></td><td>이벤트 타임라인 생성 (식사/운동/수면 시간 배치).</td></tr>
+<tr><td><code>health_models.py</code></td><td>6개 건강 모델 (혈압, BMI, 수면, 스트레스, 활성산소, 혈액).</td></tr>
+</table>
+
+<h3>backend/voice/ — 음성 처리</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>stt_processor.py</code></td><td>Whisper STT 래퍼. 한국어 음성 → 텍스트 변환.</td></tr>
+<tr><td><code>intent_classifier.py</code></td><td>LLM(GPT-4o-mini) + 키워드 폴백. 35+ 키워드로 도메인 분류.</td></tr>
+<tr><td><code>tts_responder.py</code></td><td>gTTS. 텍스트 → 한국어 MP3 음성 생성.</td></tr>
+</table>
+
+<h3>backend/services/ — 비즈니스 서비스</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>user_state_manager.py</code></td><td>40차원 State 벡터 관리. Supabase UPSERT + 인메모리 폴백.</td></tr>
+<tr><td><code>feedback_collector.py</code></td><td>사용자 피드백 → 보상 변환. RL 재학습 트리거.</td></tr>
+<tr><td><code>kakao_auth.py</code></td><td>카카오 OAuth. 로그인 URL 생성 / 콜백 처리 / JWT 발급 / 검증.</td></tr>
+<tr><td><code>model_registry.py</code></td><td>S3 모델 가중치 버전 관리. SHA256 체크섬 검증.</td></tr>
+<tr><td><code>gamification.py</code></td><td>게이미피케이션 (레벨, EXP, 칭호 시스템).</td></tr>
+<tr><td><code>quest_system.py</code></td><td>일일 퀘스트 (3개 건강 미션).</td></tr>
+<tr><td><code>input_validator.py</code></td><td>입력 검증 (파일 타입/크기, 텍스트 길이).</td></tr>
+</table>
+
+<h3>backend/dashboard/ & environment/</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>dashboard/gauge_calculator.py</code></td><td>6개 게이지 점수 계산 (활성산소, 혈액청정도, 탈모위험, 수면, 스트레스, 주간달성률).</td></tr>
+<tr><td><code>environment/weather_monitor.py</code></td><td>AirKorea + OpenWeather API. 미세먼지/날씨 모니터링.</td></tr>
+<tr><td><code>environment/plan_adjuster.py</code></td><td>날씨 → 운동 플랜 자동 조정. 미세먼지 높으면 실내 운동.</td></tr>
+</table>
+
+<h3>frontend/src/pages/ — 11개 페이지</h3>
+<table>
+<tr><th>파일</th><th>경로</th><th>기능</th></tr>
+<tr><td><code>LandingPage.jsx</code></td><td>/</td><td>히어로 섹션, 4도메인 소개, 기술 태그, CTA 버튼</td></tr>
+<tr><td><code>LoginPage.jsx</code></td><td>/login</td><td>카카오 OAuth + 게스트 모드</td></tr>
+<tr><td><code>OnboardingPage.jsx</code></td><td>/onboarding</td><td>3단계 위저드 (기본정보/생활패턴/목표). <strong>v0.3.0: 백엔드 연결</strong></td></tr>
+<tr><td><code>DashboardPage.jsx</code></td><td>/dashboard</td><td>4도메인 카드 + 6개 게이지 + AI 채팅 + 연쇄경고. <strong>v0.3.0: API 데이터 연동</strong></td></tr>
+<tr><td><code>AnalysisPage.jsx</code></td><td>/analysis</td><td>사진 업로드/카메라 → CLIP/YOLO → Top-5. <strong>v0.3.0: 대시보드 적용 버튼</strong></td></tr>
+<tr><td><code>SimulatorPage.jsx</code></td><td>/simulator</td><td>10개 행동 클릭 → 보상/연쇄효과 + 누적 기록. <strong>v0.3.0: PPO 추천 표시</strong></td></tr>
+<tr><td><code>SchedulePage.jsx</code></td><td>/schedule</td><td>24시간 원형 시계 + N일 시뮬레이션 + 신뢰구간 차트</td></tr>
+<tr><td><code>RoadmapPage.jsx</code></td><td>/roadmap</td><td>12주 타임라인 (적응기/발전기/강화기/완성기)</td></tr>
+<tr><td><code>AvatarSimPage.jsx</code></td><td>/avatar</td><td>가상 인물 선택 시뮬레이션 (식사/운동/수면/취미)</td></tr>
+<tr><td><code>ReportPage.jsx</code></td><td>/report</td><td>주간 건강 리포트 + 레이더차트 + 4주 트렌드</td></tr>
+<tr><td><code>ArchitecturePage.jsx</code></td><td>/architecture</td><td>인터랙티브 시스템 아키텍처 맵 (56노드, 팝업)</td></tr>
+</table>
+
+<h3>frontend/src/components/ — UI 컴포넌트</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>dashboard/GaugePanel.jsx</code></td><td>6개 RadialBar 게이지. WebSocket + 전역상태 연동.</td></tr>
+<tr><td><code>dashboard/QuickChat.jsx</code></td><td>AI 채팅. 키워드 도메인 감지 → /api/query → <strong>v0.3.0: 게이지 자동 업데이트</strong>.</td></tr>
+<tr><td><code>cascade/CascadeAlert.jsx</code></td><td>크로스 도메인 연쇄 효과 경고 카드.</td></tr>
+<tr><td><code>layout/Layout.jsx</code></td><td>공통 레이아웃 (사이드바 + 메인 콘텐츠).</td></tr>
+<tr><td><code>layout/Sidebar.jsx</code></td><td>네비게이션 사이드바 (11개 메뉴).</td></tr>
+<tr><td><code>AvatarBody.jsx</code></td><td>SVG 아바타 (BMI/기분/에너지에 따라 변화).</td></tr>
+<tr><td><code>CharacterCard.jsx</code></td><td>시뮬레이터용 캐릭터 정보 카드.</td></tr>
+<tr><td><code>ErrorBarChart.jsx</code></td><td>Recharts 신뢰구간 차트. 토/일 색상, 월별 배경, 스크롤.</td></tr>
+<tr><td><code>ErrorBoundary.jsx</code></td><td>React Error Boundary. 에러 시 안전 폴백 UI.</td></tr>
+<tr><td><code>SimulationAnimation.jsx</code></td><td>시뮬레이션 시각 애니메이션.</td></tr>
+<tr><td><code>VoiceControl.jsx</code></td><td>음성 입력 + TTS 재생 컨트롤.</td></tr>
+</table>
+
+<h3>frontend/src/context/ & services/</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>AppStateContext.jsx</code></td><td>전역 상태 관리. <strong>v0.3.0: gauges, domainSummary, lastCascade 추가.</strong> localStorage 자동 저장.</td></tr>
+<tr><td><code>ThemeContext.jsx</code></td><td>다크/라이트 테마 전환.</td></tr>
+<tr><td><code>services/offlineEngine.js</code></td><td>IndexedDB 모델 캐싱 + smartSimulate(서버 우선, 오프라인 폴백).</td></tr>
+</table>
+
+<h3>기타</h3>
+<table>
+<tr><th>폴더/파일</th><th>설명</th></tr>
+<tr><td><code>.github/CODEOWNERS</code></td><td>파일별 자동 리뷰어 배정 (그룹 A/B/C).</td></tr>
+<tr><td><code>.github/workflows/ci.yml</code></td><td>GitHub Actions CI (pytest 자동 실행).</td></tr>
+<tr><td><code>.vscode/</code></td><td>VSCode 설정 (Python 인터프리터, 디버거, 익스텐션).</td></tr>
+<tr><td><code>data/recipes.csv</code></td><td>레시피 원본 데이터 (시드).</td></tr>
+<tr><td><code>data/exercises.json</code></td><td>운동 데이터 (종류, 강도, 칼로리).</td></tr>
+<tr><td><code>data/health_guidelines.json</code></td><td>건강검진 기준치 가이드라인.</td></tr>
+<tr><td><code>scripts/start.bat</code></td><td>백엔드 + 프론트 동시 실행 배치 파일.</td></tr>
+<tr><td><code>scripts/train_and_upload.py</code></td><td>로컬 GPU PPO 학습 → S3 업로드 스크립트.</td></tr>
+<tr><td><code>tests/</code></td><td>pytest 테스트 (E2E, 에이전트, RL, 음성, API 에러).</td></tr>
+<tr><td><code>docs/</code></td><td>아키텍처 보고서 (DOCX, HTML).</td></tr>
+<tr><td><code>frontend/android/</code></td><td>Capacitor Android 빌드 설정 (Gradle, Manifest).</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 14. GLOSSARY ═══════════════════════════════ -->
+<h2 id="glossary">14. 용어 사전</h2>
+
+<h3>A. 프로그래밍 기초</h3>
+<div class="card">
+  <p class="glossary-term">API (Application Programming Interface)</p>
+  <p class="glossary-desc">프로그램들이 서로 대화하는 방법입니다. 음식점 메뉴판처럼, '이것을 주문하면 이것을 받는다'는 약속입니다. 예: '치킨 먹었어'를 POST /api/query로 보내면, AI가 '칼로리 800kcal, 수면 -35%'를 돌려줍니다.</p>
+
+  <p class="glossary-term">Frontend (프론트엔드)</p>
+  <p class="glossary-desc">사용자가 보는 화면입니다. 음식점의 '홀' — 메뉴판, 테이블, 의자. React로 11개 페이지를 레고처럼 조립합니다.</p>
+
+  <p class="glossary-term">Backend (백엔드)</p>
+  <p class="glossary-desc">사용자가 못 보는 뒷부분입니다. 음식점의 '주방' — 요리, 재료 관리. FastAPI(Python)로 만들었습니다.</p>
+
+  <p class="glossary-term">WebSocket</p>
+  <p class="glossary-desc">전화처럼 양방향 통신입니다. 보통 API는 '물어보면 대답'이지만, WebSocket은 '연결되어 있으면 서버가 먼저 보낼 수 있음'. 게이지가 실시간으로 변하는 것이 이 덕분입니다.</p>
+
+  <p class="glossary-term">Docker</p>
+  <p class="glossary-desc">프로그램을 '상자'에 넣어서 어디서든 같은 환경으로 실행하는 도구. '내 PC에서는 되는데' 문제를 해결합니다.</p>
+</div>
+
+<h3>B. AI/ML 기술</h3>
+<div class="card">
+  <p class="glossary-term">LLM (Large Language Model)</p>
+  <p class="glossary-desc">방대한 양의 글을 읽고 배운 AI입니다. 사람처럼 자연어를 이해하고 생성합니다. GPT-4o-mini는 OpenAI의 LLM으로, 한국어를 잘 이해하고, 비용이 저렴합니다 (요청당 ~$0.002).</p>
+
+  <p class="glossary-term">LangChain</p>
+  <p class="glossary-desc">LLM을 특정 작업에 쓰기 쉽게 해주는 도구. '프롬프트 → LLM → 파서' 체인을 쉽게 만듭니다. 4개 도메인 Agent가 이것으로 만들어졌습니다.</p>
+
+  <p class="glossary-term">LangGraph</p>
+  <p class="glossary-desc">LangChain의 확장. 복잡한 분기/루프를 그래프로 관리합니다. Orchestrator가 이것으로 '치킨 → food → cascade → 게이지 업데이트'를 선언적으로 관리합니다.</p>
+
+  <p class="glossary-term">RAG (Retrieval-Augmented Generation)</p>
+  <p class="glossary-desc">AI가 모르는 것을 검색해서 찾아보고 답하는 방법. 시험에서 '책 보고 답하기'와 비슷합니다. ChromaDB에서 10만건 레시피를 검색 → LLM에 주입 → 정확한 추천.</p>
+
+  <p class="glossary-term">강화학습 (Reinforcement Learning)</p>
+  <p class="glossary-desc">게임처럼 '해보고 → 보상 받고 → 더 잘하는 방법을 배우는' AI입니다. PPO는 가장 안정적인 알고리즘. 규칙 기반은 '야식은 나쁘다'만 알지만, RL은 '이 사람에게는 야식 대신 과일이 스트레스를 더 줄인다'를 학습합니다.</p>
+
+  <p class="glossary-term">OpenCLIP</p>
+  <p class="glossary-desc">이미지와 텍스트를 같은 공간에 배치하는 AI. '이 사진은 샐러드와 비슷하다'를 숫자(512차원 벡터)로 판단합니다.</p>
+
+  <p class="glossary-term">YOLO</p>
+  <p class="glossary-desc">사진에서 물체를 찾는 AI. '이 사진에 토마토, 계란, 식빵이 있다'를 0.1초 만에 판단합니다. 식단 사진으로 자동 칼로리 추정에 사용됩니다.</p>
+
+  <p class="glossary-term">MediaPipe</p>
+  <p class="glossary-desc">사람의 몸 33개 포인트를 추적하는 AI. 운동 자세가 올바른지 판단합니다. 잘못된 자세 → 부상 방지 → AI 교정.</p>
+</div>
+
+<h3>C. 인프라 & 보안</h3>
+<div class="card">
+  <p class="glossary-term">Railway</p>
+  <p class="glossary-desc">백엔드를 클라우드에 배포하는 서비스. GitHub에 코드 올리면 자동으로 서버가 업데이트됩니다. $5/월.</p>
+
+  <p class="glossary-term">Vercel</p>
+  <p class="glossary-desc">프론트엔드를 전 세계 CDN에 배포. 무료. 어디서 접속해도 빠르게 로딩됩니다.</p>
+
+  <p class="glossary-term">Capacitor</p>
+  <p class="glossary-desc">웹 앱을 안드로이드 APK로 변환하는 도구. 하나의 코드로 웹+앱 모두 만듭니다. 카메라, 파일시스템 등 네이티브 기능 사용 가능.</p>
+
+  <p class="glossary-term">JWT (JSON Web Token)</p>
+  <p class="glossary-desc">입장권입니다. 로그인하면 토큰(입장권)을 받고, 매 요청마다 보여주어야 합니다. 건강 데이터는 민감하므로 인증 없는 접근을 차단합니다.</p>
+
+  <p class="glossary-term">Rate Limiting</p>
+  <p class="glossary-desc">1분에 60번만 요청 허용. DDoS 공격(폭탄 세례) 방어. 429 에러와 X-RateLimit 헤더로 알려줍니다.</p>
+
+  <p class="glossary-term">CORS (Cross-Origin Resource Sharing)</p>
+  <p class="glossary-desc">다른 사이트에서 우리 서버에 접근하는 것을 허락/차단하는 방화벽입니다. localhost, Vercel 도메인만 허용합니다.</p>
+
+  <p class="glossary-term">Supabase</p>
+  <p class="glossary-desc">PostgreSQL 데이터베이스를 클라우드에서 무료로 제공하는 서비스. 사용자 상태(40차원 벡터)를 영속 저장합니다. 앱을 종료하고 다시 와도 이전 상태가 유지됩니다.</p>
+
+  <p class="glossary-term">ChromaDB</p>
+  <p class="glossary-desc">벡터 데이터베이스. 문장을 숫자 배열(임베딩)로 변환하여 저장하고, 비슷한 것을 빠르게 찾습니다. 10만건 레시피에서 '저칼로리 닭가슴살 요리'를 0.1초 만에 검색합니다.</p>
+
+  <p class="glossary-term">IndexedDB</p>
+  <p class="glossary-desc">브라우저 안에 있는 데이터베이스. 오프라인에서 모델/상태를 저장합니다. 지하철에서도 앱이 동작합니다.</p>
+</div>
+
+<!-- Footer -->
+<div style="margin-top:60px;padding:30px 0;border-top:2px solid var(--border);text-align:center;">
+  <p style="color:var(--muted);font-size:.85em;">LifeSync AI v0.3.0 — System Architecture Report</p>
+  <p style="color:var(--muted);font-size:.85em;">KDT-FT-team3-Chainers | Generated 2026-03-28</p>
+</div>
+
+</div>
+</body>
+</html>
