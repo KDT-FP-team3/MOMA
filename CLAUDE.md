@@ -16,7 +16,7 @@
 
 ## 아키텍처: Router 분리 패턴
 ```
-main.py (180줄 — 미들웨어 + 라우터 등록만. 팀장만 수정)
+main.py (234줄 — 미들웨어 + 플러그인 등록 + 라우터 등록만. 팀장만 수정)
   ├→ routers/ai_router.py    ← 그룹 A 전담 (사진분석, 시뮬레이션, 모델동기화)
   ├→ routers/api_router.py   ← 그룹 B 전담 (쿼리, 인증, 대시보드, WebSocket)
   └→ frontend/src/           ← 그룹 C 전담 (11개 페이지, 컴포넌트)
@@ -103,17 +103,43 @@ lifesync-ai/
 └── frontend/android/                  # Capacitor Android APK 빌드
 ```
 
-## 팀 분업 (3그룹)
-| 그룹 | 라우터 | 담당 모듈 |
-|------|--------|-----------|
-| A (AI/ML) 2명 | ai_router.py | rl_engine, multimodal, knowledge, risk_engine, scripts |
-| B (백엔드) 2명 | api_router.py | agents, voice, services, dashboard, environment |
-| C (프론트) 2명 | frontend/src/ | pages, components, context, services, android |
+## 아키텍처: 코어 + 플러그인 (이탈 방지 설계)
+```
+코어 (팀장 단독 완성 가능 — 폴백으로 동작)
+  ├→ core/interfaces.py      ← Protocol 정의 (플러그인 계약)
+  ├→ core/fallbacks.py       ← 규칙 기반 기본 구현 (LLM 없이 동작)
+  ├→ core/plugin_registry.py ← 플러그인 등록/조회 싱글톤
+  └→ plugins/                ← 팀원별 독립 폴더
+       ├→ food_rag/          ← 팀원 A (RAG 고도화)
+       ├→ exercise_weather/  ← 팀원 B (운동+날씨)
+       ├→ health_checkup/    ← 팀원 C (건강검진)
+       ├→ hobby_stress/      ← 팀원 D (취미+스트레스)
+       ├→ vision_korean/     ← 팀원 E (한식 YOLO)
+       └→ voice_stt/         ← 팀원 F (음성 STT/TTS)
+```
+
+### 플러그인 규칙
+1. 팀원은 **자기 plugins/ 폴더만** 수정 (다른 폴더 수정 금지)
+2. plugin.py의 register() 함수에서 레지스트리에 등록
+3. 구현 안 하면 → 폴백(BasicAgent)이 자동 동작 → 프로젝트에 영향 없음
+4. 구현 완료하면 → 코어에 자동 연결 → 시너지 효과
+5. GET /api/plugins/status 로 활성/폴백 상태 조회 가능
+
+## 팀 분업 (6명)
+| 팀원 | 플러그인 폴더 | 담당 | 코어 폴백 |
+|------|-------------|------|----------|
+| A | plugins/food_rag/ | RAG 레시피 추천 + LangChain | BasicFoodAgent |
+| B | plugins/exercise_weather/ | 운동+날씨+부상 | BasicExerciseAgent |
+| C | plugins/health_checkup/ | 건강검진 분석 | BasicHealthAgent |
+| D | plugins/hobby_stress/ | 취미+스트레스 시너지 | BasicHobbyAgent |
+| E | plugins/vision_korean/ | YOLO 한식 + CLIP | BasicImageAnalyzer |
+| F | plugins/voice_stt/ | Whisper STT + gTTS | BasicVoiceProcessor |
 
 ### 충돌 방지 규칙
-1. 그룹 A는 ai_router.py만, 그룹 B는 api_router.py만 수정
-2. main.py 수정 필요 시 팀장에게 PR 요청
-3. 각 그룹은 자기 브랜치에서 작업 → PR로 main 병합
+1. 팀원은 **plugins/자기폴더/** 만 수정 → git 충돌 원천 차단
+2. main.py, core/ 수정 필요 시 팀장에게 PR 요청
+3. 각 팀원은 자기 브랜치에서 작업 → PR로 main 병합
+4. CODEOWNERS: 파일별 자동 리뷰어 배정
 
 ## 보안 (v0.3.0)
 - JWT 인증: 프로덕션에서 JWT_SECRET 필수 (미설정 시 서버 시작 거부)

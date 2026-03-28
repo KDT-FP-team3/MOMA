@@ -248,13 +248,35 @@ async def cascade_preview(request: QueryRequest) -> dict[str, Any]:
 
 @router.get("/api/dashboard/{user_id}")
 async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
-    """대시보드 6개 게이지 점수."""
+    """대시보드 6개 게이지 + 4개 도메인 요약.
+
+    프론트엔드 DashboardPage가 gauges와 domain_summary 모두 사용.
+    """
     _validate_user_id(user_id)
     if state_manager is None or gauge_calculator is None:
         raise HTTPException(status_code=503, detail="대시보드 서비스가 비활성 상태입니다.")
     user_state = state_manager.to_dict(user_id)
     gauges = gauge_calculator.calculate_all(user_state)
-    return {"user_id": user_id, "gauges": gauges, "state": user_state}
+
+    # 4개 도메인 요약 카드 데이터 생성
+    calories = user_state.get("daily_calories", 0)
+    exercise_min = user_state.get("exercise_minutes", 0)
+    health_status = "양호" if gauges.get("blood_purity", 0) >= 60 else "주의"
+    hobby_min = user_state.get("hobby_minutes", 0)
+
+    domain_summary = {
+        "food": {"value": f"{int(calories):,} kcal", "sub": "오늘 섭취"},
+        "exercise": {"value": f"{int(exercise_min)}분", "sub": "오늘 활동"},
+        "health": {"value": health_status, "sub": "종합 상태"},
+        "hobby": {"value": f"{int(hobby_min)}분", "sub": "오늘 활동"},
+    }
+
+    return {
+        "user_id": user_id,
+        "gauges": gauges,
+        "domain_summary": domain_summary,
+        "state": user_state,
+    }
 
 
 @router.put("/api/state/{user_id}")

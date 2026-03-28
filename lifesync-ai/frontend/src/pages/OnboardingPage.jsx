@@ -35,7 +35,7 @@ const SLEEP_OPTIONS = [
 
 const STRESS_OPTIONS = [
   { label: "낮음", emoji: "😌", value: "low" },
-  { label: "보통", emoji: "😐", value: "moderate" },
+  { label: "보통", emoji: "😐", value: "medium" },
   { label: "높음", emoji: "😰", value: "high" },
   { label: "매우높음", emoji: "🤯", value: "very_high" },
 ];
@@ -328,7 +328,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={async () => {
                   // ── 연결: 온보딩 데이터 → 백엔드 → LifeEnv 초기화 ──
-                  const profile = { age, height, weight, activity, sleep, stress, goals };
+                  const profile = { age, height, weight, activity, sleep: sleepPattern, stress: stressLevel, goals };
                   updateState("onboardingData", profile);
                   updateState("userProfile", profile);
                   try {

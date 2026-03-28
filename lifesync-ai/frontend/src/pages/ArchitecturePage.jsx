@@ -22,7 +22,7 @@ const NODES = [
   { id: "whisper",        emoji: "\uD83C\uDF99\uFE0F", label: "Whisper STT",             status: "pending", col: 0, row: 1, desc: "음성→텍스트 변환", path: "backend/voice/stt_processor.py", features: ["한국어 지원", "실시간 처리"], role: "음성 인식", pros: "높은 한국어 정확도", cons: "스텁 상태 (미구현)", reason: "요리/운동 중 손을 못 쓸 때 음성 입력 필수" },
   { id: "gtts",           emoji: "\uD83D\uDD0A",  label: "gTTS Response",               status: "pending", col: 0, row: 2, desc: "텍스트→음성 응답", path: "backend/voice/tts_responder.py", features: ["한국어 TTS", "MP3 생성"], role: "음성 출력", pros: "무료, 한국어 지원", cons: "스텁 상태, 기계적 음질", reason: "시각 장애 접근성, 운동 중 화면 못 볼 때" },
 
-  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket 서버 (Router 분리)", path: "backend/app/main.py", features: ["main.py 180줄 (미들웨어만)", "ai_router.py (그룹A)", "api_router.py (그룹B)", "30+ 엔드포인트"], role: "중앙 API 서버", pros: "Router 분리로 팀 간 충돌 제거, 비동기, Swagger", cons: "라우터 간 서비스 중복 초기화", reason: "프론트와 AI/ML을 연결하는 유일한 통로. Router 패턴으로 3그룹 동시 개발 가능" },
+  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket (Router 분리 + 플러그인)", path: "backend/app/main.py", features: ["main.py 234줄 (미들웨어+플러그인)", "ai_router.py (그룹A)", "api_router.py (그룹B)", "core/ (인터페이스+폴백)", "plugins/ (팀원별 독립)"], role: "중앙 API 서버", pros: "Router 분리 + 플러그인 아키텍처로 팀원 이탈에도 무영향", cons: "라우터 간 서비스 중복 초기화", reason: "코어+플러그인 구조로 팀장 단독 완성 가능 + 팀원 기여 시 시너지" },
   { id: "websocket",      emoji: "\uD83D\uDD0C",  label: "WebSocket",                   status: "active",  col: 1, row: 1, desc: "실시간 양방향 통신", path: "backend/app/routers/api_router.py", features: ["게이지 실시간 업데이트", "JWT 토큰 인증", "echo/voice/query/feedback/subscribe"], role: "실시간 통신", pros: "HTTP 폴링 대비 지연 90% 감소", cons: "서버 재시작 시 연결 끊김", reason: "대시보드 게이지가 실시간 변해야 행동 효과 즉시 확인" },
   { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "active",  col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드+ChromaDB+프론트", "한 명령 실행"], role: "환경 일관성", pros: "'내 PC에서는 되는데' 문제 해결", cons: "Docker Desktop 설치 필요", reason: "6명 팀원 동일 개발환경 보장, Railway 배포 필수" },
   { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "active",  col: 1, row: 3, desc: "클라우드 배포 ($5/월)", path: "railway.toml", features: ["GitHub 자동 배포", "볼륨 마운트", "Health check"], role: "백엔드 배포", pros: "$5/월 24시간 운영, 설정 간편", cons: "GPU 미지원, 콜드 스타트", reason: "로컬 설치 없이 서비스를 사용할 수 있는 공유 URL" },
@@ -47,7 +47,11 @@ const NODES = [
   { id: "openclip",       emoji: "\uD83D\uDDBC\uFE0F", label: "OpenCLIP Embedding",     status: "partial", col: 4, row: 5, desc: "512차원 이미지/텍스트 임베딩", path: "backend/multimodal/photo_analyzer.py", features: ["얼굴/체형 분석", "LLM 개인화 조언", "Top-K"], role: "이미지 AI 분석", pros: "이미지+텍스트 크로스 모달 검색", cons: "ViT-B-32 정확도 한계 (GPU시 ViT-L-14)", reason: "사진 한 장으로 건강 상태 추정 + 맞춤 조언" },
   { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 6, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["어깨/척추 정렬", "자세 점수", "운동 폼 교정"], role: "자세 교정 AI", pros: "무료, CPU 실시간, 높은 정확도", cons: "정적 이미지만 (실시간 비디오 미구현)", reason: "잘못된 운동 자세 → 부상 → AI 교정으로 안전" },
 
-  // Layer 5: 배포 + 오프라인
+  // Layer 5: 코어 + 플러그인
+  { id: "core",           emoji: "\uD83E\uDDE9",  label: "Core (Interfaces + Fallbacks)", status: "active",  col: 2, row: 4, desc: "플러그인 계약 + 규칙 기반 폴백", path: "backend/core/", features: ["6개 Protocol 정의", "BasicAgent 폴백", "PluginRegistry 싱글톤"], role: "이탈 방지 골격", pros: "팀원 미구현 시 자동 폴백, 팀장 단독 완성 가능", cons: "폴백은 LLM 없이 규칙 기반", reason: "팀원 이탈해도 프로젝트 무영향 + 구현 시 시너지" },
+  { id: "plugins",        emoji: "\uD83D\uDD0C",  label: "Plugins (6 팀원)",             status: "active",  col: 2, row: 5, desc: "팀원별 독립 플러그인 폴더", path: "backend/plugins/", features: ["food_rag/", "exercise_weather/", "health_checkup/", "hobby_stress/", "vision_korean/", "voice_stt/"], role: "팀원 기여 모듈", pros: "자기 폴더만 수정 → git 충돌 제로", cons: "인터페이스 준수 필요", reason: "/api/plugins/status로 활성/폴백 확인 가능" },
+
+  // Layer 6: 배포 + 오프라인
   { id: "offline",        emoji: "\uD83D\uDCF1",  label: "Offline Engine (JS)",          status: "active",  col: 0, row: 3, desc: "오프라인 추론 + 모델 동기화", path: "frontend/src/services/offlineEngine.js", features: ["IndexedDB 캐싱", "smartSimulate", "5초 지연 동기화"], role: "오프라인 폴백", pros: "네트워크 없이 핵심 기능 사용", cons: "LLM 추천은 오프라인 불가", reason: "지하철/비행기 등 오프라인이 빈번 → 앱 멈추면 안 됨" },
   { id: "capacitor",      emoji: "\uD83D\uDCF2",  label: "Capacitor (Android APK)",     status: "active",  col: 0, row: 4, desc: "Android APK 빌드", path: "frontend/capacitor.config.json", features: ["카메라", "파일시스템", "오프라인 모드"], role: "모바일 앱 변환", pros: "웹+앱 하나의 코드베이스, 네이티브 API", cons: "iOS 별도 추가 필요", reason: "핸드폰 직접 설치 요구사항 충족" },
   { id: "vercel",         emoji: "\u25B2",        label: "Vercel (Frontend Deploy)",    status: "active",  col: 1, row: 4, desc: "프론트엔드 CDN 배포", path: "frontend/vercel.json", features: ["자동 배포", "SPA Rewrite", "글로벌 CDN"], role: "프론트 배포", pros: "완전 무료, 전 세계 빠른 로딩", cons: "서버 사이드 로직 불가", reason: "프론트엔드는 CDN이 훨씬 빠르고 저렴" },
@@ -116,6 +120,10 @@ const CONNECTIONS = [
   { from: "orchestrator", to: "supabase",  label: "연쇄효과 → 상태 영속 저장",  cat: "data" },
   { from: "frontend",  to: "supabase",     label: "온보딩 → 초기 상태 저장",    cat: "data" },
   { from: "ppo",       to: "simulator",    label: "PPO 최적 행동 추천",        cat: "rl" },
+  // 코어 + 플러그인 아키텍처
+  { from: "orchestrator", to: "core",      label: "폴백 Agent 조회",          cat: "agent" },
+  { from: "core",      to: "plugins",      label: "플러그인 자동 등록",        cat: "agent" },
+  { from: "fastapi",   to: "core",         label: "PluginRegistry",          cat: "api" },
 ];
 
 /* ------------------------------------------------------------------ */

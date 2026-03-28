@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
     logger.info("LifeSync AI 서버 종료")
 
 
-app = FastAPI(title="LifeSync AI", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="LifeSync AI", version="0.3.0", lifespan=lifespan)
 
 
 # ============================================================
@@ -100,7 +100,7 @@ app.add_middleware(
 PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
-    "/api/onboarding",
+    "/api/onboarding", "/api/plugins/status",
 }
 
 
@@ -200,6 +200,21 @@ app.add_middleware(RateLimitMiddleware)
 async def health_check() -> dict[str, str]:
     """헬스체크 — Railway/Docker healthcheck용."""
     return {"status": "ok"}
+
+
+@app.get("/api/plugins/status")
+async def plugin_status():
+    """플러그인 상태 조회 — 각 슬롯의 활성/폴백 상태 확인."""
+    from backend.core.plugin_registry import registry
+    return {"plugins": registry.status()}
+
+
+# ============================================================
+# 플러그인 자동 등록 (팀원 플러그인 탐색)
+# ============================================================
+
+from backend.plugins import auto_register_plugins
+auto_register_plugins()
 
 
 # ============================================================
