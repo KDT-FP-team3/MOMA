@@ -4,7 +4,7 @@
   "webDir": "dist",
   "server": {
     "cleartext": true,
-    "allowNavigation": ["moma-production.up.railway.app", "*.railway.app", "*"]
+    "allowNavigation": ["*"]
   },
   "plugins": {
     "CapacitorHttp": {
