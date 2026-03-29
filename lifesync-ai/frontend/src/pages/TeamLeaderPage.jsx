@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Layout from "../components/layout/Layout";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "";
 const TABS = [
   { key: "progress", label: "아키텍처 현황", icon: Network },
   { key: "activity", label: "팀 활동", icon: Users },

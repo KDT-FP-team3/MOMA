@@ -46,9 +46,16 @@ export default function GaugePanel() {
 
     function connect() {
       if (unmounted || retryCount >= MAX_RETRIES) return;
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.host;
-      socket = new WebSocket(`${protocol}//${host}/ws`);
+      // Capacitor 앱에서는 VITE_API_BASE로, 웹에서는 현재 호스트로 연결
+      const apiBase = import.meta.env.VITE_API_BASE || "";
+      let wsUrl;
+      if (apiBase) {
+        wsUrl = apiBase.replace("https://", "wss://").replace("http://", "ws://") + "/ws";
+      } else {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      }
+      socket = new WebSocket(wsUrl);
 
       socket.onopen = () => {
         retryCount = 0; // 연결 성공 시 카운터 리셋
