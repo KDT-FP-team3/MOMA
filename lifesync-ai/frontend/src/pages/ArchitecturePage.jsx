@@ -22,7 +22,7 @@ const NODES = [
   { id: "whisper",        emoji: "\uD83C\uDF99\uFE0F", label: "Whisper STT",             status: "pending", col: 0, row: 1, desc: "음성→텍스트 변환", path: "backend/voice/stt_processor.py", features: ["한국어 지원", "실시간 처리"], role: "음성 인식", pros: "높은 한국어 정확도", cons: "스텁 상태 (미구현)", reason: "요리/운동 중 손을 못 쓸 때 음성 입력 필수" },
   { id: "gtts",           emoji: "\uD83D\uDD0A",  label: "gTTS Response",               status: "pending", col: 0, row: 2, desc: "텍스트→음성 응답", path: "backend/voice/tts_responder.py", features: ["한국어 TTS", "MP3 생성"], role: "음성 출력", pros: "무료, 한국어 지원", cons: "스텁 상태, 기계적 음질", reason: "시각 장애 접근성, 운동 중 화면 못 볼 때" },
 
-  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket (Router 분리 + 플러그인)", path: "backend/app/main.py", features: ["main.py 234줄 (미들웨어+플러그인)", "ai_router.py (그룹A)", "api_router.py (그룹B)", "core/ (인터페이스+폴백)", "plugins/ (팀원별 독립)"], role: "중앙 API 서버", pros: "Router 분리 + 플러그인 아키텍처로 팀원 이탈에도 무영향", cons: "라우터 간 서비스 중복 초기화", reason: "코어+플러그인 구조로 팀장 단독 완성 가능 + 팀원 기여 시 시너지" },
+  { id: "fastapi",        emoji: "\uD83D\uDE80",  label: "FastAPI Backend",             status: "active",  col: 1, row: 0, desc: "REST API + WebSocket (Router 분리 + 플러그인)", path: "backend/app/main.py", features: ["main.py 234줄 (미들웨어+플러그인)", "ai_router.py (그룹A)", "api_router.py (그룹B)", "core/ (인터페이스+폴백)", "plugins/ (팀원별 독립)"], role: "중앙 API 서버", pros: "Router 분리 + 플러그인 아키텍처로 모듈 독립성 보장", cons: "라우터 간 서비스 중복 초기화", reason: "코어+플러그인 구조로 기본 동작 보장 + 플러그인으로 기능 확장" },
   { id: "websocket",      emoji: "\uD83D\uDD0C",  label: "WebSocket",                   status: "active",  col: 1, row: 1, desc: "실시간 양방향 통신", path: "backend/app/routers/api_router.py", features: ["게이지 실시간 업데이트", "JWT 토큰 인증", "echo/voice/query/feedback/subscribe"], role: "실시간 통신", pros: "HTTP 폴링 대비 지연 90% 감소", cons: "서버 재시작 시 연결 끊김", reason: "대시보드 게이지가 실시간 변해야 행동 효과 즉시 확인" },
   { id: "docker",         emoji: "\uD83D\uDC33",  label: "Docker",                      status: "active",  col: 1, row: 2, desc: "컨테이너 오케스트레이션", path: "docker-compose.yml", features: ["백엔드+ChromaDB+프론트", "한 명령 실행"], role: "환경 일관성", pros: "'내 PC에서는 되는데' 문제 해결", cons: "Docker Desktop 설치 필요", reason: "6명 팀원 동일 개발환경 보장, Railway 배포 필수" },
   { id: "railway",        emoji: "\uD83D\uDE82",  label: "Railway Deploy",              status: "active",  col: 1, row: 3, desc: "클라우드 배포 ($5/월)", path: "railway.toml", features: ["GitHub 자동 배포", "볼륨 마운트", "Health check"], role: "백엔드 배포", pros: "$5/월 24시간 운영, 설정 간편", cons: "GPU 미지원, 콜드 스타트", reason: "로컬 설치 없이 서비스를 사용할 수 있는 공유 URL" },
@@ -32,7 +32,7 @@ const NODES = [
   { id: "risk",           emoji: "\u26A0\uFE0F",  label: "Risk Engine",                 status: "active",  col: 2, row: 2, desc: "음식 위험도 + 야식 패널티", path: "backend/risk_engine/", features: ["베이지안 위험도", "야식 -5 패널티", "타임라인"], role: "위험 경고", pros: "시간대 기반 동적 위험도 계산", cons: "규칙 기반으로 새 패턴 적응 못 함", reason: "튀김의 콜레스테롤, 야식의 수면 영향 등 구체적 경고" },
 
   { id: "food",           emoji: "\uD83C\uDF73",  label: "Food Agent (LangChain)",      status: "active",  col: 3, row: 0, desc: "RAG 기반 레시피 추천", path: "backend/agents/food_agent.py", features: ["쿼리 확장+리랭킹", "위험도 평가", "영양 분석"], role: "개인화 식단 추천", pros: "10만건 레시피에서 RAG 검색 + LLM 설명", cons: "LLM API 비용, 응답 2-5초", reason: "BMI/목표에 따라 개인화된 식단 추천" },
-  { id: "exercise",       emoji: "\uD83C\uDFCB\uFE0F", label: "Exercise Agent (LangChain)", status: "active", col: 3, row: 1, desc: "운동 추천 + 부상 위험 평가", path: "backend/agents/exercise_agent.py", features: ["미세먼지 연동", "부상 위험도", "실내 대체 운동"], role: "안전한 운동 추천", pros: "환경+개인 상태 고려한 추천", cons: "날씨 API 미연동", reason: "부상 이력, 미세먼지 등 고려한 안전한 운동" },
+  { id: "exercise",       emoji: "\uD83C\uDFCB\uFE0F", label: "Exercise Agent (LangChain)", status: "active", col: 3, row: 1, desc: "운동 추천 + 부상 위험 평가", path: "backend/agents/exercise_agent.py", features: ["기상청+에어코리아 연동", "부상 위험도", "실내 자동 전환"], role: "안전한 운동 추천", pros: "한국 공공 API로 날씨+미세먼지 실시간 연동", cons: "API 호출 횟수 제한 (일 500회)", reason: "부상 이력, 미세먼지 등 고려한 안전한 운동" },
   { id: "health",         emoji: "\uD83C\uDFE5",  label: "Health Agent (LangChain)",     status: "active",  col: 3, row: 2, desc: "건강검진 분석 + 플랜", path: "backend/agents/health_agent.py", features: ["메트릭 분석", "위험도 분류", "맞춤 플랜"], role: "건강 해석 + 플랜", pros: "검진 숫자를 알기 쉬운 자연어로 해석", cons: "의료 면허 없는 AI 한계", reason: "검진 결과의 의미를 모르는 사용자에게 가이드" },
   { id: "hobby",          emoji: "\uD83C\uDFB8",  label: "Hobby Agent (LangChain)",      status: "active",  col: 3, row: 3, desc: "스트레스 해소 취미 추천", path: "backend/agents/hobby_agent.py", features: ["스트레스 기반", "크로스 도메인 시너지", "감소율 모델링"], role: "정신건강 관리", pros: "기타 30분→스트레스 -15% 등 연쇄 효과", cons: "취미 카탈로그 제한적", reason: "건강 관리 = 식단+운동+정신건강 → 지속 가능" },
   { id: "ppo",            emoji: "\uD83C\uDFAF",  label: "PPO Reinforcement Learning",  status: "active",  col: 3, row: 4, desc: "PPO 강화학습 정책", path: "backend/rl_engine/ppo_agent.py", features: ["40차원 상태", "10개 행동", "84스텝 에피소드"], role: "최적 행동 학습", pros: "피드백으로 지속 개선, 다축 보상 균형", cons: "CPU 학습 느림, 초기 데이터 부족", reason: "규칙 기반은 개인차 미반영 → RL로 개인별 최적 전략" },
@@ -48,8 +48,8 @@ const NODES = [
   { id: "mediapipe",      emoji: "\uD83E\uDD38",  label: "MediaPipe Pose",              status: "partial", col: 4, row: 6, desc: "자세 분석 33 랜드마크", path: "backend/multimodal/pose_analyzer.py", features: ["어깨/척추 정렬", "자세 점수", "운동 폼 교정"], role: "자세 교정 AI", pros: "무료, CPU 실시간, 높은 정확도", cons: "정적 이미지만 (실시간 비디오 미구현)", reason: "잘못된 운동 자세 → 부상 → AI 교정으로 안전" },
 
   // Layer 5: 코어 + 플러그인
-  { id: "core",           emoji: "\uD83E\uDDE9",  label: "Core (Interfaces + Fallbacks)", status: "active",  col: 2, row: 4, desc: "플러그인 계약 + 규칙 기반 폴백", path: "backend/core/", features: ["6개 Protocol 정의", "BasicAgent 폴백", "PluginRegistry 싱글톤"], role: "이탈 방지 골격", pros: "팀원 미구현 시 자동 폴백, 팀장 단독 완성 가능", cons: "폴백은 LLM 없이 규칙 기반", reason: "팀원 이탈해도 프로젝트 무영향 + 구현 시 시너지" },
-  { id: "plugins",        emoji: "\uD83D\uDD0C",  label: "Plugins (6 팀원)",             status: "active",  col: 2, row: 5, desc: "팀원별 독립 플러그인 폴더", path: "backend/plugins/", features: ["food_rag/", "exercise_weather/", "health_checkup/", "hobby_stress/", "vision_korean/", "voice_stt/"], role: "팀원 기여 모듈", pros: "자기 폴더만 수정 → git 충돌 제로", cons: "인터페이스 준수 필요", reason: "/api/plugins/status로 활성/폴백 확인 가능" },
+  { id: "core",           emoji: "\uD83E\uDDE9",  label: "Core (Interfaces + Fallbacks)", status: "active",  col: 2, row: 4, desc: "플러그인 계약 + 규칙 기반 폴백", path: "backend/core/", features: ["6개 Protocol 정의", "BasicAgent 폴백", "PluginRegistry 싱글톤"], role: "플러그인 프레임워크", pros: "미등록 슬롯은 자동 폴백, 기본 동작 항상 보장", cons: "폴백은 LLM 없이 규칙 기반", reason: "플러그인 미구현 시에도 서비스 정상 동작 + 구현 시 기능 확장" },
+  { id: "plugins",        emoji: "\uD83D\uDD0C",  label: "Plugins (6 Modules)",          status: "active",  col: 2, row: 5, desc: "모듈별 독립 플러그인 폴더", path: "backend/plugins/", features: ["food_rag/", "exercise_weather/", "health_checkup/", "hobby_stress/", "vision_korean/", "voice_stt/"], role: "확장 모듈", pros: "자기 폴더만 수정 → git 충돌 제로", cons: "인터페이스 준수 필요", reason: "/api/plugins/status로 활성/폴백 확인 가능" },
 
   // Layer 6: 배포 + 오프라인
   { id: "offline",        emoji: "\uD83D\uDCF1",  label: "Offline Engine (JS)",          status: "active",  col: 0, row: 3, desc: "오프라인 추론 + 모델 동기화", path: "frontend/src/services/offlineEngine.js", features: ["IndexedDB 캐싱", "smartSimulate", "5초 지연 동기화"], role: "오프라인 폴백", pros: "네트워크 없이 핵심 기능 사용", cons: "LLM 추천은 오프라인 불가", reason: "지하철/비행기 등 오프라인이 빈번 → 앱 멈추면 안 됨" },
@@ -135,90 +135,88 @@ const NODE_H = 56;
 const POPUP_W = 260;
 const POPUP_H = 280;
 
-// Tree layout: hand-tuned positions for maximum clarity
-// Structure: Frontend (root) → Backend → branches fan out
+// Tree layout: 5열 배치
+// 열 간격 = NODE_W(210) + 여백(60) = 270px
+// 행 간격 = NODE_H(56) + 여백(24) = 80px
+// 상단 여백 40px 추가 (레이어 헤더 공간)
+const COL = 270;
+const TOP_PAD = 40;
+const ROW = 80;
 const TREE_POS = {
-  // Layer 0: Entry point (left)
-  frontend:     { x: 40,   y: 280 },
-  whisper:      { x: 40,   y: 500 },
-  gtts:         { x: 40,   y: 620 },
+  // 열 0: UI
+  frontend:     { x: COL * 0, y: ROW * 0 },
+  whisper:      { x: COL * 0, y: ROW * 1 },
+  gtts:         { x: COL * 0, y: ROW * 2 },
+  offline:      { x: COL * 0, y: ROW * 3 },
+  capacitor:    { x: COL * 0, y: ROW * 4 },
 
-  // Layer 1: Server core (center-left)
-  fastapi:      { x: 340,  y: 280 },
-  websocket:    { x: 340,  y: 140 },
-  docker:       { x: 340,  y: 500 },
-  railway:      { x: 340,  y: 620 },
+  // 열 1: 서버
+  websocket:    { x: COL * 1, y: ROW * 0 },
+  fastapi:      { x: COL * 1, y: ROW * 1 },
+  docker:       { x: COL * 1, y: ROW * 2 },
+  railway:      { x: COL * 1, y: ROW * 3 },
+  vercel:       { x: COL * 1, y: ROW * 4 },
+  jwt:          { x: COL * 1, y: ROW * 5 },
 
-  // Layer 2: Processing (center) — fanned out vertically
-  orchestrator: { x: 680,  y: 100 },
-  simulator:    { x: 680,  y: 300 },
-  risk:         { x: 680,  y: 500 },
+  // 열 2: 처리
+  plugins:      { x: COL * 2, y: ROW * 0 },
+  orchestrator: { x: COL * 2, y: ROW * 1 },
+  core:         { x: COL * 2, y: ROW * 2 },
+  simulator:    { x: COL * 2, y: ROW * 3 },
+  risk:         { x: COL * 2, y: ROW * 4 },
+  gpu_train:    { x: COL * 2, y: ROW * 5 },
 
-  // Layer 3: Domain agents — wide fan
-  food:         { x: 1040, y: 40 },
-  exercise:     { x: 1040, y: 200 },
-  health:       { x: 1040, y: 360 },
-  hobby:        { x: 1040, y: 520 },
-  ppo:          { x: 1040, y: 680 },
+  // 열 3: 에이전트
+  food:         { x: COL * 3, y: ROW * 0 },
+  exercise:     { x: COL * 3, y: ROW * 1 },
+  health:       { x: COL * 3, y: ROW * 2 },
+  hobby:        { x: COL * 3, y: ROW * 3 },
+  ppo:          { x: COL * 3, y: ROW * 4 },
+  retrain:      { x: COL * 3, y: ROW * 5 },
+  optuna:       { x: COL * 3, y: ROW * 6 },
 
-  // Layer 4: AI/Data backends — spread right
-  gpt4o:        { x: 1400, y: 40 },
-  chromadb:     { x: 1400, y: 200 },
-  supabase:     { x: 1400, y: 360 },
-  s3:           { x: 1400, y: 520 },
-  yolo:         { x: 1400, y: 680 },
-  openclip:     { x: 1400, y: 840 },
-  mediapipe:    { x: 1400, y: 1000 },
-
-  // RL 확장
-  retrain:      { x: 1040, y: 840 },
-  optuna:       { x: 1040, y: 960 },
-
-  // 배포 + 오프라인
-  offline:      { x: 40,   y: 740 },
-  capacitor:    { x: 40,   y: 880 },
-  vercel:       { x: 340,  y: 740 },
-  jwt:          { x: 340,  y: 880 },
-  gpu_train:    { x: 680,  y: 680 },
+  // 열 4: AI/Data
+  gpt4o:        { x: COL * 4, y: ROW * 0 },
+  chromadb:     { x: COL * 4, y: ROW * 1 },
+  supabase:     { x: COL * 4, y: ROW * 2 },
+  s3:           { x: COL * 4, y: ROW * 3 },
+  yolo:         { x: COL * 4, y: ROW * 4 },
+  openclip:     { x: COL * 4, y: ROW * 5 },
+  mediapipe:    { x: COL * 4, y: ROW * 6 },
 };
 
 const EXPANDED_POPUP_OFFSET = POPUP_H + 16;
 
-function nodePos(node, expandedMode = false, pinnedSet = new Set()) {
+/**
+ * 노드 위치 계산.
+ * showAll(전체보기) 시 행 간격을 POPUP_H만큼 넓혀서 팝업 공간 확보.
+ */
+function nodePos(node, isExpanded = false) {
   const base = TREE_POS[node.id] || { x: 100, y: 100 };
-  let extraY = 0;
-  if (expandedMode) {
-    // In expanded mode, shift everything down to make room for popups
-    // Count how many nodes above this one (by y) in the layout
-    const aboveCount = Object.entries(TREE_POS).filter(([id, pos]) => pos.y < base.y).length;
-    extraY = aboveCount * (EXPANDED_POPUP_OFFSET * 0.35);
-  } else if (pinnedSet.size > 0) {
-    const sorted = Object.entries(TREE_POS).sort((a, b) => a[1].y - b[1].y);
-    for (const [id, pos] of sorted) {
-      if (pos.y < base.y && pinnedSet.has(id)) {
-        extraY += POPUP_H * 0.4;
-      }
-    }
-  }
-  return { x: base.x, y: base.y + extraY };
+  const baseY = base.y + TOP_PAD;
+  if (!isExpanded) return { x: base.x, y: baseY };
+  // 전체보기: 행 번호 = base.y / ROW → 팝업 높이만큼 추가 간격
+  const rowIndex = Math.round(base.y / ROW);
+  const expandedY = rowIndex * (ROW + POPUP_H + 20) + TOP_PAD;
+  return { x: base.x, y: expandedY };
 }
 
 /* ------------------------------------------------------------------ */
 /*  SVG helpers                                                        */
 /* ------------------------------------------------------------------ */
 
-function anchorRight(node, expanded, pinned) {
-  const p = nodePos(node, expanded, pinned);
+function anchorRight(node, exp) {
+  const p = nodePos(node, exp);
   return { x: p.x + NODE_W, y: p.y + NODE_H / 2 };
 }
-function anchorLeft(node, expanded, pinned) {
-  const p = nodePos(node, expanded, pinned);
+function anchorLeft(node, exp) {
+  const p = nodePos(node, exp);
   return { x: p.x, y: p.y + NODE_H / 2 };
 }
 
-function curvePath(from, to, expanded, pinned) {
-  const a = anchorRight(from, expanded, pinned);
-  const b = anchorLeft(to, expanded, pinned);
+function curvePath(from, to, exp) {
+  const a = anchorRight(from, exp);
+  const b = anchorLeft(to, exp);
   if (b.x <= a.x) {
     // Backward connection — loop around
     const loopOut = 60;
@@ -234,8 +232,8 @@ function curvePath(from, to, expanded, pinned) {
 /*  COMPONENTS                                                         */
 /* ------------------------------------------------------------------ */
 
-function NodeRect({ node, isHighlighted, onClick, onMouseEnter, onMouseLeave, expanded, pinned }) {
-  const { x, y } = nodePos(node, expanded, pinned);
+function NodeRect({ node, isHighlighted, onClick, onMouseEnter, onMouseLeave, expanded }) {
+  const { x, y } = nodePos(node, expanded);
   const s = STATUS_META[node.status];
 
   return (
@@ -263,9 +261,10 @@ function NodeRect({ node, isHighlighted, onClick, onMouseEnter, onMouseLeave, ex
   );
 }
 
-function InlinePopup({ node, expanded, pinned }) {
-  const { x, y } = nodePos(node, expanded, pinned);
+function InlinePopup({ node, expanded }) {
+  const { x, y } = nodePos(node, expanded);
   const s = STATUS_META[node.status];
+  // 팝업을 노드 아래에 표시
   const popupX = x;
   const popupY = y + NODE_H + 6;
 
@@ -321,33 +320,45 @@ function InlinePopup({ node, expanded, pinned }) {
   );
 }
 
-function ConnectionLine({ conn, connIndex, nodes, hoveredConn, onEnter, onLeave, expanded, pinned, showAllLabels }) {
+function ConnectionLine({ conn, connIndex, nodes, hoveredConn, onEnter, onLeave, showAllLabels, activeNodeId, expanded }) {
   const fromNode = nodes.find((n) => n.id === conn.from);
   const toNode = nodes.find((n) => n.id === conn.to);
   if (!fromNode || !toNode) return null;
 
   const cat = CONN_CATEGORIES[conn.cat] || CONN_CATEGORIES.api;
-  const d = curvePath(fromNode, toNode, expanded, pinned);
+  const d = curvePath(fromNode, toNode, expanded);
   const key = `${conn.from}-${conn.to}`;
   const isHovered = hoveredConn === key;
-  const showLabel = showAllLabels || isHovered;
 
-  // Label position: offset along the curve to avoid overlap
-  const a = anchorRight(fromNode, expanded, pinned);
-  const b = anchorLeft(toNode, expanded, pinned);
-  // Use t parameter (0.3-0.7) spread across connections to same target
-  const t = 0.35 + (connIndex % 5) * 0.07;
-  const labelX = a.x + (b.x - a.x) * t;
-  const labelY = a.y + (b.y - a.y) * t - 14; // offset above the line
+  // 연결선 표시 조건:
+  // - 전체보기: 연결선만 표시 (라벨은 호버 시)
+  // - 개별 모드: 호버/고정된 노드의 연결선만 표시
+  const isNodeActive = activeNodeId === conn.from || activeNodeId === conn.to;
+  const isVisible = showAllLabels || isHovered || isNodeActive;
+  const showLabel = isVisible; // 연결선이 보이면 라벨도 표시
+
+  // Label position: 연결선 중간에 배치, connIndex로 수직 분산하여 겹침 방지
+  const a = anchorRight(fromNode, expanded);
+  const b = anchorLeft(toNode, expanded);
+  const t = 0.5; // 곡선 중앙
+  const midX = a.x + (b.x - a.x) * t;
+  const midY = a.y + (b.y - a.y) * t;
+  // 수직 오프셋: connIndex를 사용하여 라벨을 위아래로 분산 (±20px 간격)
+  const vertSpread = ((connIndex % 7) - 3) * 18;
+  const labelX = midX;
+  const labelY = midY + vertSpread;
 
   const labelW = conn.label.length * 8.5 + 16;
 
   return (
     <g onMouseEnter={() => onEnter(key)} onMouseLeave={onLeave}>
       <path d={d} fill="none" stroke="transparent" strokeWidth={14} className="cursor-pointer" />
-      <path d={d} fill="none" stroke={showLabel ? cat.color : "#374151"} strokeWidth={showLabel ? 2 : 1.2}
-        markerEnd={`url(#arrow-${conn.cat})`} className="transition-all duration-200"
-        opacity={showLabel ? 1 : 0.5}
+      <path d={d} fill="none"
+        stroke={isVisible ? cat.color : "transparent"}
+        strokeWidth={1}
+        markerEnd={isVisible ? `url(#arrow-${conn.cat})` : ""}
+        className="transition-all duration-300"
+        opacity={isVisible ? (isHovered ? 1 : (showAllLabels ? 0.5 : 0.6)) : 0}
       />
       {showLabel && (
         <g>
@@ -357,10 +368,10 @@ function ConnectionLine({ conn, connIndex, nodes, hoveredConn, onEnter, onLeave,
             width={labelW}
             height={20}
             rx={4}
-            fill={cat.bg}
+            fill="#111827"
             stroke={cat.border}
-            strokeWidth={0.7}
-            opacity={0.95}
+            strokeWidth={0.5}
+            opacity={0.92}
           />
           <text
             x={labelX}
@@ -424,12 +435,9 @@ export default function ArchitecturePage() {
   // Calculate SVG dimensions dynamically
   let maxX = 0, maxY = 0;
   NODES.forEach((n) => {
-    const p = nodePos(n, expanded, pinnedSet);
-    const rightX = p.x + NODE_W + 40;
-    let bottomY = p.y + NODE_H;
-    if (expanded || pinnedSet.has(n.id)) {
-      bottomY += POPUP_H + 16;
-    }
+    const p = nodePos(n, expanded);
+    const rightX = p.x + NODE_W + (expanded ? POPUP_W + 40 : 40);
+    const bottomY = p.y + NODE_H + (expanded ? POPUP_H + 30 : 20);
     if (rightX > maxX) maxX = rightX;
     if (bottomY > maxY) maxY = bottomY;
   });
@@ -536,14 +544,14 @@ export default function ArchitecturePage() {
 
             {/* layer labels */}
             {[
-              { x: 145, label: "User Interface" },
-              { x: 445, label: "Server / Infra" },
-              { x: 785, label: "Orchestration" },
-              { x: 1145, label: "Domain Agents" },
-              { x: 1505, label: "AI / Data" },
+              { x: COL * 0 + NODE_W / 2, label: "User Interface" },
+              { x: COL * 1 + NODE_W / 2, label: "Server / Infra" },
+              { x: COL * 2 + NODE_W / 2, label: "Processing" },
+              { x: COL * 3 + NODE_W / 2, label: "Domain Agents" },
+              { x: COL * 4 + NODE_W / 2, label: "AI / Data" },
             ].map(({ x, label }) => (
-              <text key={label} x={x} y={20}
-                textAnchor="middle" fill="#4b5563" fontSize={12} fontWeight={600}
+              <text key={label} x={x} y={TOP_PAD - 10}
+                textAnchor="middle" fill="#6b7280" fontSize={13} fontWeight={600}
               >
                 {label}
               </text>
@@ -559,9 +567,9 @@ export default function ArchitecturePage() {
                 hoveredConn={hoveredConn}
                 onEnter={setHoveredConn}
                 onLeave={() => { setHoveredConn(null); setConnTooltip(null); }}
-                expanded={expanded}
-                pinned={pinnedSet}
                 showAllLabels={showAll}
+                activeNodeId={hoveredNodeId}
+                expanded={expanded}
               />
             ))}
 
@@ -575,18 +583,24 @@ export default function ArchitecturePage() {
                 onMouseEnter={setHoveredNodeId}
                 onMouseLeave={() => setHoveredNodeId(null)}
                 expanded={expanded}
-                pinned={pinnedSet}
               />
             ))}
 
-            {/* Pinned popups (inline in SVG, below each node) */}
-            {NODES.filter((n) => pinnedSet.has(n.id)).map((node) => (
-              <InlinePopup key={`popup-${node.id}`} node={node} expanded={expanded} pinned={pinnedSet} />
+            {/* 전체보기: 모든 팝업 표시 (행 간격 자동 확장됨) */}
+            {showAll && NODES.map((node) => (
+              <InlinePopup key={`popup-${node.id}`} node={node} expanded={true} />
             ))}
 
-            {/* Hover popup (only for non-pinned, as SVG foreignObject) */}
-            {hoverPopupNode && (
-              <InlinePopup node={hoverPopupNode} expanded={expanded} pinned={pinnedSet} />
+            {/* 개별 모드: 클릭 고정 + 호버 팝업 */}
+            {!showAll && (
+              <>
+                {NODES.filter((n) => pinnedSet.has(n.id)).map((node) => (
+                  <InlinePopup key={`popup-${node.id}`} node={node} expanded={false} />
+                ))}
+                {hoverPopupNode && (
+                  <InlinePopup node={hoverPopupNode} expanded={false} />
+                )}
+              </>
             )}
           </svg>
 

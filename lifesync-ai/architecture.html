@@ -918,7 +918,7 @@
             <span class="dirname">backend/</span> <span class="desc">FastAPI 서버 전체</span>
             <ul>
               <li>
-                <span class="dirname">app/</span> <span class="team-badge tb-a">팀장</span>
+                <span class="dirname">app/</span> <span class="team-badge tb-a">Core</span>
                 <ul><li><span class="fname">main.py</span> <span class="desc">FastAPI + WebSocket 서버 진입점</span></li></ul>
               </li>
               <li>
@@ -986,11 +986,11 @@
                 </ul>
               </li>
               <li>
-                <span class="dirname">dashboard/</span> <span class="team-badge tb-a">팀장</span> <span class="desc">계기판 데이터 엔진</span>
+                <span class="dirname">dashboard/</span> <span class="team-badge tb-a">Core</span> <span class="desc">계기판 데이터 엔진</span>
                 <ul><li><span class="fname">gauge_calculator.py</span> <span class="desc">6개 계기판 지수 계산기</span></li></ul>
               </li>
               <li>
-                <span class="dirname">services/</span> <span class="team-badge tb-a">팀장</span> <span class="desc">공통 서비스 레이어</span>
+                <span class="dirname">services/</span> <span class="team-badge tb-a">Core</span> <span class="desc">공통 서비스 레이어</span>
                 <ul>
                   <li><span class="fname">user_state_manager.py</span> <span class="desc">40+ 차원 State 벡터 관리</span></li>
                   <li><span class="fname">feedback_collector.py</span> <span class="desc">피드백 → Reward 변환</span></li>
@@ -1041,7 +1041,7 @@
   <table class="team-table">
     <tr><th>역할</th><th>이름</th><th>담당 폴더</th><th>핵심 역할</th></tr>
     <tr>
-      <td><span class="team-badge tb-a">팀장</span></td>
+      <td><span class="team-badge tb-a">Core</span></td>
       <td>YS</td>
       <td>app/, services/, dashboard/</td>
       <td>
@@ -1179,7 +1179,7 @@
         <th style="color:var(--red);">4주차</th>
       </tr>
       <tr>
-        <td><span class="team-badge tb-a">팀장 YS</span><br/>서버&middot;인프라 총괄</td>
+        <td><span class="team-badge tb-a">Admin</span><br/>서버&middot;인프라 총괄</td>
         <td>main.py 서버 골격<br/>Docker 환경 구성<br/>Supabase DB 설계<br/>.env&middot;API 키 관리</td>
         <td>services/ 구현<br/>dashboard/ 구현<br/>Railway 배포 세팅<br/>WebSocket 안정화</td>
         <td>통합 배포 관리<br/>서버 장애 대응<br/>DB 성능 모니터링<br/>API 통신 최적화</td>
@@ -1247,7 +1247,7 @@
       <span style="font-size:12px; color:var(--text-dim); min-width:60px;">PR + Review</span>
     </div>
     <div class="branch-row">
-      <div class="branch-name bn-feat-a">feature/팀장-server-infra</div>
+      <div class="branch-name bn-feat-a">feature/admin-server-infra</div>
       <div class="branch-line bl-feat-a" style="max-width:40%;"></div>
     </div>
     <div class="branch-row">
@@ -1278,7 +1278,7 @@
       <div class="legend-item"><div class="legend-dot" style="background:var(--orange);"></div> docs/* (문서·테스트)</div>
     </div>
     <div class="branch-flow">
-      feature/* &#x2192; dev (PR + 1인 리뷰) &#x2192; main (팀장 단독 merge, 주 1회 릴리즈)
+      feature/* &#x2192; dev (PR + 1인 리뷰) &#x2192; main (관리자 merge, 주 1회 릴리즈)
     </div>
   </div>
 </section>

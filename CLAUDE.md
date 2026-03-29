@@ -16,7 +16,7 @@
 
 ## 아키텍처: Router 분리 패턴
 ```
-main.py (234줄 — 미들웨어 + 플러그인 등록 + 라우터 등록만. 팀장만 수정)
+main.py (234줄 — 미들웨어 + 플러그인 등록 + 라우터 등록만. 관리자만 수정)
   ├→ routers/ai_router.py    ← 그룹 A 전담 (사진분석, 시뮬레이션, 모델동기화)
   ├→ routers/api_router.py   ← 그룹 B 전담 (쿼리, 인증, 대시보드, WebSocket)
   └→ frontend/src/           ← 그룹 C 전담 (11개 페이지, 컴포넌트)
@@ -88,7 +88,7 @@ lifesync-ai/
 │   │   └── input_validator.py         # 입력 검증 (파일/텍스트)
 │   ├── dashboard/gauge_calculator.py  # 6개 게이지 점수 계산
 │   └── environment/
-│       ├── weather_monitor.py         # AirKorea + OpenWeather API
+│       ├── weather_monitor.py         # 기상청 단기예보 + 에어코리아 대기오염 API
 │       └── plan_adjuster.py           # 날씨 → 운동 플랜 자동 조정
 ├── frontend/src/
 │   ├── pages/ (11개)                  # Landing, Login, Onboarding, Dashboard, Analysis,
@@ -103,9 +103,9 @@ lifesync-ai/
 └── frontend/android/                  # Capacitor Android APK 빌드
 ```
 
-## 아키텍처: 코어 + 플러그인 (이탈 방지 설계)
+## 아키텍처: 코어 + 플러그인
 ```
-코어 (팀장 단독 완성 가능 — 폴백으로 동작)
+코어 (폴백으로 기본 동작 보장)
   ├→ core/interfaces.py      ← Protocol 정의 (플러그인 계약)
   ├→ core/fallbacks.py       ← 규칙 기반 기본 구현 (LLM 없이 동작)
   ├→ core/plugin_registry.py ← 플러그인 등록/조회 싱글톤
@@ -137,7 +137,7 @@ lifesync-ai/
 
 ### 충돌 방지 규칙
 1. 팀원은 **plugins/자기폴더/** 만 수정 → git 충돌 원천 차단
-2. main.py, core/ 수정 필요 시 팀장에게 PR 요청
+2. main.py, core/ 수정 필요 시 관리자에게 PR 요청
 3. 각 팀원은 자기 브랜치에서 작업 → PR로 main 병합
 4. CODEOWNERS: 파일별 자동 리뷰어 배정
 
@@ -174,9 +174,53 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:8000
 - 커밋: feat: / fix: / docs: / test: / refactor:
 - 환경변수: 절대 하드코딩 금지
 
-## 금지 사항
-1. .env 파일 내용을 코드에 하드코딩 금지
-2. requirements.txt, docker-compose.yml 무단 수정 금지
-3. orchestrator.py의 run_chain() 시그니처 변경 금지 (팀장 승인 필수)
-4. main 브랜치 직접 push 금지
-5. 새 라이브러리 추가 시 반드시 버전 고정
+## 전역 제한사항 (모든 팀원 필수)
+
+### 절대 금지
+1. `.env` 파일 내용을 코드에 하드코딩 금지
+2. `main.py`, `core/` 디렉토리 직접 수정 금지 (관리자 PR 필수)
+3. `orchestrator.py`의 `run_chain()` 시그니처 변경 금지
+4. `main` 브랜치 직접 push 금지 (PR로만 병합)
+5. 다른 팀원의 `plugins/` 폴더 수정 금지
+6. `requirements.txt`, `docker-compose.yml` 무단 수정 금지
+
+### 필수 준수
+1. 자기 `plugins/자기폴더/` 안에서만 코드 작성
+2. `core/interfaces.py`의 Protocol 메서드 시그니처를 정확히 구현
+3. `plugin.py`의 `register(registry)` 함수로만 코어에 연결
+4. 새 라이브러리 추가 시 반드시 **버전 고정** + 관리자 승인
+5. 모든 함수에 **타입 힌트 + docstring** 필수
+6. 테스트 코드를 `plugins/자기폴더/tests/`에 작성
+
+### 인터페이스 계약 (변경 불가)
+```python
+# DomainAgent — food/exercise/health/hobby 에이전트
+def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+    # 반환 필수 키: recommendations(list), explanation(str)
+
+# KnowledgeBase — RAG 지식베이스
+def search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+
+# RLAgent — 강화학습 에이전트
+def predict(self, state: Any) -> tuple[int, float]:  # (action, confidence)
+def train(self, total_timesteps: int = 10000) -> dict[str, Any]:
+
+# ImageAnalyzer — 이미지 분석
+def analyze(self, image_bytes: bytes) -> dict[str, Any]:
+
+# VoiceProcessor — 음성 처리
+def speech_to_text(self, audio_bytes: bytes) -> str:
+def text_to_speech(self, text: str) -> bytes:
+```
+
+## 팀원별 CLAUDE.md 위치
+각 플러그인 폴더에 독립 CLAUDE.md가 있습니다:
+```
+plugins/food_rag/CLAUDE.md        ← 팀원 A 전용 컨텍스트
+plugins/exercise_weather/CLAUDE.md ← 팀원 B 전용 컨텍스트
+plugins/health_checkup/CLAUDE.md   ← 팀원 C 전용 컨텍스트
+plugins/hobby_stress/CLAUDE.md     ← 팀원 D 전용 컨텍스트
+plugins/vision_korean/CLAUDE.md    ← 팀원 E 전용 컨텍스트
+plugins/voice_stt/CLAUDE.md        ← 팀원 F 전용 컨텍스트
+```
+Claude Code / Cursor가 해당 폴더에서 작업 시 자동으로 읽습니다.

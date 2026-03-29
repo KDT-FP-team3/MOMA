@@ -4,7 +4,7 @@
 실제 엔드포인트 로직은 routers/ 패키지에 분리되어 있다.
 
 구조:
-  main.py                (이 파일 — 팀장/공통)
+  main.py                (이 파일 — 공통)
   routers/ai_router.py   (그룹 A — AI/ML 엔드포인트)
   routers/api_router.py  (그룹 B — 백엔드 API 엔드포인트)
 
@@ -152,21 +152,30 @@ app.add_middleware(AuthMiddleware)
 # ============================================================
 
 import time
+from collections import defaultdict
 
-_rate_limit_store: dict[str, list[float]] = {}
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+_rate_limit_last_cleanup = 0.0  # 마지막 정리 시각
 RATE_LIMIT_MAX = 60
 RATE_LIMIT_WINDOW = 60  # 초
+_CLEANUP_INTERVAL = 300  # 5분마다 오래된 IP 정리
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """IP 기반 Rate Limiting."""
+    """IP 기반 Rate Limiting + 주기적 메모리 정리."""
 
     async def dispatch(self, request: Request, call_next):
+        global _rate_limit_last_cleanup
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
 
-        if client_ip not in _rate_limit_store:
-            _rate_limit_store[client_ip] = []
+        # 5분마다 전체 정리 (오래된 IP 제거 → 메모리 누수 방지)
+        if now - _rate_limit_last_cleanup > _CLEANUP_INTERVAL:
+            stale = [ip for ip, ts in _rate_limit_store.items()
+                     if not ts or now - ts[-1] > RATE_LIMIT_WINDOW]
+            for ip in stale:
+                del _rate_limit_store[ip]
+            _rate_limit_last_cleanup = now
 
         # 윈도우 밖 기록 제거
         _rate_limit_store[client_ip] = [
@@ -207,6 +216,13 @@ async def plugin_status():
     """플러그인 상태 조회 — 각 슬롯의 활성/폴백 상태 확인."""
     from backend.core.plugin_registry import registry
     return {"plugins": registry.status()}
+
+
+@app.get("/api/device/info")
+async def device_info():
+    """GPU/CPU 디바이스 정보 — 팀원이 자기 PC의 GPU 상태를 확인."""
+    from backend.core.device import get_device_info
+    return get_device_info()
 
 
 # ============================================================

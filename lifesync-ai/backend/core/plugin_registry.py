@@ -13,9 +13,9 @@
     agent = registry.get("food_agent")
     result = agent.recommend(user_state)
 
-팀원 이탈 시:
-    - 플러그인이 등록되지 않으면 fallbacks.py의 기본 구현이 동작
-    - 프로젝트 전체에 영향 없음
+미등록 슬롯:
+    - fallbacks.py의 기본 구현이 자동으로 동작
+    - 서비스 전체에 영향 없음
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ class PluginRegistry:
         4. 플러그인 에러 시 폴백으로 자동 전환
     """
 
-    # 슬롯별 폴백 매핑 (팀원이 없어도 동작하는 기본값)
+    # 슬롯별 폴백 매핑 (플러그인 미등록 시 자동 적용)
     _FALLBACKS: dict[str, type] = {
         "food_agent": BasicFoodAgent,
         "exercise_agent": BasicExerciseAgent,

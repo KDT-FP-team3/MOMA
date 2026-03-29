@@ -39,11 +39,13 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 .file-tree .folder{color:var(--orange);font-weight:600;}
 .file-tree .file{color:var(--muted);}
 .file-tree .desc{color:#64748b;font-style:italic;}
-.glossary-term{color:var(--accent);font-weight:700;}
-.glossary-desc{margin-left:20px;margin-bottom:8px;color:var(--text);}
+.glossary-term{color:var(--accent);font-weight:700;font-size:1.05em;margin-top:12px;}
+.glossary-desc{margin-left:20px;margin-bottom:12px;color:var(--text);line-height:1.8;}
+.glossary-desc .gl{display:block;margin-bottom:2px;}
+.glossary-desc .gl b{color:var(--orange);}
 .stat-number{font-size:2em;font-weight:800;color:var(--accent);}
 .stat-label{font-size:.85em;color:var(--text);}
-.connection-line{stroke-width:2;fill:none;marker-end:url(#arrowhead);}
+.connection-line{stroke-width:1;fill:none;marker-end:url(#arrowhead);}
 .node-box{rx:8;ry:8;stroke-width:2;}
 .print-btn{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;z-index:100;}
 @media print{.print-btn{display:none;} body{background:#fff;color:#333;} .card{border:1px solid #ccc;} h2{color:#0891b2;}}
@@ -84,7 +86,10 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <a href="#offline">11. 오프라인 지원</a>
   <a href="#team">12. 팀 분업</a>
   <a href="#files">13. 전체 파일/폴더 설명</a>
-  <a href="#glossary">14. 용어 사전</a>
+  <a href="#plugin-tech">14. 플러그인별 기술 스택</a>
+  <a href="#deps">15. 기술 스택 의존 관계도</a>
+  <a href="#skills">16. 담당자별 필요 역량</a>
+  <a href="#glossary">17. 용어 사전</a>
 </div>
 
 <!-- ═══════════════════════════════ 1. OVERVIEW ═══════════════════════════════ -->
@@ -291,97 +296,97 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <!-- ═══ CONNECTIONS (새 좌표 기준 곡선 화살표) ═══ -->
 
   <!-- 연결 1: 온보딩 → main.py (초록) -->
-  <path d="M115 110 C115 210,125 250,125 290" stroke="#10b981" stroke-width="2.5" fill="none" marker-end="url(#ag)"/>
+  <path d="M115 110 C115 210,125 250,125 290" stroke="#10b981" stroke-width="1" fill="none" marker-end="url(#ag)"/>
   <text x="60" y="210" fill="#10b981" font-size="11" font-weight="600">POST /api/onboarding</text>
 
   <!-- 연결 2: 대시보드 → api_router (파란) -->
-  <path d="M315 110 C315 190,615 220,615 290" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#ab)"/>
+  <path d="M315 110 C315 190,615 220,615 290" stroke="#3b82f6" stroke-width="1" fill="none" marker-end="url(#ab)"/>
   <text x="420" y="180" fill="#3b82f6" font-size="11" font-weight="600">GET /api/dashboard/{uid}</text>
 
   <!-- 연결 3: AI채팅 → Orchestrator (보라) -->
-  <path d="M515 110 C515 220,365 240,365 290" stroke="#a78bfa" stroke-width="2.5" fill="none" marker-end="url(#ap)"/>
+  <path d="M515 110 C515 220,365 240,365 290" stroke="#a78bfa" stroke-width="1" fill="none" marker-end="url(#ap)"/>
   <text x="465" y="230" fill="#a78bfa" font-size="11" font-weight="600">POST /api/query</text>
 
   <!-- 연결 4: 사진분석 → ai_router (주황) -->
-  <path d="M715 110 C715 200,865 230,865 290" stroke="#f59e0b" stroke-width="2.5" fill="none" marker-end="url(#ao)"/>
+  <path d="M715 110 C715 200,865 230,865 290" stroke="#f59e0b" stroke-width="1" fill="none" marker-end="url(#ao)"/>
   <text x="760" y="195" fill="#f59e0b" font-size="11" font-weight="600">POST /api/photo/upload</text>
 
   <!-- 연결 5: 시뮬레이터 → ai_router (핑크) -->
-  <path d="M915 110 C915 200,890 240,880 290" stroke="#ec4899" stroke-width="2.5" fill="none" marker-end="url(#ak)"/>
+  <path d="M915 110 C915 200,890 240,880 290" stroke="#ec4899" stroke-width="1" fill="none" marker-end="url(#ak)"/>
   <text x="940" y="215" fill="#ec4899" font-size="11" font-weight="600">POST /api/simulation/step</text>
 
   <!-- WebSocket 양방향 (점선) -->
-  <path d="M315 200 C315 240,615 255,615 290" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="6,4" opacity="0.5"/>
+  <path d="M315 200 C315 240,615 255,615 290" stroke="white" stroke-width="1" fill="none" stroke-dasharray="6,4" opacity="0.5"/>
   <text x="430" y="252" fill="white" font-size="10" opacity="0.6">WebSocket /ws</text>
 
   <!-- Orchestrator → 4 Agents (보라) — 넓은 간격 -->
-  <path d="M310 355 C310 380,125 380,125 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
-  <path d="M340 355 C340 375,305 375,305 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
-  <path d="M390 355 C390 375,485 375,485 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
-  <path d="M420 355 C420 380,665 380,665 400" stroke="#a78bfa" stroke-width="1.5" fill="none" marker-end="url(#ap)"/>
+  <path d="M310 355 C310 380,125 380,125 400" stroke="#a78bfa" stroke-width="1" fill="none" marker-end="url(#ap)"/>
+  <path d="M340 355 C340 375,305 375,305 400" stroke="#a78bfa" stroke-width="1" fill="none" marker-end="url(#ap)"/>
+  <path d="M390 355 C390 375,485 375,485 400" stroke="#a78bfa" stroke-width="1" fill="none" marker-end="url(#ap)"/>
+  <path d="M420 355 C420 380,665 380,665 400" stroke="#a78bfa" stroke-width="1" fill="none" marker-end="url(#ap)"/>
 
   <!-- Agents → CASCADE → updated_gauges -->
-  <path d="M740 428 C760 428,790 428,790 428" stroke="#f59e0b" stroke-width="1.5" fill="none" marker-end="url(#ao)"/>
-  <path d="M1020 428 C1040 428,1060 428,1060 428" stroke="#10b981" stroke-width="2" fill="none" marker-end="url(#ag)"/>
+  <path d="M740 428 C760 428,790 428,790 428" stroke="#f59e0b" stroke-width="1" fill="none" marker-end="url(#ao)"/>
+  <path d="M1020 428 C1040 428,1060 428,1060 428" stroke="#10b981" stroke-width="1" fill="none" marker-end="url(#ag)"/>
 
   <!-- Agents → LLM (주황 곡선 — 텍스트 아래 배치) -->
-  <path d="M125 455 C125 570,540 610,540 660" stroke="#f59e0b" stroke-width="1.5" fill="none" marker-end="url(#ao)"/>
+  <path d="M125 455 C125 570,540 610,540 660" stroke="#f59e0b" stroke-width="1" fill="none" marker-end="url(#ao)"/>
   <text x="270" y="590" fill="#f59e0b" font-size="10">LLM 추론 요청 (GPT-4o-mini)</text>
 
   <!-- Agents → ChromaDB RAG (초록 — 왼쪽 여백 활용) -->
-  <path d="M70 455 C20 600,20 850,125 930" stroke="#10b981" stroke-width="1.5" fill="none" marker-end="url(#ag)"/>
+  <path d="M70 455 C20 600,20 850,125 930" stroke="#10b981" stroke-width="1" fill="none" marker-end="url(#ag)"/>
   <text x="10" y="750" fill="#10b981" font-size="10" transform="rotate(-80,10,750)">RAG 검색</text>
 
   <!-- ai_router → Vision models (빨간 — 간격 넓게) -->
-  <path d="M830 355 C830 580,745 610,745 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
-  <path d="M870 355 C870 570,935 610,935 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
-  <path d="M910 355 C950 570,1120 610,1120 660" stroke="#f43f5e" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <path d="M830 355 C830 580,745 610,745 660" stroke="#f43f5e" stroke-width="1" fill="none" marker-end="url(#ar)"/>
+  <path d="M870 355 C870 570,935 610,935 660" stroke="#f43f5e" stroke-width="1" fill="none" marker-end="url(#ar)"/>
+  <path d="M910 355 C950 570,1120 610,1120 660" stroke="#f43f5e" stroke-width="1" fill="none" marker-end="url(#ar)"/>
 
   <!-- ai_router → PPO (핑크 곡선 — 하단 경유) -->
-  <path d="M770 355 C770 560,200 590,120 660" stroke="#ec4899" stroke-width="2" fill="none" marker-end="url(#ak)"/>
+  <path d="M770 355 C770 560,200 590,120 660" stroke="#ec4899" stroke-width="1" fill="none" marker-end="url(#ak)"/>
   <text x="400" y="575" fill="#ec4899" font-size="10" font-weight="600">PPO optimal_action 추천 (v0.3.0)</text>
 
   <!-- PPO ← 보상함수 -->
-  <path d="M240 690 C220 690,210 690,210 690" stroke="#ec4899" stroke-width="1.5" fill="none" marker-end="url(#ak)"/>
+  <path d="M240 690 C220 690,210 690,210 690" stroke="#ec4899" stroke-width="1" fill="none" marker-end="url(#ak)"/>
 
   <!-- Backend → Supabase (시안 곡선) -->
-  <path d="M125 355 C80 600,345 860,345 930" stroke="#06b6d4" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <path d="M125 355 C80 600,345 860,345 930" stroke="#06b6d4" stroke-width="1" fill="none" marker-end="url(#ah)"/>
 
   <!-- PPO → S3 -->
-  <path d="M120 720 C120 850,565 870,565 930" stroke="#06b6d4" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+  <path d="M120 720 C120 850,565 870,565 930" stroke="#06b6d4" stroke-width="1" fill="none" marker-end="url(#ah)"/>
   <text x="300" y="860" fill="#67e8f9" font-size="10">모델 업로드/다운로드</text>
 
   <!-- Retrain → PPO (점선) -->
-  <path d="M670 788 C400 800,200 750,170 720" stroke="#ec4899" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#ak)"/>
+  <path d="M670 788 C400 800,200 750,170 720" stroke="#ec4899" stroke-width="1" fill="none" stroke-dasharray="5,3" marker-end="url(#ak)"/>
   <text x="380" y="780" fill="#f9a8d4" font-size="9">자동 재학습 트리거</text>
 
   <!-- Optuna → PPO (점선) -->
-  <path d="M450 788 C300 800,180 750,150 720" stroke="#ec4899" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>
+  <path d="M450 788 C300 800,180 750,150 720" stroke="#ec4899" stroke-width="1" fill="none" stroke-dasharray="5,3"/>
 
   <!-- updated_gauges → AppState (초록 점선 — 상단 경유) -->
-  <path d="M1155 400 C1300 350,1300 180,600 172 C560 172,515 172,515 172" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
+  <path d="M1155 400 C1300 350,1300 180,600 172 C560 172,515 172,515 172" stroke="#10b981" stroke-width="1" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
   <text x="1050" y="230" fill="#10b981" font-size="10" font-weight="600">gauges 전역 상태 업데이트</text>
 
   <!-- ═══ LEGEND (하단 고정) ═══ -->
   <rect x="30" y="1030" width="1340" height="75" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
   <text x="50" y="1055" fill="white" font-size="13" font-weight="700">연결 범례</text>
 
-  <line x1="50" y1="1080" x2="110" y2="1080" stroke="#10b981" stroke-width="3"/>
+  <line x1="50" y1="1080" x2="110" y2="1080" stroke="#10b981" stroke-width="1"/>
   <text x="118" y="1085" fill="white" font-size="11">데이터 저장/RAG</text>
 
-  <line x1="260" y1="1080" x2="320" y2="1080" stroke="#a78bfa" stroke-width="3"/>
+  <line x1="260" y1="1080" x2="320" y2="1080" stroke="#a78bfa" stroke-width="1"/>
   <text x="328" y="1085" fill="white" font-size="11">에이전트 라우팅</text>
 
-  <line x1="470" y1="1080" x2="530" y2="1080" stroke="#f59e0b" stroke-width="3"/>
+  <line x1="470" y1="1080" x2="530" y2="1080" stroke="#f59e0b" stroke-width="1"/>
   <text x="538" y="1085" fill="white" font-size="11">LLM 추론</text>
 
-  <line x1="620" y1="1080" x2="680" y2="1080" stroke="#ec4899" stroke-width="3"/>
+  <line x1="620" y1="1080" x2="680" y2="1080" stroke="#ec4899" stroke-width="1"/>
   <text x="688" y="1085" fill="white" font-size="11">강화학습</text>
 
-  <line x1="770" y1="1080" x2="830" y2="1080" stroke="#f43f5e" stroke-width="3"/>
+  <line x1="770" y1="1080" x2="830" y2="1080" stroke="#f43f5e" stroke-width="1"/>
   <text x="838" y="1085" fill="white" font-size="11">비전/멀티모달</text>
 
-  <line x1="960" y1="1080" x2="1020" y2="1080" stroke="white" stroke-width="2" stroke-dasharray="6,4" opacity="0.6"/>
+  <line x1="960" y1="1080" x2="1020" y2="1080" stroke="white" stroke-width="1" stroke-dasharray="6,4" opacity="0.6"/>
   <text x="1028" y="1085" fill="white" font-size="11">WebSocket/비동기</text>
 </svg>
 </div>
@@ -395,7 +400,7 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 
 <table>
 <tr><th>파일</th><th>담당</th><th>엔드포인트</th></tr>
-<tr><td><code>main.py</code></td><td>팀장 (공통)</td><td>미들웨어: 보안헤더, CORS, JWT, RateLimit</td></tr>
+<tr><td><code>main.py</code></td><td>공통</td><td>미들웨어: 보안헤더, CORS, JWT, RateLimit</td></tr>
 <tr><td><code>ai_router.py</code></td><td>그룹 A (AI/ML)</td><td>/api/photo/*, /api/simulation/*, /api/models/*, /api/rl/*</td></tr>
 <tr><td><code>api_router.py</code></td><td>그룹 B (백엔드)</td><td>/api/query, /api/dashboard, /api/auth, /api/onboarding, /ws</td></tr>
 <tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>11개 페이지, 컴포넌트, 오프라인 엔진</td></tr>
@@ -482,7 +487,42 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <p><strong>오프라인 모드:</strong> 네트워크 없을 때 내장 모델로 추론 (LLM 추천은 캐시 반환)</p>
 </div>
 
-<h2 id="team">12. 팀 분업 (3그룹)</h2>
+<h2 id="team">12. 팀 분업 — 코어 + 플러그인 아키텍처</h2>
+
+<div class="card">
+<div class="card-title">설계 원칙</div>
+<p><strong>코어(core/)</strong>는 서비스의 기본 동작을 보장합니다. 각 담당자는 <strong>플러그인(plugins/)</strong>을 통해 기능을 고도화합니다. 플러그인이 미구현된 슬롯은 코어의 폴백(규칙 기반)이 자동으로 동작합니다.</p>
+</div>
+
+<h3>코어 프레임워크</h3>
+<table>
+<tr><th>파일</th><th>역할</th></tr>
+<tr><td><code>core/interfaces.py</code></td><td>6개 Protocol 정의 (DomainAgent, KnowledgeBase, RLAgent, ImageAnalyzer, VoiceProcessor, RewardFunction). 팀원이 구현해야 할 메서드를 명확히 정의.</td></tr>
+<tr><td><code>core/fallbacks.py</code></td><td>규칙 기반 기본 구현 (LLM/GPU 없이 동작). BasicFoodAgent, BasicExerciseAgent, BasicHealthAgent, BasicHobbyAgent, BasicRLAgent, BasicImageAnalyzer, BasicVoiceProcessor.</td></tr>
+<tr><td><code>core/plugin_registry.py</code></td><td>싱글톤 레지스트리. register()/get()/status() 메서드. 미등록 슬롯은 폴백 자동 반환.</td></tr>
+</table>
+
+<h3>팀원별 플러그인 (독립 폴더)</h3>
+<table>
+<tr><th>팀원</th><th>폴더</th><th>담당</th><th>미구현 시 폴백</th></tr>
+<tr><td>A</td><td><code>plugins/food_rag/</code></td><td>RAG 레시피 추천 + LangChain</td><td>BasicFoodAgent (BMI 기반 규칙 추천)</td></tr>
+<tr><td>B</td><td><code>plugins/exercise_weather/</code></td><td>운동 + 날씨 + 부상 위험</td><td>BasicExerciseAgent (강도별 규칙 추천)</td></tr>
+<tr><td>C</td><td><code>plugins/health_checkup/</code></td><td>건강검진 분석</td><td>BasicHealthAgent (BMI/수면 규칙 분석)</td></tr>
+<tr><td>D</td><td><code>plugins/hobby_stress/</code></td><td>취미 + 스트레스 시너지</td><td>BasicHobbyAgent (감소율 기반 추천)</td></tr>
+<tr><td>E</td><td><code>plugins/vision_korean/</code></td><td>YOLO 한식 + CLIP</td><td>BasicImageAnalyzer (텍스트 입력 안내)</td></tr>
+<tr><td>F</td><td><code>plugins/voice_stt/</code></td><td>Whisper STT + gTTS</td><td>BasicVoiceProcessor (텍스트 전용 모드)</td></tr>
+</table>
+
+<h3>충돌 방지 규칙</h3>
+<table>
+<tr><th>규칙</th><th>설명</th></tr>
+<tr><td>폴더 격리</td><td>팀원은 <code>plugins/자기폴더/</code>만 수정 → git 충돌 원천 차단</td></tr>
+<tr><td>코어 보호</td><td><code>main.py</code>, <code>core/</code> 수정 필요 시 관리자에게 PR 요청</td></tr>
+<tr><td>자동 연결</td><td><code>plugin.py</code>의 <code>register()</code> 주석 해제 → 코어에 자동 연결</td></tr>
+<tr><td>상태 조회</td><td><code>GET /api/plugins/status</code>로 활성/폴백 상태 실시간 확인</td></tr>
+</table>
+
+<h3>Router 분리 (3그룹)</h3>
 <table>
 <tr><th>그룹</th><th>라우터</th><th>담당 모듈</th></tr>
 <tr><td>A (AI/ML) 2명</td><td>ai_router.py</td><td>rl_engine, multimodal, knowledge, risk_engine, scripts</td></tr>
@@ -513,10 +553,29 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <tr><td><code>test_db.py</code></td><td>Supabase 연결 테스트 스크립트.</td></tr>
 </table>
 
+<h3>backend/core/ — 코어 프레임워크</h3>
+<table>
+<tr><th>파일</th><th>설명</th></tr>
+<tr><td><code>interfaces.py</code></td><td>6개 Protocol 정의: DomainAgent(recommend), KnowledgeBase(search), RLAgent(predict/train), ImageAnalyzer(analyze), VoiceProcessor(speech_to_text/text_to_speech), RewardFunction(calculate). 팀원이 이 인터페이스를 구현하면 코어에 플러그인으로 연결.</td></tr>
+<tr><td><code>fallbacks.py</code></td><td>규칙 기반 기본 구현 (LLM/GPU 없이 동작). BasicFoodAgent(BMI 필터링), BasicExerciseAgent(스트레스 기반 강도), BasicHealthAgent(수치 범위 판단), BasicHobbyAgent(감소율 정렬), BasicRLAgent(시간대 규칙), BasicImageAnalyzer/BasicVoiceProcessor(안내 메시지).</td></tr>
+<tr><td><code>plugin_registry.py</code></td><td>싱글톤 PluginRegistry. register(slot, plugin)/get(slot)/status()/is_plugin_active(slot). 11개 슬롯(food_agent, exercise_agent, health_agent, hobby_agent, rl_agent, image_analyzer, voice_processor, recipe_db, exercise_db, health_db, hobby_db).</td></tr>
+</table>
+
+<h3>backend/plugins/ — 팀원별 플러그인</h3>
+<table>
+<tr><th>폴더</th><th>팀원</th><th>설명</th></tr>
+<tr><td><code>food_rag/plugin.py</code></td><td>A</td><td>AdvancedFoodAgent. ChromaDB RAG + 쿼리 확장 + 리랭킹 + LangChain GPT-4o-mini. register() 주석 해제 시 활성화.</td></tr>
+<tr><td><code>exercise_weather/plugin.py</code></td><td>B</td><td>WeatherExerciseAgent. exercise_db + plan_adjuster + 부상 위험도. register() 주석 해제 시 활성화.</td></tr>
+<tr><td><code>health_checkup/plugin.py</code></td><td>C</td><td>CheckupHealthAgent. health_guidelines RAG + 검진 수치 해석. register() 주석 해제 시 활성화.</td></tr>
+<tr><td><code>hobby_stress/plugin.py</code></td><td>D</td><td>StressHobbyAgent. hobby_catalog RAG + 스트레스-취미 상관관계. register() 주석 해제 시 활성화.</td></tr>
+<tr><td><code>vision_korean/plugin.py</code></td><td>E</td><td>KoreanFoodAnalyzer. YOLO 한식 파인튜닝 + CLIP 개선. register() 주석 해제 시 활성화.</td></tr>
+<tr><td><code>voice_stt/plugin.py</code></td><td>F</td><td>WhisperVoiceProcessor. Whisper STT + gTTS TTS. register() 주석 해제 시 활성화.</td></tr>
+</table>
+
 <h3>backend/app/ — FastAPI 진입점</h3>
 <table>
 <tr><th>파일</th><th>설명</th></tr>
-<tr><td><code>main.py</code></td><td><strong>180줄.</strong> FastAPI 앱 생성, 4개 미들웨어(보안헤더/CORS/JWT/RateLimit) 등록, 2개 라우터 include. 팀장만 수정.</td></tr>
+<tr><td><code>main.py</code></td><td><strong>234줄.</strong> FastAPI 앱 생성, 4개 미들웨어(보안헤더/CORS/JWT/RateLimit), 플러그인 자동 등록(auto_register_plugins), 2개 라우터 include. <code>/api/plugins/status</code> 엔드포인트 포함. 관리자만 수정.</td></tr>
 <tr><td><code>routers/ai_router.py</code></td><td><strong>그룹 A 전담.</strong> 사진분석(/api/photo), 시뮬레이션(/api/simulation), 모델동기화(/api/models), RL 상태(/api/rl). CLIP, YOLO, PPO, ScheduleSimulator 사용.</td></tr>
 <tr><td><code>routers/api_router.py</code></td><td><strong>그룹 B 전담.</strong> 도메인쿼리(/api/query→Orchestrator), 온보딩(/api/onboarding), 대시보드, 피드백, 카카오 인증, WebSocket.</td></tr>
 </table>
@@ -655,82 +714,316 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <tr><td><code>frontend/android/</code></td><td>Capacitor Android 빌드 설정 (Gradle, Manifest).</td></tr>
 </table>
 
-<!-- ═══════════════════════════════ 14. GLOSSARY ═══════════════════════════════ -->
-<h2 id="glossary">14. 용어 사전</h2>
+<!-- ═══════════════════════════════ 14. PLUGIN TECH ═══════════════════════════════ -->
+<h2 id="plugin-tech">14. 플러그인별 기술 스택</h2>
+<p>각 플러그인 폴더가 사용하는 핵심 기술과 의존성입니다.</p>
+
+<h3>14.1 food_rag/ — RAG 레시피 추천</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>LangChain</code> + <code>ChromaDB</code> + <code>GPT-4o-mini</code></td></tr>
+<tr><td>RAG 파이프라인</td><td>recipe_db 10만건 벡터검색 → ChatPromptTemplate → GPT-4o-mini → 개인화 레시피 JSON</td></tr>
+<tr><td>의존 패키지</td><td>langchain-openai, langchain-core, chromadb, sentence-transformers</td></tr>
+<tr><td>구현 포인트</td><td>쿼리 확장(동의어/유사 재료), 리랭킹(BMI/칼로리 목표), 위험도 평가(>0.6 경고)</td></tr>
+</table>
+
+<h3>14.2 exercise_weather/ — 운동+날씨</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>LangChain</code> + <code>OpenWeather API</code> + <code>AirKorea API</code></td></tr>
+<tr><td>외부 API</td><td>OpenWeather(날씨), AirKorea(PM10/PM2.5). requests 라이브러리로 HTTP 호출</td></tr>
+<tr><td>의존 패키지</td><td>langchain-openai, chromadb, requests</td></tr>
+<tr><td>구현 포인트</td><td>PM10≥76 실내전환, 부상위험도(나이>50:+30%, 무릎/허리이력:+30%)</td></tr>
+</table>
+
+<h3>14.3 health_checkup/ — 건강검진</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>LangChain</code> + <code>GPT-4o-mini</code> (temperature=0.3)</td></tr>
+<tr><td>LLM 설정</td><td>temp=0.3 보수적: 건강 정보는 창의적 응답보다 정확성이 중요</td></tr>
+<tr><td>의존 패키지</td><td>langchain-openai, langchain-core, chromadb</td></tr>
+<tr><td>구현 포인트</td><td>메트릭별 정상/주의/위험 3단계 분류, 의료 진단 문구 사용 금지</td></tr>
+</table>
+
+<h3>14.4 hobby_stress/ — 취미+스트레스</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>LangChain</code> + <code>GPT-4o-mini</code> + <code>CASCADE_RULES</code></td></tr>
+<tr><td>시너지 모델</td><td>Orchestrator의 CASCADE_RULES와 연동: 취미 → 스트레스↓ → 폭식↓ → 식단↑</td></tr>
+<tr><td>의존 패키지</td><td>langchain-openai, chromadb</td></tr>
+<tr><td>구현 포인트</td><td>감소율 0~100 정규화, CASCADE_RULES 형식 준수</td></tr>
+</table>
+
+<h3>14.5 vision_korean/ — 한식 YOLO+CLIP</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>YOLOv8</code> + <code>OpenCLIP</code>(ViT-B-32) + <code>MediaPipe</code></td></tr>
+<tr><td>3종 비전 모델</td><td>YOLO(객체감지) + CLIP(이미지-텍스트 임베딩) + MediaPipe(33pt 자세)</td></tr>
+<tr><td>의존 패키지</td><td>ultralytics, open-clip-torch, mediapipe, numpy, Pillow</td></tr>
+<tr><td>구현 포인트</td><td>CPU 500ms 이하, 모델파일 .gitignore, 10MB 제한</td></tr>
+</table>
+
+<h3>14.6 voice_stt/ — Whisper+gTTS</h3>
+<table>
+<tr><th>항목</th><th>상세</th></tr>
+<tr><td>핵심 기술</td><td><code>Whisper STT</code> + <code>gTTS</code> + <code>WebSocket</code></td></tr>
+<tr><td>STT</td><td>Whisper base/small 모델. wav/mp3/webm 허용, 30MB 제한</td></tr>
+<tr><td>TTS</td><td>gTTS 한국어 MP3 생성. 무료</td></tr>
+<tr><td>의존 패키지</td><td>whisper 또는 openai, gtts, websockets</td></tr>
+<tr><td>구현 포인트</td><td>STT/TTS 실패 시 빈 반환(에러 전파 금지). Whisper large 금지(메모리)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 14b. DEPENDENCY ═══════════════════════════════ -->
+<h2 id="deps">15. 기술 스택 의존 관계도</h2>
+<table>
+<tr><th>플러그인</th><th>의존 체인</th></tr>
+<tr><td><code>food_rag/</code></td><td>LangChain → GPT-4o-mini (OpenAI API) + ChromaDB → sentence-transformers + Pydantic → JsonOutputParser</td></tr>
+<tr><td><code>exercise_weather/</code></td><td>LangChain → GPT-4o-mini + ChromaDB + requests → OpenWeather API + AirKorea API</td></tr>
+<tr><td><code>health_checkup/</code></td><td>LangChain → GPT-4o-mini (temp=0.3) + ChromaDB</td></tr>
+<tr><td><code>hobby_stress/</code></td><td>LangChain → GPT-4o-mini + ChromaDB + CASCADE_RULES (orchestrator.py 읽기 전용)</td></tr>
+<tr><td><code>vision_korean/</code></td><td>ultralytics(YOLOv8) + open-clip-torch(ViT-B-32) + mediapipe(Pose) + numpy + Pillow</td></tr>
+<tr><td><code>voice_stt/</code></td><td>whisper/openai.Audio + gtts + WebSocket(FastAPI)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 14c. SKILLS ═══════════════════════════════ -->
+<h2 id="skills">16. 담당자별 필요 역량</h2>
+<p>●=필수, ○=선택</p>
+<table>
+<tr><th>플러그인</th><th>Python</th><th>AI/ML</th><th>외부API</th><th>프레임워크</th></tr>
+<tr><td><code>food_rag/</code></td><td>●●●○</td><td>●●○○</td><td>○○○○</td><td>LangChain, ChromaDB</td></tr>
+<tr><td><code>exercise_weather/</code></td><td>●●●○</td><td>●●○○</td><td>●●●○</td><td>LangChain, requests</td></tr>
+<tr><td><code>health_checkup/</code></td><td>●●○○</td><td>●○○○</td><td>○○○○</td><td>LangChain</td></tr>
+<tr><td><code>hobby_stress/</code></td><td>●●○○</td><td>●○○○</td><td>○○○○</td><td>LangChain</td></tr>
+<tr><td><code>vision_korean/</code></td><td>●●●○</td><td>●●●●</td><td>○○○○</td><td>PyTorch, OpenCV</td></tr>
+<tr><td><code>voice_stt/</code></td><td>●●●○</td><td>●●●○</td><td>●○○○</td><td>Whisper, WebSocket</td></tr>
+</table>
+
+<!-- ═══════════════════════════════ 17. GLOSSARY ═══════════════════════════════ -->
+<h2 id="glossary">17. 용어 사전</h2>
 
 <h3>A. 프로그래밍 기초</h3>
 <div class="card">
   <p class="glossary-term">API (Application Programming Interface)</p>
-  <p class="glossary-desc">프로그램들이 서로 대화하는 방법입니다. 음식점 메뉴판처럼, '이것을 주문하면 이것을 받는다'는 약속입니다. 예: '치킨 먹었어'를 POST /api/query로 보내면, AI가 '칼로리 800kcal, 수면 -35%'를 돌려줍니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 프로그램들이 서로 대화하는 규약</span>
+    <span class="gl"><b>역할:</b> 프론트엔드와 백엔드 사이의 요청/응답 통로</span>
+    <span class="gl"><b>사용 이유:</b> 표준화된 형식으로 데이터를 주고받기 위함</span>
+    <span class="gl"><b>예시:</b> POST /api/query에 '치킨 먹었어' 전송 → AI가 '칼로리 800kcal' 응답</span>
+  </p>
+
+  <p class="glossary-term">FastAPI</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> Python 비동기 웹 프레임워크</span>
+    <span class="gl"><b>역할:</b> 모든 API 요청을 처리하는 중앙 서버</span>
+    <span class="gl"><b>사용 이유:</b> 비동기 처리, 자동 Swagger 문서, Pydantic 타입 검증</span>
+    <span class="gl"><b>장점:</b> Django 대비 2-3배 빠름</span>
+    <span class="gl"><b>단점:</b> 커뮤니티/플러그인 적음</span>
+  </p>
 
   <p class="glossary-term">Frontend (프론트엔드)</p>
-  <p class="glossary-desc">사용자가 보는 화면입니다. 음식점의 '홀' — 메뉴판, 테이블, 의자. React로 11개 페이지를 레고처럼 조립합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 사용자가 보는 화면 (브라우저/앱)</span>
+    <span class="gl"><b>역할:</b> 11개 페이지의 UI 렌더링 + 사용자 입력 처리</span>
+    <span class="gl"><b>사용 이유:</b> React 18의 컴포넌트 기반으로 UI를 모듈화</span>
+  </p>
 
   <p class="glossary-term">Backend (백엔드)</p>
-  <p class="glossary-desc">사용자가 못 보는 뒷부분입니다. 음식점의 '주방' — 요리, 재료 관리. FastAPI(Python)로 만들었습니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 사용자가 보지 못하는 서버 측 로직</span>
+    <span class="gl"><b>역할:</b> API 처리, DB 접근, AI 추론, 인증</span>
+    <span class="gl"><b>사용 이유:</b> FastAPI(Python)로 AI 라이브러리와 자연스럽게 통합</span>
+  </p>
 
   <p class="glossary-term">WebSocket</p>
-  <p class="glossary-desc">전화처럼 양방향 통신입니다. 보통 API는 '물어보면 대답'이지만, WebSocket은 '연결되어 있으면 서버가 먼저 보낼 수 있음'. 게이지가 실시간으로 변하는 것이 이 덕분입니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 양방향 실시간 통신 프로토콜</span>
+    <span class="gl"><b>역할:</b> 대시보드 게이지 실시간 업데이트</span>
+    <span class="gl"><b>사용 이유:</b> HTTP 폴링 대비 지연 90% 감소</span>
+    <span class="gl"><b>장점:</b> 서버가 먼저 데이터를 보낼 수 있음</span>
+  </p>
 
   <p class="glossary-term">Docker</p>
-  <p class="glossary-desc">프로그램을 '상자'에 넣어서 어디서든 같은 환경으로 실행하는 도구. '내 PC에서는 되는데' 문제를 해결합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 컨테이너 가상화 도구</span>
+    <span class="gl"><b>역할:</b> 동일 개발/배포 환경 보장</span>
+    <span class="gl"><b>사용 이유:</b> '내 PC에서는 되는데' 문제 해결</span>
+    <span class="gl"><b>장점:</b> 환경 일관성</span>
+    <span class="gl"><b>단점:</b> Docker Desktop 설치 필요</span>
+  </p>
 </div>
 
 <h3>B. AI/ML 기술</h3>
 <div class="card">
-  <p class="glossary-term">LLM (Large Language Model)</p>
-  <p class="glossary-desc">방대한 양의 글을 읽고 배운 AI입니다. 사람처럼 자연어를 이해하고 생성합니다. GPT-4o-mini는 OpenAI의 LLM으로, 한국어를 잘 이해하고, 비용이 저렴합니다 (요청당 ~$0.002).</p>
+  <p class="glossary-term">GPT-4o-mini (LLM)</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> OpenAI의 경량 대규모 언어 모델</span>
+    <span class="gl"><b>역할:</b> 자연어 이해/생성 (레시피 추천, 건강 요약, 취미 제안)</span>
+    <span class="gl"><b>사용 이유:</b> 한국어 우수, GPT-4의 1/10 비용</span>
+    <span class="gl"><b>장점:</b> 빠르고 저렴</span>
+    <span class="gl"><b>단점:</b> 할루시네이션(없는 정보 생성) 가능</span>
+  </p>
 
   <p class="glossary-term">LangChain</p>
-  <p class="glossary-desc">LLM을 특정 작업에 쓰기 쉽게 해주는 도구. '프롬프트 → LLM → 파서' 체인을 쉽게 만듭니다. 4개 도메인 Agent가 이것으로 만들어졌습니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> LLM 애플리케이션 프레임워크</span>
+    <span class="gl"><b>역할:</b> 4개 도메인 Agent의 LLM 호출 관리</span>
+    <span class="gl"><b>사용 이유:</b> 프롬프트+출력파서+체이닝을 선언적으로 구성</span>
+    <span class="gl"><b>장점:</b> LLM 교체 용이</span>
+    <span class="gl"><b>단점:</b> 추상화 레이어 오버헤드</span>
+  </p>
 
   <p class="glossary-term">LangGraph</p>
-  <p class="glossary-desc">LangChain의 확장. 복잡한 분기/루프를 그래프로 관리합니다. Orchestrator가 이것으로 '치킨 → food → cascade → 게이지 업데이트'를 선언적으로 관리합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> LangChain 기반 상태 그래프 엔진</span>
+    <span class="gl"><b>역할:</b> Orchestrator의 8노드 DAG 실행</span>
+    <span class="gl"><b>사용 이유:</b> 복잡한 조건 분기를 선언적으로 정의</span>
+    <span class="gl"><b>장점:</b> 상태 자동 관리, 디버깅 용이</span>
+    <span class="gl"><b>단점:</b> 병렬 실행 미지원</span>
+  </p>
 
   <p class="glossary-term">RAG (Retrieval-Augmented Generation)</p>
-  <p class="glossary-desc">AI가 모르는 것을 검색해서 찾아보고 답하는 방법. 시험에서 '책 보고 답하기'와 비슷합니다. ChromaDB에서 10만건 레시피를 검색 → LLM에 주입 → 정확한 추천.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 검색 증강 생성 — LLM에 외부 지식을 주입하는 기법</span>
+    <span class="gl"><b>역할:</b> ChromaDB에서 관련 문서를 검색 → LLM에 전달 → 정확한 응답</span>
+    <span class="gl"><b>사용 이유:</b> LLM만으로는 최신 레시피/운동 정보를 모름</span>
+    <span class="gl"><b>장점:</b> 정확도 향상, 할루시네이션 감소</span>
+    <span class="gl"><b>단점:</b> 벡터 DB 관리 필요</span>
+  </p>
 
-  <p class="glossary-term">강화학습 (Reinforcement Learning)</p>
-  <p class="glossary-desc">게임처럼 '해보고 → 보상 받고 → 더 잘하는 방법을 배우는' AI입니다. PPO는 가장 안정적인 알고리즘. 규칙 기반은 '야식은 나쁘다'만 알지만, RL은 '이 사람에게는 야식 대신 과일이 스트레스를 더 줄인다'를 학습합니다.</p>
+  <p class="glossary-term">PPO (강화학습)</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> Proximal Policy Optimization — 안정적 RL 알고리즘</span>
+    <span class="gl"><b>역할:</b> 40D 상태 → 10개 행동 중 최적 선택</span>
+    <span class="gl"><b>사용 이유:</b> 규칙 기반은 개인차 미반영, RL은 피드백으로 학습</span>
+    <span class="gl"><b>장점:</b> 지속적 개선</span>
+    <span class="gl"><b>단점:</b> 초기 데이터 부족, CPU 학습 느림</span>
+  </p>
 
   <p class="glossary-term">OpenCLIP</p>
-  <p class="glossary-desc">이미지와 텍스트를 같은 공간에 배치하는 AI. '이 사진은 샐러드와 비슷하다'를 숫자(512차원 벡터)로 판단합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 오픈소스 CLIP (이미지-텍스트 크로스 모달)</span>
+    <span class="gl"><b>역할:</b> 사진을 512차원 벡터로 변환 → 유사도 검색</span>
+    <span class="gl"><b>사용 이유:</b> 사진 한 장으로 건강 상태 추정 가능</span>
+    <span class="gl"><b>장점:</b> 무료, 이미지+텍스트 동시 처리</span>
+  </p>
 
-  <p class="glossary-term">YOLO</p>
-  <p class="glossary-desc">사진에서 물체를 찾는 AI. '이 사진에 토마토, 계란, 식빵이 있다'를 0.1초 만에 판단합니다. 식단 사진으로 자동 칼로리 추정에 사용됩니다.</p>
+  <p class="glossary-term">YOLO (You Only Look Once)</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 실시간 객체 감지 모델</span>
+    <span class="gl"><b>역할:</b> 식재료 자동 인식 (80+ 카테고리)</span>
+    <span class="gl"><b>사용 이유:</b> CPU에서도 100ms 추론 가능</span>
+    <span class="gl"><b>장점:</b> 빠르고 정확</span>
+    <span class="gl"><b>단점:</b> 한국 음식 특화 부족</span>
+  </p>
 
   <p class="glossary-term">MediaPipe</p>
-  <p class="glossary-desc">사람의 몸 33개 포인트를 추적하는 AI. 운동 자세가 올바른지 판단합니다. 잘못된 자세 → 부상 방지 → AI 교정.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> Google의 인체 인식 AI</span>
+    <span class="gl"><b>역할:</b> 33개 랜드마크로 자세 분석, 운동 폼 교정</span>
+    <span class="gl"><b>사용 이유:</b> 무료, CPU 실시간, 높은 정확도</span>
+    <span class="gl"><b>장점:</b> 잘못된 자세 → 부상 방지</span>
+  </p>
+
+  <p class="glossary-term">Optuna</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 하이퍼파라미터 자동 최적화 라이브러리</span>
+    <span class="gl"><b>역할:</b> PPO의 lr/gamma/batch 등을 자동 탐색</span>
+    <span class="gl"><b>사용 이유:</b> 수동 튜닝 대비 체계적 Bayesian 탐색</span>
+    <span class="gl"><b>장점:</b> 100 trial로 최적 조합 탐색</span>
+  </p>
 </div>
 
 <h3>C. 인프라 & 보안</h3>
 <div class="card">
   <p class="glossary-term">Railway</p>
-  <p class="glossary-desc">백엔드를 클라우드에 배포하는 서비스. GitHub에 코드 올리면 자동으로 서버가 업데이트됩니다. $5/월.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 클라우드 배포 플랫폼</span>
+    <span class="gl"><b>역할:</b> 백엔드 24시간 운영</span>
+    <span class="gl"><b>사용 이유:</b> $5/월, GitHub 자동 배포, 설정 간편</span>
+    <span class="gl"><b>단점:</b> GPU 미지원, 콜드 스타트</span>
+  </p>
 
   <p class="glossary-term">Vercel</p>
-  <p class="glossary-desc">프론트엔드를 전 세계 CDN에 배포. 무료. 어디서 접속해도 빠르게 로딩됩니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 프론트엔드 CDN 배포 플랫폼</span>
+    <span class="gl"><b>역할:</b> React 앱 글로벌 배포</span>
+    <span class="gl"><b>사용 이유:</b> 완전 무료, 빠른 로딩</span>
+    <span class="gl"><b>장점:</b> 글로벌 CDN으로 어디서든 빠름</span>
+  </p>
 
   <p class="glossary-term">Capacitor</p>
-  <p class="glossary-desc">웹 앱을 안드로이드 APK로 변환하는 도구. 하나의 코드로 웹+앱 모두 만듭니다. 카메라, 파일시스템 등 네이티브 기능 사용 가능.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 웹 → 네이티브 앱 변환 프레임워크</span>
+    <span class="gl"><b>역할:</b> Android APK 빌드</span>
+    <span class="gl"><b>사용 이유:</b> 하나의 코드베이스로 웹+앱</span>
+    <span class="gl"><b>장점:</b> 카메라/파일시스템 네이티브 API 접근</span>
+    <span class="gl"><b>단점:</b> iOS 별도 추가 필요</span>
+  </p>
 
   <p class="glossary-term">JWT (JSON Web Token)</p>
-  <p class="glossary-desc">입장권입니다. 로그인하면 토큰(입장권)을 받고, 매 요청마다 보여주어야 합니다. 건강 데이터는 민감하므로 인증 없는 접근을 차단합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 상태 무관(stateless) 인증 토큰</span>
+    <span class="gl"><b>역할:</b> 사용자 인증 — 로그인 후 모든 요청에 토큰 첨부</span>
+    <span class="gl"><b>사용 이유:</b> 서버 세션 없이 인증 가능</span>
+    <span class="gl"><b>장점:</b> 서버 부담 적음</span>
+    <span class="gl"><b>단점:</b> 토큰 탈취 시 만료까지 유효</span>
+  </p>
+
+  <p class="glossary-term">OAuth</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 제3자 인증 표준 (카카오 로그인)</span>
+    <span class="gl"><b>역할:</b> 자체 회원가입 없이 카카오 계정으로 로그인</span>
+    <span class="gl"><b>사용 이유:</b> 비밀번호 직접 관리 불필요</span>
+    <span class="gl"><b>장점:</b> 보안 강화, 사용자 편의</span>
+  </p>
 
   <p class="glossary-term">Rate Limiting</p>
-  <p class="glossary-desc">1분에 60번만 요청 허용. DDoS 공격(폭탄 세례) 방어. 429 에러와 X-RateLimit 헤더로 알려줍니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> API 호출 횟수 제한</span>
+    <span class="gl"><b>역할:</b> IP별 분당 60회 제한, 429 응답</span>
+    <span class="gl"><b>사용 이유:</b> DDoS 공격 방어</span>
+  </p>
 
-  <p class="glossary-term">CORS (Cross-Origin Resource Sharing)</p>
-  <p class="glossary-desc">다른 사이트에서 우리 서버에 접근하는 것을 허락/차단하는 방화벽입니다. localhost, Vercel 도메인만 허용합니다.</p>
+  <p class="glossary-term">CORS</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> Cross-Origin Resource Sharing (교차 출처 리소스 공유)</span>
+    <span class="gl"><b>역할:</b> 허용된 도메인만 API 접근 가능</span>
+    <span class="gl"><b>사용 이유:</b> 외부 사이트의 무단 API 호출 차단</span>
+  </p>
 
   <p class="glossary-term">Supabase</p>
-  <p class="glossary-desc">PostgreSQL 데이터베이스를 클라우드에서 무료로 제공하는 서비스. 사용자 상태(40차원 벡터)를 영속 저장합니다. 앱을 종료하고 다시 와도 이전 상태가 유지됩니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> PostgreSQL 클라우드 DB 서비스</span>
+    <span class="gl"><b>역할:</b> 사용자 40D 상태 벡터 영속 저장</span>
+    <span class="gl"><b>사용 이유:</b> 무료 500MB, REST API 자동 제공</span>
+    <span class="gl"><b>장점:</b> 앱 종료 후에도 상태 유지</span>
+    <span class="gl"><b>단점:</b> 연결 수 제한, timeout 발생 가능</span>
+  </p>
 
   <p class="glossary-term">ChromaDB</p>
-  <p class="glossary-desc">벡터 데이터베이스. 문장을 숫자 배열(임베딩)로 변환하여 저장하고, 비슷한 것을 빠르게 찾습니다. 10만건 레시피에서 '저칼로리 닭가슴살 요리'를 0.1초 만에 검색합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 벡터 데이터베이스 (임베딩 저장/검색)</span>
+    <span class="gl"><b>역할:</b> 4개 RAG 컬렉션 (recipe, exercise, health, hobby)</span>
+    <span class="gl"><b>사용 이유:</b> 무료, persistent 저장, 한국어 multilingual</span>
+    <span class="gl"><b>장점:</b> 10만건에서 0.1초 검색</span>
+    <span class="gl"><b>단점:</b> 대규모(100만건+) 성능 저하</span>
+  </p>
 
   <p class="glossary-term">IndexedDB</p>
-  <p class="glossary-desc">브라우저 안에 있는 데이터베이스. 오프라인에서 모델/상태를 저장합니다. 지하철에서도 앱이 동작합니다.</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 브라우저 내장 데이터베이스</span>
+    <span class="gl"><b>역할:</b> 오프라인 모델/데이터 캐싱</span>
+    <span class="gl"><b>사용 이유:</b> 네트워크 없을 때도 앱 동작</span>
+    <span class="gl"><b>장점:</b> 큰 용량 저장 가능</span>
+  </p>
+
+  <p class="glossary-term">Protocol (Python)</p>
+  <p class="glossary-desc">
+    <span class="gl"><b>정의:</b> 구조적 서브타이핑 (duck typing 공식화)</span>
+    <span class="gl"><b>역할:</b> 플러그인 인터페이스 계약 정의</span>
+    <span class="gl"><b>사용 이유:</b> 구현해야 할 메서드를 명확히 정의</span>
+    <span class="gl"><b>장점:</b> 런타임 타입 체크 가능 (runtime_checkable)</span>
+  </p>
 </div>
 
 <!-- Footer -->

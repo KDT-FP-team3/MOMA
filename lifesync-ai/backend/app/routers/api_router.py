@@ -29,10 +29,13 @@ from backend.voice.tts_responder import TTSResponder
 from backend.services.user_state_manager import UserStateManager
 from backend.services.feedback_collector import FeedbackCollector
 from backend.services.kakao_auth import get_kakao_login_url, kakao_login, verify_token
-from backend.dashboard.gauge_calculator import GaugeCalculator
 from backend.risk_engine.timeline_generator import TimelineGenerator
-from backend.rl_engine.retrain_scheduler import RetrainScheduler
-from backend.rl_engine.ppo_agent import PPOAgent
+# 공유 서비스 (중복 초기화 방지)
+from backend.app.services_init import (
+    _safe_init, gauge_calculator, retrain_scheduler, ppo_agent,
+)
+
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,6 @@ router = APIRouter(tags=["Backend API"])
 # 입력 검증 헬퍼
 # ============================================================
 
-import re
 _USER_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]{1,100}$")
 
 
@@ -54,29 +56,15 @@ def _validate_user_id(user_id: str) -> str:
 
 
 # ============================================================
-# 서비스 초기화 (그룹 B 담당 서비스만)
+# 서비스 초기화 (그룹 B 전용 — 공유 서비스는 services_init에서)
 # ============================================================
-
-def _safe_init(name: str, factory):
-    """서비스 안전 초기화. 실패 시 None 반환 + 로그."""
-    try:
-        instance = factory()
-        logger.info("[API Router] 서비스 초기화 성공: %s", name)
-        return instance
-    except Exception:
-        logger.exception("[API Router] 서비스 초기화 실패 (비활성): %s", name)
-        return None
-
 
 orchestrator = _safe_init("Orchestrator", Orchestrator)
 intent_classifier = _safe_init("IntentClassifier", IntentClassifier)
 tts_responder = _safe_init("TTSResponder", TTSResponder)
 state_manager = _safe_init("UserStateManager", UserStateManager)
 feedback_collector = _safe_init("FeedbackCollector", FeedbackCollector)
-gauge_calculator = _safe_init("GaugeCalculator", GaugeCalculator)
 timeline_generator = _safe_init("TimelineGenerator", TimelineGenerator)
-retrain_scheduler = _safe_init("RetrainScheduler", RetrainScheduler)
-ppo_agent = _safe_init("PPOAgent", PPOAgent)
 
 # WebSocket 구독자 관리
 gauge_subscribers: set[WebSocket] = set()

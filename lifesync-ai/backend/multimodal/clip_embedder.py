@@ -23,21 +23,25 @@ class CLIPEmbedder:
         self._loaded = False
 
     def _ensure_loaded(self) -> None:
-        """모델을 lazy load."""
+        """모델을 lazy load. GPU가 있으면 자동으로 GPU에 로드."""
         if self._loaded:
             return
 
         try:
             import open_clip
             import torch
+            from backend.core.device import get_device
 
+            device = get_device()
             self._model, _, self._preprocess = open_clip.create_model_and_transforms(
                 self.model_name, pretrained="laion2b_s34b_b79k"
             )
             self._tokenizer = open_clip.get_tokenizer(self.model_name)
+            self._model = self._model.to(device)
             self._model.eval()
+            self._device = device
             self._loaded = True
-            logger.info("OpenCLIP 모델 로드 완료: %s", self.model_name)
+            logger.info("OpenCLIP 모델 로드 완료: %s (device=%s)", self.model_name, device)
         except ImportError:
             logger.warning("open_clip 패키지 미설치")
         except Exception:

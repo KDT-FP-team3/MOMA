@@ -30,10 +30,11 @@ from backend.multimodal.food_recognizer import FoodRecognizer
 from backend.rl_engine.env.life_env import LifeEnv, ACTION_DEFINITIONS
 from backend.rl_engine.reward_cross_domain import CrossDomainReward
 from backend.rl_engine.schedule_simulator import ScheduleSimulator
-from backend.rl_engine.retrain_scheduler import RetrainScheduler
-from backend.rl_engine.ppo_agent import PPOAgent
 from backend.services.model_registry import ModelRegistry
-from backend.dashboard.gauge_calculator import GaugeCalculator
+# 공유 서비스 (중복 초기화 방지)
+from backend.app.services_init import (
+    _safe_init, gauge_calculator, retrain_scheduler, ppo_agent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,28 +42,14 @@ router = APIRouter(tags=["AI/ML"])
 
 
 # ============================================================
-# 서비스 초기화 (그룹 A 담당 서비스만)
+# 서비스 초기화 (그룹 A 전용 서비스만 — 공유 서비스는 services_init에서)
 # ============================================================
-
-def _safe_init(name: str, factory):
-    """서비스 안전 초기화. 실패 시 None 반환 + 로그."""
-    try:
-        instance = factory()
-        logger.info("[AI Router] 서비스 초기화 성공: %s", name)
-        return instance
-    except Exception:
-        logger.exception("[AI Router] 서비스 초기화 실패 (비활성): %s", name)
-        return None
-
 
 photo_analyzer = _safe_init("PhotoAnalyzer", PhotoAnalyzer)
 food_recognizer = _safe_init("FoodRecognizer", FoodRecognizer)
 reward_calculator = _safe_init("CrossDomainReward", CrossDomainReward)
 schedule_simulator = _safe_init("ScheduleSimulator", ScheduleSimulator)
-retrain_scheduler = _safe_init("RetrainScheduler", RetrainScheduler)
-ppo_agent = _safe_init("PPOAgent", PPOAgent)
 model_registry = _safe_init("ModelRegistry", ModelRegistry)
-gauge_calculator = _safe_init("GaugeCalculator", GaugeCalculator)
 
 
 # ============================================================

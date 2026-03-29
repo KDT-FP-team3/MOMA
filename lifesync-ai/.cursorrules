@@ -1,13 +1,31 @@
-# LifeSync AI — Cursor Rules
+# LifeSync AI — Cursor Rules (v0.3.0)
 
-## 금지 사항
-1. .env 파일 내용을 코드에 하드코딩하지 말 것
-2. requirements.txt, docker-compose.yml을 무단으로 수정하지 말 것
-3. orchestrator.py의 run_chain() 시그니처 변경 금지
-4. main 브랜치 직접 push 금지
-5. 새 라이브러리 추가 시 반드시 버전 고정
+## 전역 금지 사항 (모든 팀원)
+1. `.env` 파일 내용을 코드에 하드코딩 금지
+2. `main.py`, `core/` 디렉토리 직접 수정 금지 (관리자 PR 필수)
+3. `orchestrator.py`의 `run_chain()` 시그니처 변경 금지
+4. `main` 브랜치 직접 push 금지 (PR로만 병합)
+5. 다른 팀원의 `plugins/` 폴더 수정 금지
+6. `requirements.txt`, `docker-compose.yml` 무단 수정 금지
+7. 새 라이브러리 추가 시 반드시 버전 고정 + 관리자 승인
+
+## 플러그인 규칙
+- 팀원은 `backend/plugins/자기폴더/` 안에서만 코드 작성
+- `core/interfaces.py`의 Protocol 메서드 시그니처를 정확히 구현
+- `plugin.py`의 `register(registry)` 함수로만 코어에 연결
+- LLM/API 호출 실패 시 에러 전파 금지 — 빈 결과 반환
+- 완료 후 `register()` 주석 해제 → `/api/plugins/status` 확인
+
+## 인터페이스 계약 (변경 불가)
+- DomainAgent.recommend(user_state) → {recommendations, explanation}
+- KnowledgeBase.search(query, top_k) → list[dict]
+- RLAgent.predict(state) → (action, confidence)
+- ImageAnalyzer.analyze(image_bytes) → dict
+- VoiceProcessor.speech_to_text(audio_bytes) → str
+- VoiceProcessor.text_to_speech(text) → bytes
 
 ## 코드 컨벤션
 - Python: Black 포맷터, 타입 힌트 필수, docstring Google 스타일
 - JS/JSX: Prettier, 함수형 컴포넌트만, props 타입 명시
 - 환경변수: 절대 하드코딩 금지, 반드시 os.getenv() 사용
+- 커밋: feat: / fix: / docs: / test: / refactor:

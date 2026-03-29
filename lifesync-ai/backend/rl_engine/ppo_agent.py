@@ -1,4 +1,8 @@
-"""PPO 정책 에이전트 — Stable-Baselines3 기반 PPO 학습 및 추론."""
+"""PPO 정책 에이전트 — Stable-Baselines3 기반 PPO 학습 및 추론.
+
+GPU 자동 감지: CUDA GPU가 있으면 자동으로 GPU에서 학습합니다.
+FORCE_CPU=1 환경변수로 CPU 강제 사용 가능.
+"""
 
 import logging
 import os
@@ -10,17 +14,30 @@ logger = logging.getLogger(__name__)
 
 
 class PPOAgent:
-    """PPO 강화학습 에이전트."""
+    """PPO 강화학습 에이전트. GPU 자동 감지."""
 
     def __init__(self, model_path: str | None = None) -> None:
         self.model_path = model_path
         self._model: Any = None
 
+        # GPU/CPU 자동 감지
+        try:
+            from backend.core.device import get_device, get_device_info
+            self._device = get_device()
+            info = get_device_info()
+            if self._device == "cuda":
+                logger.info("PPOAgent: GPU 사용 (%s, VRAM %.1fGB)",
+                            info.get("gpu_name", "?"), info.get("vram_gb", 0))
+            else:
+                logger.info("PPOAgent: CPU 사용")
+        except Exception:
+            self._device = "cpu"
+
         if model_path and os.path.exists(model_path):
             self.load(model_path)
 
     def train(self, total_timesteps: int = 10000) -> dict[str, Any]:
-        """PPO 모델 학습.
+        """PPO 모델 학습. GPU가 있으면 자동으로 GPU에서 학습.
 
         Args:
             total_timesteps: 총 학습 타임스텝.
@@ -42,6 +59,7 @@ class PPOAgent:
                 batch_size=64,
                 n_epochs=10,
                 gamma=0.99,
+                device=self._device,  # GPU 자동 활용
             )
             self._model.learn(total_timesteps=total_timesteps)
 
