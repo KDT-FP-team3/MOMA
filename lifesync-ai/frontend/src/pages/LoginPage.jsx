@@ -33,6 +33,8 @@ export default function LoginPage() {
         updateState("authUser", res.data.user);
         updateState("authToken", res.data.token);
         updateState("userId", res.data.user.id);
+        // 토큰을 sessionStorage에 저장 (브라우저 탭 종료 시 자동 삭제)
+        try { sessionStorage.setItem("lifesync-auth-token", res.data.token); } catch {}
         navigate("/dashboard");
       })
       .catch((err) => {
@@ -63,11 +65,14 @@ export default function LoginPage() {
   const handleGuestLogin = () => {
     updateState("authUser", {
       id: "guest",
-      nickname: "게스트",
+      nickname: "게스트 (읽기 전용)",
       profile_image: "",
       provider: "guest",
+      isGuest: true,
     });
     updateState("userId", "guest");
+    // 게스트는 토큰 없이 접근 — 백엔드에서 읽기만 허용
+    try { sessionStorage.removeItem("lifesync-auth-token"); } catch {}
     navigate("/dashboard");
   };
 

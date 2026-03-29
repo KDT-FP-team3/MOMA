@@ -78,6 +78,7 @@ function getScoreColor(score) {
 /* ─── 메인 대시보드 ─── */
 export default function DashboardPage() {
   const { state, updateState } = useAppState();
+  const isGuest = state.authUser?.isGuest === true;
   const [activeTab, setActiveTab] = useState("solution");
   const [solutionLoading, setSolutionLoading] = useState(new Set());
   const [solutionResults, setSolutionResults] = useState({});
@@ -197,13 +198,20 @@ export default function DashboardPage() {
             {/* 중앙 링 차트 */}
             <div className="relative w-44 h-44 md:w-52 md:h-52 flex-shrink-0">
               <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
-                <circle cx="100" cy="100" r="80" fill="none" stroke="#e5e7eb" strokeWidth="14"
-                  strokeDasharray={`${Math.PI * 80 * 270 / 360} ${Math.PI * 80 * 90 / 360}`}
-                  strokeLinecap="round" transform="rotate(135 100 100)" opacity="0.3" />
-                <circle cx="100" cy="100" r="80" fill="none" stroke={scoreColor} strokeWidth="14"
-                  strokeDasharray={`${Math.PI * 80 * 270 * overallScore / 36000} ${Math.PI * 80 * 2}`}
-                  strokeLinecap="round" transform="rotate(135 100 100)"
-                  style={{ transition: "stroke-dasharray 0.5s ease" }} />
+                {(() => {
+                  const R = 80, C = 2 * Math.PI * R; // 원둘레
+                  const arc = C * 270 / 360;          // 270도 호 길이
+                  const filled = arc * overallScore / 100;
+                  return (<>
+                    <circle cx="100" cy="100" r={R} fill="none" stroke="#e5e7eb" strokeWidth="14"
+                      strokeDasharray={`${arc} ${C}`}
+                      strokeLinecap="round" transform="rotate(135 100 100)" opacity="0.3" />
+                    <circle cx="100" cy="100" r={R} fill="none" stroke={scoreColor} strokeWidth="14"
+                      strokeDasharray={`${filled} ${C}`}
+                      strokeLinecap="round" transform="rotate(135 100 100)"
+                      style={{ transition: "stroke-dasharray 0.5s ease" }} />
+                  </>);
+                })()}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl md:text-4xl font-black" style={{ color: scoreColor }}>
@@ -297,7 +305,7 @@ export default function DashboardPage() {
                       {!result && (
                         <button
                           onClick={() => applySolution(sol)}
-                          disabled={isLoading}
+                          disabled={isLoading || isGuest}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                             isLoading
                               ? "bg-gray-700 text-white"

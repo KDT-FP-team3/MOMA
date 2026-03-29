@@ -99,8 +99,8 @@ export default function GaugePanel() {
           const value = Math.round(gauges[key] || 0);
           const status = getStatus(value, invert);
           // SVG 게이지: 240도 범위 (210 ~ -30)
-          const R = 36;
-          const arcLen = Math.PI * R * 240 / 180;
+          const R = 36, C = 2 * Math.PI * R;
+          const arcLen = C * 240 / 360;
           const filled = arcLen * value / 100;
 
           return (
@@ -111,10 +111,10 @@ export default function GaugePanel() {
               <div className="relative w-20 h-20 md:w-24 md:h-24 group-hover:scale-105 transition-transform duration-300">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
                   <circle cx="50" cy="50" r={R} fill="none" stroke="#e5e7eb" strokeWidth="8"
-                    strokeDasharray={`${arcLen} ${Math.PI * R * 2 - arcLen}`}
+                    strokeDasharray={`${arcLen} ${C}`}
                     strokeLinecap="round" transform="rotate(150 50 50)" opacity="0.25" />
                   <circle cx="50" cy="50" r={R} fill="none" stroke={color} strokeWidth="8"
-                    strokeDasharray={`${filled} ${Math.PI * R * 2 - filled}`}
+                    strokeDasharray={`${filled} ${C}`}
                     strokeLinecap="round" transform="rotate(150 50 50)"
                     style={{ transition: "stroke-dasharray 0.5s ease" }} />
                 </svg>

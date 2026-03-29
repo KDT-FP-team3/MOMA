@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { path: "/", label: "홈", icon: Home },
   { path: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { path: "/analysis", label: "사진 분석", icon: Camera },
-  { path: "/roadmap", label: "로드맵", icon: Map },
   { path: "/simulator", label: "시뮬레이터", icon: User },
   { path: "/schedule", label: "생활패턴", icon: Clock },
   { path: "/avatar", label: "가상인물", icon: PersonStanding },

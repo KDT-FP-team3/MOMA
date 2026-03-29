@@ -5,8 +5,8 @@
  * PPO 강화학습 환경(LifeEnv)을 API로 호출하여 시뮬레이션.
  */
 import { useState, useEffect, useCallback } from "react";
-import { RadialBarChart, RadialBar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Play, RotateCcw, TrendingUp, TrendingDown, Minus, User, Zap, AlertTriangle } from "lucide-react";
+import { RadialBarChart, RadialBar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
+import { Play, RotateCcw, TrendingUp, TrendingDown, Minus, User, Zap, AlertTriangle, Map } from "lucide-react";
 import axios from "axios";
 import Layout from "../components/layout/Layout";
 import CharacterCard from "../components/CharacterCard";
@@ -58,6 +58,7 @@ export default function SimulatorPage() {
   const [totalReward, setTotalReward] = useState(() => saved.totalReward || 0);
   const [showAnimation, setShowAnimation] = useState(false);
   const [actionLog, setActionLog] = useState(() => saved.actionLog || []);
+  const [simTab, setSimTab] = useState("sim");
 
   // Save simulator state to global context + localStorage whenever it changes
   useEffect(() => {
@@ -165,6 +166,20 @@ export default function SimulatorPage() {
   return (
     <Layout>
       <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
+        {/* 탭 헤더: 시뮬레이션 / 12주 로드맵 */}
+        <div className="flex gap-1 bg-gray-800/50 p-1 rounded-xl w-fit">
+          <button onClick={() => setSimTab("sim")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${simTab === "sim" ? "bg-cyan-500/15 text-cyan-400" : "text-white hover:text-cyan-400"}`}>
+            <Zap size={15} /> 시뮬레이션
+          </button>
+          <button onClick={() => setSimTab("roadmap")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${simTab === "roadmap" ? "bg-cyan-500/15 text-cyan-400" : "text-white hover:text-cyan-400"}`}>
+            <Map size={15} /> 12주 로드맵
+          </button>
+        </div>
+
+        {simTab === "roadmap" && <RoadmapTab />}
+        {simTab === "sim" && <>
         {/* 상단 바 */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -370,7 +385,128 @@ export default function SimulatorPage() {
             </div>
           </div>
         )}
+        </>}
       </div>
     </Layout>
+  );
+}
+
+/* ============================================================
+   RoadmapTab — 12주 로드맵 (시뮬레이터 탭으로 통합)
+   ============================================================ */
+const roadmapPhaseStyles = {
+  "적응기": { color: "bg-blue-500", text: "text-blue-400" },
+  "발전기": { color: "bg-orange-500", text: "text-orange-400" },
+  "강화기": { color: "bg-purple-500", text: "text-purple-400" },
+  "완성기": { color: "bg-cyan-500", text: "text-cyan-400" },
+};
+const roadmapDomainColors = { exercise: "#60a5fa", food: "#fb923c", health: "#4ade80", hobby: "#c084fc" };
+
+function fallbackRoadmap() {
+  const phases = ["적응기","적응기","발전기","발전기","강화기","강화기","강화기","강화기","완성기","완성기","완성기","완성기"];
+  return phases.map((phase, i) => ({
+    week: i + 1, phase,
+    goals: [
+      { name: "체중 관리", domain: "exercise", intensity: Math.min(1, (i+1)/8.4), description: "목표 체중 달성" },
+      { name: "식단 개선", domain: "food", intensity: Math.min(1, (i+1)/8.4), description: "균형 잡힌 식단" },
+      { name: "스트레스 관리", domain: "hobby", intensity: Math.min(1, (i+1)/8.4), description: "스트레스 해소" },
+    ],
+  }));
+}
+
+function RoadmapTab() {
+  const [roadmap, setRoadmap] = useState([]);
+  const [expandedWeek, setExpandedWeek] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get("/api/roadmap/default");
+        setRoadmap(res.data.roadmap || []);
+      } catch { setRoadmap(fallbackRoadmap()); }
+      finally { setLoading(false); }
+    })();
+  }, []);
+
+  const chartData = roadmap.map((w) => ({
+    week: `${w.week}주`,
+    exercise: Math.round((w.goals?.find((g) => g.domain === "exercise")?.intensity || 0) * 100),
+    food: Math.round((w.goals?.find((g) => g.domain === "food")?.intensity || 0) * 100),
+    health: Math.round((w.goals?.find((g) => g.domain === "health")?.intensity || 0) * 100),
+    hobby: Math.round((w.goals?.find((g) => g.domain === "hobby")?.intensity || 0) * 100),
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-white">12주 로드맵</h2>
+        <p className="text-sm text-white mt-0.5">Top-5 조언 기반 자동 생성된 결과 로드맵</p>
+      </div>
+
+      <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-white mb-4">주간 도메인별 강도</h3>
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
+              <Tooltip />
+              <Bar dataKey="exercise" fill={roadmapDomainColors.exercise} radius={[2,2,0,0]} name="운동" />
+              <Bar dataKey="food" fill={roadmapDomainColors.food} radius={[2,2,0,0]} name="식단" />
+              <Bar dataKey="health" fill={roadmapDomainColors.health} radius={[2,2,0,0]} name="건강" />
+              <Bar dataKey="hobby" fill={roadmapDomainColors.hobby} radius={[2,2,0,0]} name="취미" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400" />
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-700" />
+          <div className="space-y-3">
+            {roadmap.map((week) => {
+              const ps = roadmapPhaseStyles[week.phase] || roadmapPhaseStyles["적응기"];
+              const isOpen = expandedWeek === week.week;
+              const progress = Math.min(100, Math.round((week.week / 12) * 100));
+              return (
+                <div key={week.week} className="relative pl-12">
+                  <div className={`absolute left-3.5 w-3 h-3 rounded-full ${ps.color} border-2 border-gray-900`} style={{ top: 8 }} />
+                  <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 hover:border-gray-600 cursor-pointer transition-all"
+                    onClick={() => setExpandedWeek(isOpen ? null : week.week)}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{week.week}주차</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full text-white ${ps.color}`}>{week.phase}</span>
+                      </div>
+                      <span className="text-xs text-white">{progress}%</span>
+                    </div>
+                    <div className="mt-2 w-full bg-gray-700 rounded-full h-1">
+                      <div className={`${ps.color} h-1 rounded-full`} style={{ width: `${progress}%` }} />
+                    </div>
+                    {isOpen && week.goals && (
+                      <div className="mt-3 space-y-2">
+                        {week.goals.map((goal, i) => (
+                          <div key={i} className="flex items-center gap-3 text-sm bg-gray-700/40 rounded-lg p-2.5">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: roadmapDomainColors[goal.domain] || "#6b7280" }} />
+                            <span style={{ color: roadmapDomainColors[goal.domain] }}>{goal.name}</span>
+                            <span className="text-white text-xs">강도 {Math.round(goal.intensity * 100)}%</span>
+                            <span className="text-white text-xs ml-auto">{goal.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -10,7 +10,7 @@ const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
 const AnalysisPage = React.lazy(() => import("./pages/AnalysisPage"));
-const RoadmapPage = React.lazy(() => import("./pages/RoadmapPage"));
+// RoadmapPage는 SimulatorPage 내 탭으로 통합됨
 const SimulatorPage = React.lazy(() => import("./pages/SimulatorPage"));
 const SchedulePage = React.lazy(() => import("./pages/SchedulePage"));
 const ArchitecturePage = React.lazy(() => import("./pages/ArchitecturePage"));
@@ -54,7 +54,7 @@ export default function App() {
             <Route path="/auth/kakao/callback" element={<LoginPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
-            <Route path="/roadmap" element={<RoadmapPage />} />
+            {/* /roadmap → SimulatorPage 내 "12주 로드맵" 탭으로 통합 */}
             <Route path="/simulator" element={<SimulatorPage />} />
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/architecture" element={<ArchitecturePage />} />

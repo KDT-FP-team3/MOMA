@@ -38,7 +38,7 @@ const doc = new Document({
       // ===== TITLE =====
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:"LifeSync AI",font:"Arial",size:48,bold:true,color:"1a73e8"})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:40},children:[new TextRun({text:"v0.4.0 System Architecture Report v7",font:"Arial",size:24,color:"555555"})]}),
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:20},children:[new TextRun({text:"4 Domains | 14 Pages | 35+ API | 6 Team Members | 19 Bug Fixes",font:"Arial",size:16,color:"777777"})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:20},children:[new TextRun({text:"4 Domains | 13 Pages | 35+ API | 6 Team Members | 19 Bug Fixes | Top Nav",font:"Arial",size:16,color:"777777"})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:280},children:[new TextRun({text:"KDT-FT-team3-Chainers | 2026-03-29",font:"Arial",size:16,color:"999999"})]}),
 
       // TOC
@@ -118,16 +118,22 @@ const doc = new Document({
         ["자동 등록","plugins/__init__.py","6개 플러그인 폴더 탐색 -> register()"],
       ],[2000,2800,4560]),
 
-      h1("4. 프론트엔드 14개 페이지"),
+      h1("4. 프론트엔드 13개 페이지"),
+      p("Samsung Health 스타일 상단 네비게이션(TopNav) + 다크/라이트 자동 전환. 로드맵은 시뮬레이터 내 탭으로 통합."),
       tbl(["페이지","경로","핵심 기능"],[
-        ["홈","/","랜딩 페이지"], ["로그인","/login","카카오 OAuth + 게스트"],
-        ["온보딩","/onboarding","3단계 위저드"], ["대시보드","/dashboard","Samsung Health 링차트 + 3탭"],
-        ["사진 분석","/analysis","CLIP+YOLO -> Top-5"], ["로드맵","/roadmap","12주 타임라인"],
-        ["시뮬레이터","/simulator","PPO RL 12주"], ["생활패턴","/schedule","24시간 원형 시계"],
-        ["가상인물","/avatar","걷기 아바타 + BMI"], ["주간리포트","/report","레이더+바+신뢰구간"],
-        ["아키텍처","/architecture","60+ 노드 시스템맵"], ["관리자","/admin","서버/플러그인/GPU"],
-        ["전체 관리","/team-leader","4탭 팀 관리"],
-      ],[1400,1600,6360]),
+        ["홈","/","풀스크린 히어로 + 4도메인 이미지 카드"],
+        ["로그인","/login","카카오 OAuth + 게스트(읽기전용)"],
+        ["온보딩","/onboarding","3단계 위저드"],
+        ["대시보드","/dashboard","Samsung Health 링차트 + 솔루션/인사이트/코칭 3탭"],
+        ["사진 분석","/analysis","CLIP+YOLO -> Top-5 추천"],
+        ["시뮬레이터","/simulator","PPO RL 12주 + 12주 로드맵 탭"],
+        ["생활패턴","/schedule","24시간 원형 시계 + N일 시뮬"],
+        ["가상인물","/avatar","걷기 아바타 + BMI 체형 변화"],
+        ["주간리포트","/report","레이더+바+신뢰구간+아바타 비교"],
+        ["아키텍처","/architecture","34노드 인터랙티브 시스템맵"],
+        ["관리자","/admin","서버/플러그인/GPU/API키 상태"],
+        ["전체 관리","/team-leader","4탭 (아키텍처/팀활동/백업/보안)"],
+      ],[1600,1800,5960]),
 
       pb(),
       // ========== PART II ==========
@@ -231,13 +237,17 @@ const doc = new Document({
 
       h1("12. 보안 아키텍처"),
       tbl(["계층","구현","상세"],[
-        ["인증","JWT Bearer","프로덕션: JWT_SECRET 필수"],
+        ["인증","JWT Bearer","프로덕션: JWT_SECRET 필수, sessionStorage 저장"],
+        ["요청 인터셉터","axios","모든 API 요청에 Authorization 헤더 자동 추가"],
+        ["게스트 제한","isGuest 플래그","읽기만 허용, 솔루션 적용 버튼 비활성화"],
+        ["토큰 저장","sessionStorage","탭 종료 시 자동 삭제 (XSS 방어)"],
         ["WebSocket","토큰 검증","프로덕션: 미인증 거부"],
         ["Rate Limit","IP 기반","분당 60회"],
         ["보안 헤더","4종 자동","XSS, Clickjacking, HSTS, Referrer"],
         ["입력 검증","정규식","user_id, 모델명, 파일 확장자"],
-        ["경로 보호","PUBLIC_PATHS","관리 API 인증 필요 (v0.4.0)"],
+        ["경로 보호","PUBLIC_PATHS","관리 API 인증 필요"],
         ["데이터 검증","VALID_KEYS","WebSocket 게이지 화이트리스트"],
+        [".env 보호",".gitignore","git 히스토리에 없음 확인, .env.example 제공"],
       ],[1600,2200,5560]),
 
       h1("13. 배포 + 오프라인"),
@@ -338,11 +348,17 @@ const doc = new Document({
       part("Part IV. v0.4.0 업데이트"),
 
       h1("18. v0.4.0 변경 이력"),
-      h2("18.1 신규 기능 5건"),
+      h2("18.1 신규 기능"),
       li("전체 관리 대시보드 (TeamLeaderPage) - 4탭"),
       li("Samsung Health 스타일 대시보드 리디자인"),
-      li("라이트 모드 전역 전환 (Samsung Blue #1a73e8)"),
+      li("상단 네비게이션(TopNav) 전환 - 사이드바 제거"),
+      li("라이트 모드 전역 전환 (Samsung Blue + Tailwind 테마)"),
       li("걸어다니는 아바타 캐릭터 애니메이션"),
+      li("로드맵 -> 시뮬레이터 내 탭으로 통합 (13페이지)"),
+      li("모니터링 에이전트 시스템 (코어+4서포트+CLAUDE.md 연계)"),
+      li("SVG 게이지 (Recharts 제거) + WCAG AA 텍스트 대비"),
+      li("로그인 보안 강화 (Authorization 헤더, sessionStorage, 게스트 제한)"),
+      li("Unsplash 공용 이미지 랜딩 페이지"),
       li("홈 버튼 추가 (Sidebar)"),
       h2("18.2 버그 수정 19건 + 품질 개선 5건"),
       tbl(["ID","파일","문제","수정"],[

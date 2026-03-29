@@ -17,7 +17,7 @@
 ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
 
-/* ===== Utilities (Samsung Blue) ===== */
+/* ===== Utilities ===== */
 @layer utilities {
   .glass-card { background: rgba(17,24,39,0.6); backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(255,255,255,0.06); }
   .text-gradient { background: linear-gradient(135deg, #1a73e8, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -26,54 +26,87 @@
   .glow-border { box-shadow: 0 0 0 1px rgba(26,115,232,0.2), 0 0 15px rgba(26,115,232,0.1); }
 }
 
-/* ===== Dark Mode ===== */
+/* ══════════════════════════════════════════════
+   DARK MODE — 어두운 배경 + 밝은 텍스트
+   ══════════════════════════════════════════════ */
 .dark-mode {
   --bg-primary: #0f1724; --bg-card: #1a2332; --bg-elevated: #243044;
   --border-subtle: rgba(255,255,255,0.06); --border-default: rgba(255,255,255,0.1);
   --text-primary: #f1f5f9; --text-secondary: #cbd5e1; --text-muted: #94a3b8;
 }
 
-/* ===== Light Mode ===== */
+/* 다크 모드: text-white는 기본 흰색 유지 (Tailwind 기본) */
+/* 다크 모드: 회색 텍스트를 밝게 보정 — 어두운 카드 배경 대비 */
+.dark-mode .text-white { color: #f1f5f9 !important; }
+.dark-mode .text-gray-100, .dark-mode .text-gray-200 { color: #e2e8f0 !important; }
+.dark-mode .text-gray-300, .dark-mode .text-gray-400 { color: #cbd5e1 !important; }
+.dark-mode .text-gray-500, .dark-mode .text-gray-600 { color: #94a3b8 !important; }
+
+/* 다크 Recharts: 축/라벨/그리드 밝게 */
+.dark-mode .recharts-text { fill: #cbd5e1 !important; }
+.dark-mode .recharts-cartesian-axis-tick-value { fill: #94a3b8 !important; }
+.dark-mode .recharts-cartesian-grid line { stroke: rgba(255,255,255,0.08) !important; }
+.dark-mode .recharts-default-tooltip { background-color: #1a2332 !important; border-color: rgba(255,255,255,0.1) !important; color: #f1f5f9 !important; }
+.dark-mode .recharts-legend-item-text { color: #cbd5e1 !important; }
+
+/* ══════════════════════════════════════════════
+   LIGHT MODE — 밝은 배경 + 어두운 텍스트
+   ══════════════════════════════════════════════ */
 .light-mode {
-  --bg-primary: #f5f7fa; --bg-card: #ffffff; --bg-elevated: #f0f4f8;
+  --bg-primary: #ffffff; --bg-card: #ffffff; --bg-elevated: #f9fafb;
   --border-subtle: rgba(0,0,0,0.06); --border-default: rgba(0,0,0,0.1);
-  --text-primary: #111827; --text-secondary: #374151; --text-muted: #4b5563;
+  --text-primary: #111827; --text-secondary: #374151; --text-muted: #6b7280;
 }
 
-/* ===== Light Mode Overrides ===== */
-
-/* Background */
-.light-mode .bg-gray-950,
-.light-mode .bg-gray-900 { background-color: var(--bg-primary) !important; }
-.light-mode .bg-gray-800 { background-color: var(--bg-card) !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-.light-mode .bg-gray-700 { background-color: #f1f5f9 !important; }
+/* 라이트 모드: 배경 → 밝은 색 */
+.light-mode .bg-gray-950, .light-mode .bg-gray-900 { background-color: #ffffff !important; }
+.light-mode .bg-gray-800 { background-color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.light-mode .bg-gray-700 { background-color: #f3f4f6 !important; }
 .light-mode .bg-gray-950\/60, .light-mode .bg-gray-900\/80, .light-mode .bg-gray-800\/95 { background-color: rgba(255,255,255,0.95) !important; }
-.light-mode .bg-gray-900\/70, .light-mode .bg-gray-800\/80 { background-color: rgba(255,255,255,0.9) !important; }
-.light-mode .bg-gray-900\/60, .light-mode .bg-gray-800\/60 { background-color: rgba(255,255,255,0.85) !important; }
-.light-mode .bg-gray-900\/50, .light-mode .bg-gray-800\/50 { background-color: rgba(255,255,255,0.8) !important; }
-.light-mode .bg-gray-900\/20, .light-mode .bg-gray-800\/40 { background-color: rgba(248,250,252,0.65) !important; }
-.light-mode .bg-gray-800\/30, .light-mode .bg-gray-700\/50 { background-color: rgba(241,245,249,0.7) !important; }
-.light-mode .bg-gray-700\/30, .light-mode .bg-gray-700\/40 { background-color: rgba(241,245,249,0.5) !important; }
-.light-mode .bg-gray-600\/50 { background-color: rgba(226,232,240,0.5) !important; }
-.light-mode .bg-slate-900, .light-mode .bg-slate-800 { background-color: #f8fafc !important; }
-.light-mode .bg-black\/50 { background-color: rgba(0,0,0,0.4) !important; }
-.light-mode .bg-black\/60 { background-color: rgba(0,0,0,0.5) !important; }
+.light-mode .bg-gray-900\/70, .light-mode .bg-gray-800\/80 { background-color: rgba(255,255,255,0.92) !important; }
+.light-mode .bg-gray-900\/60, .light-mode .bg-gray-800\/60 { background-color: rgba(255,255,255,0.88) !important; }
+.light-mode .bg-gray-900\/50, .light-mode .bg-gray-800\/50 { background-color: rgba(249,250,251,0.85) !important; }
+.light-mode .bg-gray-900\/20, .light-mode .bg-gray-800\/40 { background-color: rgba(249,250,251,0.7) !important; }
+.light-mode .bg-gray-800\/30, .light-mode .bg-gray-700\/50 { background-color: rgba(243,244,246,0.7) !important; }
+.light-mode .bg-gray-700\/30, .light-mode .bg-gray-700\/40 { background-color: rgba(243,244,246,0.5) !important; }
+.light-mode .bg-gray-600\/50 { background-color: rgba(229,231,235,0.5) !important; }
+.light-mode .bg-gray-900\/50 { background-color: rgba(249,250,251,0.9) !important; }
+.light-mode .bg-gray-900\/90 { background-color: rgba(255,255,255,0.95) !important; }
+.light-mode .bg-slate-900, .light-mode .bg-slate-800 { background-color: #f9fafb !important; }
 
-/* Borders */
+/* 라이트 모드: 테두리 → 밝은 회색 */
 .light-mode .border-gray-700, .light-mode .border-gray-700\/50,
 .light-mode .border-gray-700\/40, .light-mode .border-gray-700\/30,
-.light-mode .border-gray-800 { border-color: #e2e8f0 !important; }
+.light-mode .border-gray-800 { border-color: #e5e7eb !important; }
 .light-mode .border-gray-600, .light-mode .border-gray-600\/50,
-.light-mode .border-gray-600\/60 { border-color: #cbd5e1 !important; }
-.light-mode .border-gray-500 { border-color: #94a3b8 !important; }
+.light-mode .border-gray-600\/60 { border-color: #d1d5db !important; }
+.light-mode .border-gray-500 { border-color: #9ca3af !important; }
 
-/* Text — 흰 배경 대비 강화 */
+/* 라이트 모드: 텍스트 → 어두운 색 (흰 배경 대비) */
 .light-mode .text-white { color: #111827 !important; }
-.light-mode .text-gray-100, .light-mode .text-gray-200 { color: #1e293b !important; }
+.light-mode .text-gray-100, .light-mode .text-gray-200 { color: #1f2937 !important; }
 .light-mode .text-gray-300, .light-mode .text-gray-400 { color: #374151 !important; }
-.light-mode .text-gray-500, .light-mode .text-gray-600 { color: #4b5563 !important; }
+.light-mode .text-gray-500, .light-mode .text-gray-600 { color: #6b7280 !important; }
 
-/* Accent: cyan → Samsung Blue */
+/* 라이트 Recharts: 축/라벨/그리드 어둡게 */
+.light-mode .recharts-text { fill: #374151 !important; }
+.light-mode .recharts-cartesian-axis-tick-value { fill: #6b7280 !important; }
+.light-mode .recharts-cartesian-grid line { stroke: #e5e7eb !important; }
+.light-mode .recharts-default-tooltip { background-color: #fff !important; border-color: #e5e7eb !important; color: #111827 !important; }
+.light-mode .recharts-legend-item-text { color: #374151 !important; }
+
+/* 라이트: 도메인/액션 색상 텍스트 — 밝은 배경 대비 어둡게 */
+.light-mode .text-green-400, .light-mode .text-green-500 { color: #059669 !important; }
+.light-mode .text-red-400, .light-mode .text-red-500 { color: #dc2626 !important; }
+.light-mode .text-yellow-400, .light-mode .text-yellow-500 { color: #ca8a04 !important; }
+.light-mode .text-orange-400 { color: #ea580c !important; }
+.light-mode .text-blue-400 { color: #2563eb !important; }
+.light-mode .text-purple-400 { color: #7c3aed !important; }
+.light-mode .text-violet-400 { color: #7c3aed !important; }
+.light-mode .text-emerald-400 { color: #059669 !important; }
+.light-mode .text-amber-400 { color: #d97706 !important; }
+
+/* 라이트 accent: cyan → Samsung Blue */
 .light-mode .text-cyan-400, .light-mode .text-cyan-500, .light-mode .text-cyan-300 { color: #1a73e8 !important; }
 .light-mode .bg-cyan-600 { background-color: #1a73e8 !important; }
 .light-mode .bg-cyan-500\/20, .light-mode .bg-cyan-500\/15 { background-color: rgba(26,115,232,0.1) !important; }
@@ -82,51 +115,68 @@
 .light-mode .hover\:bg-cyan-500:hover { background-color: #4285f4 !important; }
 .light-mode .shadow-cyan-500\/20, .light-mode .shadow-cyan-600\/20 { --tw-shadow-color: rgba(26,115,232,0.08) !important; }
 
-/* Hover */
-.light-mode .hover\:bg-gray-700:hover, .light-mode .hover\:bg-gray-600:hover { background-color: #e2e8f0 !important; }
-.light-mode .hover\:bg-gray-700\/50:hover, .light-mode .hover\:bg-gray-700\/30:hover { background-color: rgba(226,232,240,0.5) !important; }
-.light-mode .hover\:bg-gray-800\/80:hover { background-color: rgba(248,250,252,0.95) !important; }
-.light-mode .hover\:text-gray-200:hover { color: #1e293b !important; }
-.light-mode .hover\:border-gray-500:hover, .light-mode .hover\:border-gray-600\/60:hover,
-.light-mode .hover\:border-gray-600\/50:hover { border-color: #94a3b8 !important; }
+/* 라이트 hover */
+.light-mode .hover\:bg-gray-700:hover, .light-mode .hover\:bg-gray-600:hover { background-color: #e5e7eb !important; }
+.light-mode .hover\:bg-gray-700\/50:hover, .light-mode .hover\:bg-gray-700\/30:hover { background-color: rgba(229,231,235,0.6) !important; }
+.light-mode .hover\:bg-gray-800:hover { background-color: #f3f4f6 !important; }
+.light-mode .hover\:bg-gray-800\/80:hover { background-color: #f9fafb !important; }
+.light-mode .hover\:text-gray-200:hover { color: #1f2937 !important; }
+.light-mode .hover\:border-gray-500:hover { border-color: #9ca3af !important; }
 
-/* Shadows */
-.light-mode .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important; }
-.light-mode .shadow-xl { box-shadow: 0 10px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.03) !important; }
+/* 라이트 shadows */
+.light-mode .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04) !important; }
+.light-mode .shadow-xl { box-shadow: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04) !important; }
 
-/* Scrollbar */
+/* 라이트 scrollbar */
 .light-mode ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); }
 .light-mode ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.6); }
 
-/* SVG fills */
-.light-mode [fill="#1f2937"], .light-mode [fill="#0f172a"] { fill: #f8fafc !important; }
-.light-mode [fill="#1e293b"], .light-mode [fill="rgba(30,41,59,0.8)"], .light-mode [fill="#2d3748"] { fill: #e8edf2 !important; }
-.light-mode [fill="#374151"] { fill: #cbd5e1 !important; }
-.light-mode [fill="#e5e7eb"] { fill: #1e293b !important; }
+/* 라이트 SVG fills */
+.light-mode [fill="#1f2937"], .light-mode [fill="#0f172a"] { fill: #f9fafb !important; }
+.light-mode [fill="#1e293b"], .light-mode [fill="rgba(30,41,59,0.8)"], .light-mode [fill="#2d3748"] { fill: #e5e7eb !important; }
+.light-mode [fill="#374151"] { fill: #d1d5db !important; }
+.light-mode [fill="#e5e7eb"] { fill: #1f2937 !important; }
 
-/* Forms */
+/* 라이트 forms */
 .light-mode select, .light-mode input[type="number"], .light-mode input[type="text"] {
-  background-color: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important;
+  background-color: #f9fafb !important; border-color: #e5e7eb !important; color: #111827 !important;
 }
 .light-mode select:focus, .light-mode input:focus {
-  border-color: #1a73e8 !important; outline-color: #1a73e8 !important;
-  box-shadow: 0 0 0 3px rgba(26,115,232,0.1) !important;
+  border-color: #1a73e8 !important; box-shadow: 0 0 0 3px rgba(26,115,232,0.1) !important;
 }
 
-/* Charts */
-.light-mode .recharts-default-tooltip { background-color: #fff !important; border-color: #e2e8f0 !important; }
-.light-mode .recharts-cartesian-grid line { stroke: #e2e8f0 !important; }
-
-/* Glass */
-.light-mode .glass-card { background: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,0.06) !important; }
+/* 라이트 glass */
+.light-mode .glass-card { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.06) !important; }
 .light-mode .glow-border { box-shadow: 0 0 0 1px rgba(26,115,232,0.12), 0 0 8px rgba(26,115,232,0.06); }
 .light-mode .text-gradient { background: linear-gradient(135deg, #1a73e8, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .light-mode .accent-bar { background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8); }
 
-/* Status badges */
-.light-mode .bg-emerald-900\/20 { background-color: rgba(16,185,129,0.06) !important; }
-.light-mode .bg-red-900\/20, .light-mode .bg-red-900\/30 { background-color: rgba(239,68,68,0.06) !important; }
-.light-mode .bg-amber-900\/20 { background-color: rgba(245,158,11,0.06) !important; }
-.light-mode .bg-blue-900\/20, .light-mode .bg-cyan-900\/10 { background-color: rgba(26,115,232,0.06) !important; }
+/* 라이트 status */
+.light-mode .bg-emerald-900\/20 { background-color: rgba(16,185,129,0.08) !important; }
+.light-mode .bg-red-900\/20, .light-mode .bg-red-900\/30 { background-color: rgba(239,68,68,0.08) !important; }
+.light-mode .bg-amber-900\/20 { background-color: rgba(245,158,11,0.08) !important; }
+.light-mode .bg-blue-900\/20, .light-mode .bg-cyan-900\/10 { background-color: rgba(26,115,232,0.08) !important; }
+
+/* 라이트: 반투명 배경 강화 — 시뮬레이터/액션 배지 등 */
+.light-mode .bg-green-500\/10 { background-color: rgba(16,185,129,0.12) !important; }
+.light-mode .bg-red-500\/10 { background-color: rgba(239,68,68,0.12) !important; }
+.light-mode .bg-yellow-500\/10 { background-color: rgba(234,179,8,0.12) !important; }
+.light-mode .bg-blue-500\/10 { background-color: rgba(59,130,246,0.12) !important; }
+.light-mode .bg-purple-500\/10 { background-color: rgba(168,85,247,0.12) !important; }
+.light-mode .bg-orange-500\/10 { background-color: rgba(249,115,22,0.12) !important; }
+.light-mode .bg-cyan-500\/10 { background-color: rgba(26,115,232,0.12) !important; }
+.light-mode .bg-violet-500\/10 { background-color: rgba(139,92,246,0.12) !important; }
+.light-mode .bg-emerald-500\/10 { background-color: rgba(16,185,129,0.12) !important; }
+
+/* 라이트: 반투명 테두리 강화 */
+.light-mode .border-green-500\/30 { border-color: rgba(16,185,129,0.3) !important; }
+.light-mode .border-red-500\/30 { border-color: rgba(239,68,68,0.3) !important; }
+.light-mode .border-yellow-500\/30 { border-color: rgba(234,179,8,0.3) !important; }
+.light-mode .border-blue-500\/30 { border-color: rgba(59,130,246,0.3) !important; }
+.light-mode .border-purple-500\/30 { border-color: rgba(168,85,247,0.3) !important; }
+.light-mode .border-orange-500\/30 { border-color: rgba(249,115,22,0.3) !important; }
+
+/* 라이트: 카운트 배지 배경 */
+.light-mode .bg-gray-700 { background-color: #e5e7eb !important; }
 
 @media print { body { background: #fff; color: #333; } .accent-bar { display: none; } }

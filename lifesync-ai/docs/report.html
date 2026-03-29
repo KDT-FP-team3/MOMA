@@ -62,7 +62,7 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <h1>LifeSync AI</h1>
   <p class="subtitle">일상 생활 크로스 도메인 통합 관리 AI 에이전트 — 시스템 아키텍처 보고서 v0.4.0</p>
   <div>
-    <span class="badge badge-green">14개 페이지</span>
+    <span class="badge badge-green">13개 페이지</span>
     <span class="badge badge-blue">35+ API</span>
     <span class="badge badge-purple">5개 AI 모델</span>
     <span class="badge badge-orange">4개 도메인</span>
@@ -122,7 +122,17 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   </div>
   <div class="card">
     <div class="card-title">게이지 SVG 전환 + Tailwind 테마</div>
-    <p>Recharts RadialBarChart를 순수 SVG circle로 교체 (불필요 내부 링 제거). Tailwind 테마를 Samsung Blue로 전환. index.css !important 148개 &rarr; 49개 (67% 감소). 텍스트 대비 WCAG AA 준수.</p>
+    <p>Recharts RadialBarChart를 순수 SVG circle로 교체 (불필요 내부 링 제거). Tailwind 테마를 Samsung Blue로 전환. 텍스트 대비 WCAG AA 준수.</p>
+  </div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">상단 네비게이션 + 로드맵 통합</div>
+    <p>사이드바 제거 &rarr; 상단 TopNav 전환. 로드맵 페이지를 시뮬레이터 내 탭으로 통합 (14개 &rarr; 13개 페이지). Unsplash 공용 이미지 랜딩 페이지.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">로그인 보안 강화</div>
+    <p>Authorization 헤더 자동 추가 (axios 요청 인터셉터). 토큰 sessionStorage 저장 (탭 종료 시 자동 삭제). 게스트 모드 읽기 전용 제한. .env.example 제공.</p>
   </div>
 </div>
 
@@ -518,7 +528,7 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <tr><td><code>ai_router.py</code></td><td>그룹 A (AI/ML)</td><td>/api/photo/*, /api/simulation/*, /api/models/*, /api/rl/*</td></tr>
 <tr><td><code>api_router.py</code></td><td>그룹 B (백엔드)</td><td>/api/query, /api/dashboard, /api/auth, /api/onboarding, /ws</td></tr>
 <tr><td><code>admin_router.py</code></td><td>전체 관리</td><td>/api/admin/team-progress, git-history, conflicts, backup, security-audit, orchestrator-stats</td></tr>
-<tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>14개 페이지, 16개 컴포넌트, 오프라인 엔진</td></tr>
+<tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>13개 페이지 (TopNav), 16개 컴포넌트, 오프라인 엔진</td></tr>
 </table>
 
 <!-- ═══════════════════════════════ 4-11 (Summarized) ═══════════════════════════════ -->

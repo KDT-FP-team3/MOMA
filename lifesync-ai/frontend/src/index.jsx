@@ -18,6 +18,21 @@ if (API_BASE) {
 // API 타임아웃 설정 (30초)
 axios.defaults.timeout = 30000;
 
+// 요청 인터셉터 — 모든 API 요청에 Authorization 헤더 자동 추가
+axios.interceptors.request.use((config) => {
+  try {
+    const saved = localStorage.getItem("lifesync-app-state");
+    if (saved) {
+      // authToken은 localStorage에 저장하지 않으므로 sessionStorage에서 가져옴
+      const token = sessionStorage.getItem("lifesync-auth-token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch { /* ignore */ }
+  return config;
+});
+
 // 응답 인터셉터 — 401 시 로그인 리다이렉트, 서버 에러 콘솔 로깅
 axios.interceptors.response.use(
   (res) => res,

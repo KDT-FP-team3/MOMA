@@ -97,8 +97,8 @@ lifesync-ai/
 │       ├── weather_monitor.py         # 기상청 단기예보 + 에어코리아 대기오염 API
 │       └── plan_adjuster.py           # 날씨 → 운동 플랜 자동 조정
 ├── frontend/src/
-│   ├── pages/ (14개)                  # Landing, Login, Onboarding, Dashboard(Samsung Health),
-│   │                                  # Analysis, Simulator, Schedule, Roadmap, Avatar, Report,
+│   ├── pages/ (13개)                  # Landing, Login, Onboarding, Dashboard(Samsung Health),
+│   │                                  # Analysis, Simulator(+로드맵 탭), Schedule, Avatar, Report,
 │   │                                  # Architecture, Admin, TeamLeader (전체 관리)
 │   ├── components/                    # GaugePanel, QuickChat, CascadeAlert, AvatarBody(걷기) 등
 │   ├── context/                       # AppStateContext (전역 상태), ThemeContext (라이트/다크)
@@ -264,7 +264,7 @@ Claude Code / Cursor가 해당 폴더에서 작업 시 자동으로 읽습니다
 - ArchitecturePage: admin_router, TeamLeader, Dashboard v2 노드 추가
 
 ## 에이전트 점검 현황 (자동 업데이트)
-- 마지막 점검: 2026-03-29 10:03 UTC
+- 마지막 점검: 2026-03-29 13:54 UTC
 - 전체 건강도: 82/100
 - 코드 품질: 80/100 (pass:5 fail:1 warn:0)
 - 플러그인: active 6개 / fallback 5개

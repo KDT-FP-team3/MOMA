@@ -3,6 +3,7 @@
   "appName": "LifeSync AI",
   "webDir": "dist",
   "server": {
-    "cleartext": false
+    "cleartext": true,
+    "allowNavigation": ["192.168.*.*", "10.*.*.*"]
   }
 }
