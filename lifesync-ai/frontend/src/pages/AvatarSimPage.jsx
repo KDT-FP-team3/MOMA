@@ -77,18 +77,18 @@ function HistoryEntry({ entry, index, onDelete }) {
     .join(", ");
   return (
     <div className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs group ${isPos ? "bg-emerald-900/20" : "bg-red-900/20"}`}>
-      <span className="text-gray-500 font-mono w-5 text-center">{index + 1}</span>
+      <span className="text-white font-mono w-5 text-center">{index + 1}</span>
       <span className="text-sm">{entry.icon}</span>
       <div className="flex-1 min-w-0">
-        <span className="text-gray-300 truncate block">{entry.label}</span>
-        <span className="text-gray-500 text-[10px] truncate block">{effects}</span>
+        <span className="text-white truncate block">{entry.label}</span>
+        <span className="text-white text-[10px] truncate block">{effects}</span>
       </div>
       <span className={`font-mono text-xs ${isPos ? "text-emerald-400" : "text-red-400"}`}>
         {isPos ? "+" : "-"}
       </span>
       <button
         onClick={() => onDelete(index)}
-        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity text-xs px-1"
+        className="opacity-0 group-hover:opacity-100 text-white hover:text-red-400 transition-opacity text-xs px-1"
         title="삭제"
       >
         X
@@ -107,7 +107,7 @@ function StatBar({ label, value, icon, color }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-gray-400">{icon} {label}</span>
+        <span className="text-white">{icon} {label}</span>
         <span className={`font-semibold ${textColor}`}>{pct.toFixed(0)}</span>
       </div>
       <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -221,7 +221,7 @@ export default function AvatarSimPage() {
             <button
               onClick={() => setShowCustomize((prev) => !prev)}
               className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                showCustomize ? "bg-purple-700 hover:bg-purple-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                showCustomize ? "bg-purple-700 hover:bg-purple-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"
               }`}
             >
               {showCustomize ? "완료" : "꾸미기"}
@@ -229,12 +229,12 @@ export default function AvatarSimPage() {
             <button
               onClick={() => setShowCompare((prev) => !prev)}
               className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                showCompare ? "bg-cyan-700 hover:bg-cyan-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                showCompare ? "bg-cyan-700 hover:bg-cyan-600 text-white" : "bg-gray-700 hover:bg-gray-600 text-white"
               }`}
             >
               {showCompare ? "돌아가기" : "비교"}
             </button>
-            <button onClick={reset} className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm text-gray-300">
+            <button onClick={reset} className="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm text-white">
               초기화
             </button>
           </div>
@@ -243,7 +243,7 @@ export default function AvatarSimPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* 왼쪽: 선택지 */}
           <div className="lg:col-span-4 space-y-2">
-            <h2 className="text-sm font-semibold text-gray-400 mb-2">생활 선택하기</h2>
+            <h2 className="text-sm font-semibold text-white mb-2">생활 선택하기</h2>
             {CHOICES.map((cat) => (
               <div key={cat.category} className="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
                 <button
@@ -251,7 +251,7 @@ export default function AvatarSimPage() {
                   className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white hover:bg-gray-700/30 transition-colors"
                 >
                   <span>{cat.category}</span>
-                  <span className="text-gray-500 text-xs">{openCat === cat.category ? "▲" : "▼"}</span>
+                  <span className="text-white text-xs">{openCat === cat.category ? "▲" : "▼"}</span>
                 </button>
                 {openCat === cat.category && (
                   <div className="px-3 pb-3 grid grid-cols-1 gap-1.5">
@@ -268,7 +268,7 @@ export default function AvatarSimPage() {
                         <span className="text-base">{item.icon}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-gray-200 font-medium">{item.label}</p>
-                          <p className="text-gray-500 text-[10px] mt-0.5">
+                          <p className="text-white text-[10px] mt-0.5">
                             {Object.entries(item.effect)
                               .filter(([, v]) => v !== 0)
                               .map(([k, v]) => `${k} ${v > 0 ? "+" : ""}${v}`)
@@ -291,11 +291,11 @@ export default function AvatarSimPage() {
             {showCompare ? (
               /* Before / After 비교 모드 */
               <>
-                <h2 className="text-sm font-semibold text-gray-400">Before / After 비교</h2>
+                <h2 className="text-sm font-semibold text-white">Before / After 비교</h2>
                 <div className="flex items-end gap-6">
                   {/* Before (시작) */}
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-500 bg-gray-800 px-3 py-1 rounded-full">시작</span>
+                    <span className="text-xs font-semibold text-white bg-gray-800 px-3 py-1 rounded-full">시작</span>
                     <AvatarBody
                       bmi={initialStateRef.current.bmi}
                       mood={initialStateRef.current.mood}
@@ -310,7 +310,7 @@ export default function AvatarSimPage() {
                     />
                   </div>
                   {/* Arrow */}
-                  <div className="text-2xl text-gray-600 mb-16">→</div>
+                  <div className="text-2xl text-white mb-16">→</div>
                   {/* After (현재) */}
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-xs font-semibold text-cyan-400 bg-cyan-900/30 px-3 py-1 rounded-full">현재</span>
@@ -333,7 +333,7 @@ export default function AvatarSimPage() {
                   <div className="text-4xl font-bold" style={{ color: overallColor }}>
                     {overallScore}
                   </div>
-                  <div className="text-sm text-gray-400 mt-1">
+                  <div className="text-sm text-white mt-1">
                     종합 건강 점수 · <span style={{ color: overallColor }}>{overallLabel}</span>
                   </div>
                 </div>
@@ -346,7 +346,7 @@ export default function AvatarSimPage() {
                   <div className="text-5xl font-bold" style={{ color: overallColor }}>
                     {overallScore}
                   </div>
-                  <div className="text-sm text-gray-400 mt-1">
+                  <div className="text-sm text-white mt-1">
                     종합 건강 점수 · <span style={{ color: overallColor }}>{overallLabel}</span>
                   </div>
                 </div>
@@ -370,10 +370,10 @@ export default function AvatarSimPage() {
                 {/* 꾸미기 패널 */}
                 {showCustomize && (
                   <div className="w-full max-w-xs bg-gray-800/50 rounded-xl border border-gray-700 p-3 space-y-3">
-                    <p className="text-xs font-semibold text-gray-400">캐릭터 꾸미기</p>
+                    <p className="text-xs font-semibold text-white">캐릭터 꾸미기</p>
                     {/* 피부색 */}
                     <div>
-                      <p className="text-[10px] text-gray-500 mb-1.5">피부색</p>
+                      <p className="text-[10px] text-white mb-1.5">피부색</p>
                       <div className="flex gap-2">
                         {SKIN_OPTIONS.map((s) => (
                           <button
@@ -388,13 +388,13 @@ export default function AvatarSimPage() {
                     </div>
                     {/* 헤어스타일 */}
                     <div>
-                      <p className="text-[10px] text-gray-500 mb-1.5">헤어스타일</p>
+                      <p className="text-[10px] text-white mb-1.5">헤어스타일</p>
                       <div className="flex gap-1.5 flex-wrap">
                         {HAIR_OPTIONS.map((h) => (
                           <button
                             key={h.key}
                             onClick={() => setAvatarCustom((p) => ({ ...p, hairStyle: h.key }))}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] transition-all ${avatarCustom.hairStyle === h.key ? "bg-cyan-600 text-white" : "bg-gray-700 text-gray-400"}`}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] transition-all ${avatarCustom.hairStyle === h.key ? "bg-cyan-600 text-white" : "bg-gray-700 text-white"}`}
                           >
                             {h.label}
                           </button>
@@ -403,7 +403,7 @@ export default function AvatarSimPage() {
                     </div>
                     {/* 머리색 */}
                     <div>
-                      <p className="text-[10px] text-gray-500 mb-1.5">머리색</p>
+                      <p className="text-[10px] text-white mb-1.5">머리색</p>
                       <div className="flex gap-2">
                         {HAIR_COLORS.map((hc) => (
                           <button
@@ -435,9 +435,9 @@ export default function AvatarSimPage() {
           {/* 오른쪽: 히스토리 */}
           <div className="lg:col-span-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-400">선택 히스토리 ({history.length})</h2>
+              <h2 className="text-sm font-semibold text-white">선택 히스토리 ({history.length})</h2>
               {history.length > 0 && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-white">
                   +{history.filter((h) => h.type === "positive").length} / -{history.filter((h) => h.type === "negative").length}
                 </span>
               )}
@@ -445,7 +445,7 @@ export default function AvatarSimPage() {
 
             <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-3 max-h-[600px] overflow-y-auto space-y-1.5">
               {history.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-8">
+                <p className="text-xs text-white text-center py-8">
                   왼쪽에서 생활 선택을 하면<br />캐릭터가 변화합니다
                 </p>
               ) : (

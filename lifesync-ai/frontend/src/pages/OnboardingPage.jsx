@@ -13,18 +13,18 @@ import { useAppState } from "../context/AppStateContext";
 import axios from "axios";
 
 const AGE_OPTIONS = [
-  { label: "10대", emoji: "", value: "10s" },
-  { label: "20대", emoji: "", value: "20s" },
-  { label: "30대", emoji: "", value: "30s" },
-  { label: "40대", emoji: "", value: "40s" },
-  { label: "50대+", emoji: "", value: "50s+" },
+  { label: "10대", emoji: "🧑", value: "10s" },
+  { label: "20대", emoji: "👨", value: "20s" },
+  { label: "30대", emoji: "👨‍💼", value: "30s" },
+  { label: "40대", emoji: "👨‍🦳", value: "40s" },
+  { label: "50대+", emoji: "👴", value: "50s+" },
 ];
 
 const ACTIVITY_OPTIONS = [
-  { label: "비활동적", emoji: "", value: "sedentary" },
-  { label: "보통", emoji: "", value: "moderate" },
-  { label: "활동적", emoji: "", value: "active" },
-  { label: "매우 활동적", emoji: "", value: "very_active" },
+  { label: "비활동적", emoji: "🛋️", value: "sedentary" },
+  { label: "보통", emoji: "🚶", value: "moderate" },
+  { label: "활동적", emoji: "🏃", value: "active" },
+  { label: "매우 활동적", emoji: "⚡", value: "very_active" },
 ];
 
 const SLEEP_OPTIONS = [
@@ -62,7 +62,7 @@ function OptionCard({ emoji, label, selected, onClick }) {
         }`}
     >
       <span className="text-2xl">{emoji}</span>
-      <span className={`text-sm font-medium ${selected ? "text-blue-300" : "text-gray-300"}`}>
+      <span className={`text-sm font-medium ${selected ? "text-blue-300" : "text-white"}`}>
         {label}
       </span>
     </button>
@@ -73,10 +73,10 @@ function SliderField({ label, value, min, max, step, unit, onChange }) {
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-gray-300 text-sm">{label}</span>
+        <span className="text-white text-sm">{label}</span>
         <span className="text-blue-400 font-bold text-lg">
           {value}
-          <span className="text-sm text-gray-400 ml-1">{unit}</span>
+          <span className="text-sm text-white ml-1">{unit}</span>
         </span>
       </div>
       <input
@@ -88,7 +88,7 @@ function SliderField({ label, value, min, max, step, unit, onChange }) {
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
       />
-      <div className="flex justify-between text-xs text-gray-500">
+      <div className="flex justify-between text-xs text-white">
         <span>{min}{unit}</span>
         <span>{max}{unit}</span>
       </div>
@@ -165,10 +165,10 @@ export default function OnboardingPage() {
           {/* Progress bar */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-white">
                 Step {step} / 3
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-white">
                 {Math.round(progressPercent)}%
               </span>
             </div>
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
             <div className="space-y-8 max-w-xl">
               {/* Age range */}
               <div>
-                <h3 className="text-gray-300 font-medium mb-3">나이대</h3>
+                <h3 className="text-white font-medium mb-3">나이대</h3>
                 <div className="flex flex-wrap gap-3">
                   {AGE_OPTIONS.map((opt) => (
                     <OptionCard
@@ -237,7 +237,7 @@ export default function OnboardingPage() {
             <div className="space-y-8 max-w-xl">
               {/* Activity level */}
               <div>
-                <h3 className="text-gray-300 font-medium mb-3">활동량</h3>
+                <h3 className="text-white font-medium mb-3">활동량</h3>
                 <div className="flex flex-wrap gap-3">
                   {ACTIVITY_OPTIONS.map((opt) => (
                     <OptionCard
@@ -253,7 +253,7 @@ export default function OnboardingPage() {
 
               {/* Sleep pattern */}
               <div>
-                <h3 className="text-gray-300 font-medium mb-3">수면 패턴</h3>
+                <h3 className="text-white font-medium mb-3">수면 패턴</h3>
                 <div className="flex flex-wrap gap-3">
                   {SLEEP_OPTIONS.map((opt) => (
                     <OptionCard
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
 
               {/* Stress level */}
               <div>
-                <h3 className="text-gray-300 font-medium mb-3">스트레스 수준</h3>
+                <h3 className="text-white font-medium mb-3">스트레스 수준</h3>
                 <div className="flex flex-wrap gap-3">
                   {STRESS_OPTIONS.map((opt) => (
                     <OptionCard
@@ -287,7 +287,7 @@ export default function OnboardingPage() {
 
           {step === 3 && (
             <div className="space-y-6 max-w-xl">
-              <p className="text-gray-400 text-sm">
+              <p className="text-white text-sm">
                 달성하고 싶은 목표를 모두 선택해주세요.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => setStep((s) => s - 1)}
-                className="px-6 py-3 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors"
+                className="px-6 py-3 rounded-xl border border-gray-600 text-white hover:bg-gray-800 transition-colors"
               >
                 이전
               </button>
@@ -348,7 +348,7 @@ export default function OnboardingPage() {
 
         {/* Right: Avatar preview */}
         <div className="hidden lg:flex flex-col items-center justify-center w-80 xl:w-96 border-l border-gray-800 bg-gray-900/50 p-8">
-          <h3 className="text-gray-400 text-sm font-medium mb-6 tracking-wide uppercase">
+          <h3 className="text-white text-sm font-medium mb-6 tracking-wide uppercase">
             Avatar Preview
           </h3>
           <div className="bg-gray-800/40 rounded-2xl p-8 border border-gray-700/50">
@@ -363,30 +363,30 @@ export default function OnboardingPage() {
               animate
             />
           </div>
-          <div className="mt-6 space-y-2 text-xs text-gray-500 w-full">
+          <div className="mt-6 space-y-2 text-xs text-white w-full">
             <div className="flex justify-between">
               <span>BMI</span>
-              <span className="text-gray-300">{avatarProps.bmi.toFixed(1)}</span>
+              <span className="text-white">{avatarProps.bmi.toFixed(1)}</span>
             </div>
             <div className="flex justify-between">
               <span>기분</span>
-              <span className="text-gray-300">{Math.round(avatarProps.mood)}</span>
+              <span className="text-white">{Math.round(avatarProps.mood)}</span>
             </div>
             <div className="flex justify-between">
               <span>에너지</span>
-              <span className="text-gray-300">{Math.round(avatarProps.energy)}</span>
+              <span className="text-white">{Math.round(avatarProps.energy)}</span>
             </div>
             <div className="flex justify-between">
               <span>스트레스</span>
-              <span className="text-gray-300">{Math.round(avatarProps.stress)}</span>
+              <span className="text-white">{Math.round(avatarProps.stress)}</span>
             </div>
             <div className="flex justify-between">
               <span>수면</span>
-              <span className="text-gray-300">{Math.round(avatarProps.sleep)}</span>
+              <span className="text-white">{Math.round(avatarProps.sleep)}</span>
             </div>
             <div className="flex justify-between">
               <span>건강</span>
-              <span className="text-gray-300">{Math.round(avatarProps.health)}</span>
+              <span className="text-white">{Math.round(avatarProps.health)}</span>
             </div>
           </div>
         </div>

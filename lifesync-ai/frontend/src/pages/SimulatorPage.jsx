@@ -17,10 +17,10 @@ import { useAppState } from "../context/AppStateContext";
 const ACTION_STYLES = {
   healthy_meal:      { emoji: "🥗", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강한 식사" },
   unhealthy_meal:    { emoji: "🍔", color: "text-red-400",    bg: "bg-red-500/10",   border: "border-red-500/30",   label: "불건강한 식사" },
-  skip_meal:         { emoji: "🚫", color: "text-gray-400",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "식사 건너뛰기" },
+  skip_meal:         { emoji: "🚫", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "식사 건너뛰기" },
   cardio_exercise:   { emoji: "🏃", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "유산소 운동" },
   strength_exercise: { emoji: "🏋️", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "근력 운동" },
-  skip_exercise:     { emoji: "😴", color: "text-gray-400",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "운동 건너뛰기" },
+  skip_exercise:     { emoji: "😴", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "운동 건너뛰기" },
   health_check:      { emoji: "🏥", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강 체크" },
   sleep_optimize:    { emoji: "🌙", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "수면 최적화" },
   hobby_activity:    { emoji: "🎸", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "취미 활동" },
@@ -116,7 +116,8 @@ export default function SimulatorPage() {
       ].slice(-30));
 
       // 행동 로그 누적
-      const actionName = Object.keys(ACTION_STYLES)[actionId];
+      const actionKeys = Object.keys(ACTION_STYLES);
+      const actionName = actionId < actionKeys.length ? actionKeys[actionId] : `action_${actionId}`;
       setActionLog((prev) => [
         ...prev,
         { name: actionName, step: res.data.step, reward: res.data.reward },
@@ -140,7 +141,7 @@ export default function SimulatorPage() {
             <h1 className="text-3xl font-bold">
               건강 <span className="text-cyan-400">시뮬레이터</span>
             </h1>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="text-white leading-relaxed">
               가상의 인물을 생성하고, 매일의 선택(식사, 운동, 취미 등)에 따라
               <br />
               건강 상태가 어떻게 변화하는지 <strong className="text-white">12주간 시뮬레이션</strong>합니다.
@@ -169,7 +170,7 @@ export default function SimulatorPage() {
           <div>
             <h1 className="text-xl font-bold">
               건강 시뮬레이터
-              <span className="text-sm font-normal text-gray-500 ml-2">
+              <span className="text-sm font-normal text-white ml-2">
                 {week}주차 {day}일 (Day {step}/84)
               </span>
             </h1>
@@ -189,8 +190,8 @@ export default function SimulatorPage() {
         {terminated && (
           <div className="bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border border-cyan-700/30 rounded-xl p-5 text-center">
             <h2 className="text-lg font-bold text-cyan-400">12주 시뮬레이션 완료!</h2>
-            <p className="text-gray-400 mt-1">총 보상: <strong className={totalReward >= 0 ? "text-green-400" : "text-red-400"}>{totalReward.toFixed(1)}</strong></p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-white mt-1">총 보상: <strong className={totalReward >= 0 ? "text-green-400" : "text-red-400"}>{totalReward.toFixed(1)}</strong></p>
+            <p className="text-sm text-white mt-1">
               체중: {state?.weight_kg}kg | BMI: {state?.bmi} | 수면: {state?.sleep_score} | 스트레스: {state?.stress_level}
             </p>
             <button onClick={reset} className="mt-3 px-5 py-2 bg-cyan-600 hover:bg-cyan-500 rounded-lg text-sm font-medium transition-colors">
@@ -231,7 +232,7 @@ export default function SimulatorPage() {
 
           {/* 행동 선택 패널 */}
           <div className="lg:col-span-2 bg-gray-800 border border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">
+            <h3 className="text-sm font-semibold text-white mb-3">
               오늘의 선택 <span className="text-cyan-400">— 행동을 클릭하세요</span>
             </h3>
 
@@ -264,8 +265,8 @@ export default function SimulatorPage() {
               return (
                 <div className="mt-4 bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 max-h-64 overflow-y-auto">
                   <div className="flex items-center justify-between mb-2 sticky top-0 bg-gray-900/90 pb-1 z-10">
-                    <h4 className="text-xs font-semibold text-gray-500">행동 누적 기록</h4>
-                    <span className="text-[10px] text-gray-600">총 {actionLog.length}회</span>
+                    <h4 className="text-xs font-semibold text-white">행동 누적 기록</h4>
+                    <span className="text-[10px] text-white">총 {actionLog.length}회</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {entries.map(([name, info]) => {
@@ -276,7 +277,7 @@ export default function SimulatorPage() {
                           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${style.border || "border-gray-600"} ${style.bg || "bg-gray-700/30"}`}
                         >
                           <span className="text-sm">{style.emoji}</span>
-                          <span className={`text-[11px] font-medium ${style.color || "text-gray-300"}`}>
+                          <span className={`text-[11px] font-medium ${style.color || "text-white"}`}>
                             {style.label || name}
                           </span>
                           <span className="text-[11px] font-bold text-white bg-gray-700 rounded-full px-1.5 min-w-[20px] text-center">
@@ -294,8 +295,8 @@ export default function SimulatorPage() {
                     {[...actionLog].reverse().map((log, i) => {
                       const style = ACTION_STYLES[log.name] || {};
                       return (
-                        <div key={i} className="flex items-center gap-2 text-[10px] text-gray-500">
-                          <span className="text-gray-600 w-10">Day {log.step}</span>
+                        <div key={i} className="flex items-center gap-2 text-[10px] text-white">
+                          <span className="text-white w-10">Day {log.step}</span>
                           <span>{style.emoji} {style.label}</span>
                           <span className={`ml-auto ${log.reward >= 0 ? "text-green-500" : "text-red-500"}`}>
                             {log.reward >= 0 ? "+" : ""}{log.reward.toFixed(1)}
@@ -326,8 +327,8 @@ export default function SimulatorPage() {
                 </div>
                 <div className="space-y-1">
                   {lastCascade.effects?.map((eff, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
-                      <span className="text-gray-600">→</span>
+                    <div key={i} className="flex items-center gap-2 text-xs text-white">
+                      <span className="text-white">→</span>
                       <span>{eff.impact}</span>
                     </div>
                   ))}
@@ -341,7 +342,7 @@ export default function SimulatorPage() {
         {/* 건강 변화 그래프 */}
         {history.length > 1 && (
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">건강 상태 변화 추이</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">건강 상태 변화 추이</h3>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={history}>
@@ -361,7 +362,7 @@ export default function SimulatorPage() {
             </div>
             <div className="flex gap-4 mt-2 justify-center">
               {[["체중", "#ff6b6b"], ["수면", "#748ffc"], ["스트레스", "#ff922b"], ["기분", "#20c997"]].map(([l, c]) => (
-                <div key={l} className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                <div key={l} className="flex items-center gap-1.5 text-[10px] text-white">
                   <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: c }} />
                   {l}
                 </div>

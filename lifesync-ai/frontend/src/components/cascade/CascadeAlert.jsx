@@ -84,7 +84,7 @@ export default function CascadeAlert({ alerts: propAlerts }) {
 
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
         {visible.length === 0 ? (
-          <p className="text-center text-gray-600 text-sm py-10">연쇄 경고 없음</p>
+          <p className="text-center text-white text-sm py-10">연쇄 경고 없음</p>
         ) : (
           visible.map((alert) => {
             const style = severityStyles[alert.severity] || severityStyles.medium;
@@ -108,10 +108,10 @@ export default function CascadeAlert({ alerts: propAlerts }) {
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full text-white ${style.badge}`}>
                     {alert.reward > 0 ? "+" : ""}{alert.reward}
                   </span>
-                  {isOpen ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
+                  {isOpen ? <ChevronUp size={14} className="text-white" /> : <ChevronDown size={14} className="text-white" />}
                   <button
                     onClick={(e) => { e.stopPropagation(); setDismissed((p) => new Set([...p, alert.id])); }}
-                    className="text-gray-600 hover:text-gray-400"
+                    className="text-white hover:text-white"
                   >
                     <X size={12} />
                   </button>
@@ -122,7 +122,7 @@ export default function CascadeAlert({ alerts: propAlerts }) {
                   <div className="px-3 pb-3 space-y-1.5">
                     {alert.effects.map((eff, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs ml-5">
-                        <span className="text-gray-600">→</span>
+                        <span className="text-white">→</span>
                         <span>{domainIcons[eff.domain]}</span>
                         <span className={eff.delta > 0 ? "text-green-400" : "text-red-400"}>
                           {eff.impact}

@@ -97,7 +97,7 @@ function CustomTooltip({ active, payload, label }) {
 
   return (
     <div className="rounded-lg border border-gray-700 bg-gray-900/95 px-3 py-2 text-sm shadow-lg z-50">
-      <p className="mb-1 font-semibold text-gray-300">{label}</p>
+      <p className="mb-1 font-semibold text-white">{label}</p>
       {lines.map((entry) => {
         const metricKey = entry.dataKey;
         const row = entry.payload;
@@ -116,11 +116,11 @@ function CustomTooltip({ active, payload, label }) {
               className="inline-block h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-gray-400">{entry.name}:</span>
+            <span className="text-white">{entry.name}:</span>
             <span className="font-medium text-white">
               {Number(value).toFixed(1)}
             </span>
-            {range && <span className="text-gray-500">({range})</span>}
+            {range && <span className="text-white">({range})</span>}
           </div>
         );
       })}
@@ -262,7 +262,7 @@ export default function ErrorBarChart({
 
   if (data.length === 0 || metrics.length === 0) {
     return (
-      <div className="flex items-center justify-center text-gray-500" style={{ height }}>
+      <div className="flex items-center justify-center text-white" style={{ height }}>
         데이터가 없습니다
       </div>
     );
@@ -279,7 +279,7 @@ export default function ErrorBarChart({
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 viewIdx === i
                   ? "bg-cyan-600 text-white"
-                  : "bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200"
+                  : "bg-gray-700 text-white hover:bg-gray-600 hover:text-gray-200"
               }`}
             >
               {opt.label}

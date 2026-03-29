@@ -72,7 +72,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         {/* 로고 */}
         <div className="text-center space-y-2">
@@ -80,7 +80,7 @@ export default function LoginPage() {
             <span className="text-3xl">💊</span>
           </div>
           <h1 className="text-2xl font-bold text-white">LifeSync AI</h1>
-          <p className="text-sm text-gray-400">일상 생활 통합 건강 관리</p>
+          <p className="text-sm text-white">일상 생활 통합 건강 관리</p>
         </div>
 
         {/* 에러 메시지 */}
@@ -115,19 +115,19 @@ export default function LoginPage() {
         {/* 구분선 */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-700" />
-          <span className="text-xs text-gray-500">또는</span>
+          <span className="text-xs text-white">또는</span>
           <div className="flex-1 h-px bg-gray-700" />
         </div>
 
         {/* 게스트 로그인 */}
         <button
           onClick={handleGuestLogin}
-          className="w-full py-3 rounded-xl border border-gray-700 text-gray-300 text-sm font-medium hover:bg-gray-800 transition-all"
+          className="w-full py-3 rounded-xl border border-gray-700 text-white text-sm font-medium hover:bg-gray-800 transition-all"
         >
           게스트로 둘러보기
         </button>
 
-        <p className="text-center text-[11px] text-gray-600 leading-relaxed">
+        <p className="text-center text-[11px] text-white leading-relaxed">
           로그인 시 데이터가 저장되어<br />맞춤형 건강 관리를 받을 수 있습니다.
         </p>
       </div>

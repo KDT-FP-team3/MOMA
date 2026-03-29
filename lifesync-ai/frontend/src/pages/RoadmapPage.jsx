@@ -51,14 +51,14 @@ export default function RoadmapPage() {
       <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
         <div>
           <h1 className="text-xl font-bold">12주 로드맵</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-white mt-0.5">
             Top-5 조언 기반 자동 생성된 결과 로드맵
           </p>
         </div>
 
         {/* 도메인별 진행률 차트 */}
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-400 mb-4">주간 도메인별 강도</h3>
+          <h3 className="text-sm font-semibold text-white mb-4">주간 도메인별 강도</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -70,13 +70,14 @@ export default function RoadmapPage() {
                 />
                 <Bar dataKey="exercise" fill={domainColors.exercise} radius={[2, 2, 0, 0]} name="운동" />
                 <Bar dataKey="food" fill={domainColors.food} radius={[2, 2, 0, 0]} name="식단" />
+                <Bar dataKey="health" fill={domainColors.health} radius={[2, 2, 0, 0]} name="건강" />
                 <Bar dataKey="hobby" fill={domainColors.hobby} radius={[2, 2, 0, 0]} name="취미" />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="flex gap-4 mt-3 justify-center">
             {[["운동", domainColors.exercise], ["식단", domainColors.food], ["취미", domainColors.hobby]].map(([l, c]) => (
-              <div key={l} className="flex items-center gap-1.5 text-xs text-gray-400">
+              <div key={l} className="flex items-center gap-1.5 text-xs text-white">
                 <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: c }} />
                 {l}
               </div>
@@ -112,7 +113,7 @@ export default function RoadmapPage() {
                           <span className="font-bold">{week.week}주차</span>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full text-white ${ps.color}`}>{week.phase}</span>
                         </div>
-                        <span className="text-xs text-gray-500">{progress}%</span>
+                        <span className="text-xs text-white">{progress}%</span>
                       </div>
 
                       <div className="mt-2 w-full bg-gray-700 rounded-full h-1">
@@ -125,8 +126,8 @@ export default function RoadmapPage() {
                             <div key={i} className="flex items-center gap-3 text-sm bg-gray-700/40 rounded-lg p-2.5">
                               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: domainColors[goal.domain] || "#6b7280" }} />
                               <span style={{ color: domainColors[goal.domain] || "#9ca3af" }}>{goal.name}</span>
-                              <span className="text-gray-600 text-xs">강도 {Math.round(goal.intensity * 100)}%</span>
-                              <span className="text-gray-600 text-xs ml-auto">{goal.description}</span>
+                              <span className="text-white text-xs">강도 {Math.round(goal.intensity * 100)}%</span>
+                              <span className="text-white text-xs ml-auto">{goal.description}</span>
                             </div>
                           ))}
                         </div>

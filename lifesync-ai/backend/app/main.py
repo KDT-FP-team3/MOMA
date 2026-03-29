@@ -101,6 +101,8 @@ PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
     "/api/onboarding", "/api/plugins/status", "/api/admin/status", "/api/device/info",
+    "/api/admin/team-progress", "/api/admin/git-history", "/api/admin/conflicts",
+    "/api/admin/backups", "/api/admin/security-audit", "/api/admin/orchestrator-stats",
 }
 
 
@@ -283,6 +285,8 @@ auto_register_plugins()
 
 from backend.app.routers.ai_router import router as ai_router
 from backend.app.routers.api_router import router as api_router
+from backend.app.routers.admin_router import router as admin_router
 
 app.include_router(ai_router)
 app.include_router(api_router)
+app.include_router(admin_router)

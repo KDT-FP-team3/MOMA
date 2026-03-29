@@ -69,6 +69,10 @@ class BasicHealthAgent:
     """규칙 기반 건강 분석."""
 
     def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+        return self.analyze_checkup(user_state)
+
+    def analyze_checkup(self, user_state: dict[str, Any]) -> dict[str, Any]:
+        """오케스트레이터가 호출하는 건강 분석 메서드."""
         bmi = user_state.get("bmi", 22)
         sleep = user_state.get("sleep_quality", 70)
         alerts = []

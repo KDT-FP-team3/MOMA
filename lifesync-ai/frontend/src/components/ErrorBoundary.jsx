@@ -27,7 +27,7 @@ export default class ErrorBoundary extends React.Component {
             <h2 className="text-xl font-bold text-white mb-2">
               오류가 발생했습니다
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-white text-sm mb-6">
               {this.state.error?.message || "알 수 없는 오류"}
             </p>
             <button

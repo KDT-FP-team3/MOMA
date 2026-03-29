@@ -93,7 +93,7 @@ export default function QuickChat() {
     inputRef.current?.focus();
   }, []);
 
-  // Web Speech API 초기화
+  // Web Speech API 초기화 + cleanup
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -110,6 +110,12 @@ export default function QuickChat() {
       recognition.onend = () => setIsRecording(false);
       recognitionRef.current = recognition;
     }
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch { /* ignore */ }
+        recognitionRef.current = null;
+      }
+    };
   }, []);
 
   const toggleRecording = useCallback(() => {
@@ -194,7 +200,7 @@ export default function QuickChat() {
           <Bot size={16} className="text-cyan-400" />
           <h3 className="font-semibold text-sm text-cyan-400">AI 어시스턴트</h3>
         </div>
-        <button onClick={clearChat} className="text-gray-500 hover:text-gray-300 transition-colors" title="대화 초기화">
+        <button onClick={clearChat} className="text-white hover:text-white transition-colors" title="대화 초기화">
           <RefreshCw size={14} />
         </button>
       </div>
@@ -228,7 +234,7 @@ export default function QuickChat() {
             </div>
             {msg.role === "user" && (
               <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
-                <User size={12} className="text-gray-300" />
+                <User size={12} className="text-white" />
               </div>
             )}
           </div>
@@ -258,7 +264,7 @@ export default function QuickChat() {
             className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
               isRecording
                 ? "bg-red-500/20 text-red-400 animate-pulse"
-                : "bg-gray-700 text-gray-400 hover:text-gray-200"
+                : "bg-gray-700 text-white hover:text-gray-200"
             }`}
             title={isRecording ? "녹음 중지" : "음성 입력"}
           >
@@ -272,7 +278,7 @@ export default function QuickChat() {
             onKeyDown={handleKeyDown}
             placeholder={isRecording ? "듣고 있습니다..." : "질문을 입력하세요..."}
             disabled={loading}
-            className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 placeholder:text-gray-500 disabled:opacity-50"
+            className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 placeholder:text-white disabled:opacity-50"
           />
           <button
             onClick={sendMessage}

@@ -150,13 +150,13 @@ export default function CharacterCard({ profile, stats }) {
         </div>
 
         {/* ── 타이틀 ── */}
-        <p className="mt-2 text-center text-sm font-semibold text-gray-300">
+        <p className="mt-2 text-center text-sm font-semibold text-white">
           {title}
         </p>
 
         {/* ── EXP 바 ── */}
         <div className="mt-3">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-white">
             <span>EXP</span>
             <span>
               {exp} / {nextLevelExp}
@@ -194,8 +194,8 @@ export default function CharacterCard({ profile, stats }) {
 
             return (
               <div key={key} className="flex items-center gap-2">
-                <Icon className="h-3.5 w-3.5 shrink-0 text-gray-500" />
-                <span className="w-14 shrink-0 text-xs text-gray-400">
+                <Icon className="h-3.5 w-3.5 shrink-0 text-white" />
+                <span className="w-14 shrink-0 text-xs text-white">
                   {label}
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-800">
@@ -207,7 +207,7 @@ export default function CharacterCard({ profile, stats }) {
                     }}
                   />
                 </div>
-                <span className="w-8 text-right text-xs font-medium text-gray-300">
+                <span className="w-8 text-right text-xs font-medium text-white">
                   {format(raw)}
                 </span>
               </div>

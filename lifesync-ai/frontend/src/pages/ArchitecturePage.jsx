@@ -14,7 +14,7 @@ import Layout from "../components/layout/Layout";
 const STATUS_META = {
   active: { label: "활성", color: "#10b981", bg: "rgba(16,185,129,0.10)", text: "text-emerald-400" },
   partial: { label: "부분구현", color: "#f59e0b", bg: "rgba(245,158,11,0.10)", text: "text-amber-400" },
-  pending: { label: "대기", color: "#6b7280", bg: "rgba(107,114,128,0.10)", text: "text-gray-400" },
+  pending: { label: "대기", color: "#6b7280", bg: "rgba(107,114,128,0.10)", text: "text-white" },
 };
 
 const NODES = [
@@ -288,11 +288,11 @@ function InlinePopup({ node, expanded }) {
           <span className={`font-bold ${s.text}`} style={{ fontSize: 11 }}>{s.label}</span>
           {node.role && <span className="text-cyan-400 font-medium" style={{ fontSize: 9 }}>{node.role}</span>}
         </div>
-        <p className="text-gray-300 mb-1">{node.desc}</p>
+        <p className="text-white mb-1">{node.desc}</p>
         <div className="text-blue-400 font-mono truncate mb-1" style={{ fontSize: 9 }}>{node.path}</div>
         <div className="flex flex-wrap gap-0.5 mb-1">
           {node.features.map((f, i) => (
-            <span key={i} className="px-1 py-0.5 rounded bg-gray-700/60 text-gray-400" style={{ fontSize: 9 }}>{f}</span>
+            <span key={i} className="px-1 py-0.5 rounded bg-gray-700/60 text-white" style={{ fontSize: 9 }}>{f}</span>
           ))}
         </div>
         {node.pros && (
@@ -311,7 +311,7 @@ function InlinePopup({ node, expanded }) {
           </div>
         )}
         {connected.length > 0 && (
-          <div className="text-gray-500 truncate" style={{ fontSize: 9 }}>
+          <div className="text-white truncate" style={{ fontSize: 9 }}>
             {connected.slice(0, 4).join(", ")}{connected.length > 4 ? ` +${connected.length - 4}` : ""}
           </div>
         )}
@@ -457,41 +457,41 @@ export default function ArchitecturePage() {
           <div className="flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="text-gray-300">활성: {stats.active}</span>
+              <span className="text-white">활성: {stats.active}</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <span className="text-gray-300">부분구현: {stats.partial}</span>
+              <span className="text-white">부분구현: {stats.partial}</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-gray-500" />
-              <span className="text-gray-300">대기: {stats.pending}</span>
+              <span className="text-white">대기: {stats.pending}</span>
             </span>
-            <span className="text-gray-500">|</span>
-            <span className="text-gray-300">전체: {NODES.length}</span>
+            <span className="text-white">|</span>
+            <span className="text-white">전체: {NODES.length}</span>
           </div>
         </div>
 
         {/* Connection color legend */}
         <div className="flex flex-wrap items-center gap-3 text-xs">
-          <span className="text-gray-500 font-medium">연결선:</span>
+          <span className="text-white font-medium">연결선:</span>
           {Object.entries(CONN_CATEGORIES).map(([key, cat]) => (
             <span key={key} className="flex items-center gap-1">
               <span className="w-5 h-0.5 rounded" style={{ backgroundColor: cat.color }} />
-              <span className="text-gray-400">{cat.legend}</span>
+              <span className="text-white">{cat.legend}</span>
             </span>
           ))}
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-4 text-xs text-gray-400">
+        <div className="flex items-center gap-4 text-xs text-white">
           <span>호버: 상세 미리보기 · 클릭: 고정 · 다시 클릭: 해제</span>
           <button
             onClick={toggleShowAll}
             className={`ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               showAll
                 ? "bg-cyan-600 hover:bg-cyan-500 text-white"
-                : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                : "bg-gray-700 hover:bg-gray-600 text-white"
             }`}
           >
             {showAll ? "접기" : "전체보기"}
@@ -499,7 +499,7 @@ export default function ArchitecturePage() {
           {pinnedIds.size > 0 && !showAll && (
             <button
               onClick={() => setPinnedIds(new Set())}
-              className="px-3 py-2 rounded-lg text-sm bg-gray-700 hover:bg-gray-600 text-gray-300"
+              className="px-3 py-2 rounded-lg text-sm bg-gray-700 hover:bg-gray-600 text-white"
             >
               모두 해제 ({pinnedIds.size})
             </button>

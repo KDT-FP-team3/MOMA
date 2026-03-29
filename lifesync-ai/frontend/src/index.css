@@ -1,9 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ===== Google Fonts ===== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ===== Base Layer ===== */
 @layer base {
@@ -76,6 +75,27 @@
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+}
+
+/* --- Dark mode: accent 색상 통일 (cyan → blue 계열) --- */
+.dark-mode .text-cyan-400 { color: #60a5fa !important; }
+.dark-mode .text-cyan-500 { color: #3b82f6 !important; }
+.dark-mode .bg-cyan-600 { background-color: #2563eb !important; }
+.dark-mode .bg-cyan-500\/20 { background-color: rgba(59,130,246,0.12) !important; }
+.dark-mode .bg-cyan-500\/15 { background-color: rgba(59,130,246,0.09) !important; }
+.dark-mode .bg-cyan-500\/10 { background-color: rgba(59,130,246,0.06) !important; }
+.dark-mode .border-cyan-500\/20 { border-color: rgba(59,130,246,0.15) !important; }
+.dark-mode .hover\:bg-cyan-500:hover { background-color: #3b82f6 !important; }
+.dark-mode .text-gradient {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dark-mode .accent-bar {
+  background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #2563eb);
+  background-size: 300% 100%;
+  animation: gradient-x 6s ease infinite;
 }
 
 /* ===== Light Mode ===== */
@@ -199,5 +219,75 @@
 
 /* --- Light mode glow --- */
 .light-mode .glow-border {
-  box-shadow: 0 0 0 1px rgba(6,182,212,0.15), 0 0 10px rgba(6,182,212,0.06);
+  box-shadow: 0 0 0 1px rgba(26,115,232,0.15), 0 0 10px rgba(26,115,232,0.06);
+}
+
+/* --- Light mode: additional bg overrides (Samsung Health style) --- */
+.light-mode .bg-gray-950 { background-color: #f5f7fa !important; }
+.light-mode .bg-gray-950\/60 { background-color: rgba(255,255,255,0.95) !important; }
+.light-mode .bg-gray-900 { background-color: #f5f7fa !important; }
+.light-mode .bg-gray-900\/70 { background-color: rgba(255,255,255,0.9) !important; }
+.light-mode .bg-gray-900\/60 { background-color: rgba(255,255,255,0.85) !important; }
+.light-mode .bg-gray-900\/50 { background-color: rgba(248,250,252,0.8) !important; }
+.light-mode .bg-gray-800\/80 { background-color: rgba(255,255,255,0.9) !important; }
+.light-mode .bg-gray-800\/60 { background-color: rgba(255,255,255,0.8) !important; }
+.light-mode .bg-gray-800\/50 { background-color: rgba(255,255,255,0.75) !important; }
+.light-mode .bg-gray-800\/40 { background-color: rgba(255,255,255,0.65) !important; }
+.light-mode .bg-gray-800\/30 { background-color: rgba(248,250,252,0.6) !important; }
+.light-mode .bg-gray-700\/40 { background-color: rgba(241,245,249,0.5) !important; }
+
+/* --- Light mode: border overrides --- */
+.light-mode .border-gray-700\/50 { border-color: #e2e8f0 !important; }
+.light-mode .border-gray-700\/40 { border-color: #e2e8f0 !important; }
+.light-mode .border-gray-700\/30 { border-color: rgba(226,232,240,0.7) !important; }
+.light-mode .border-gray-800 { border-color: #e2e8f0 !important; }
+.light-mode .border-gray-600\/60 { border-color: #cbd5e1 !important; }
+.light-mode .border-gray-600\/50 { border-color: #cbd5e1 !important; }
+
+/* --- Light mode: Samsung Health card style --- */
+.light-mode .bg-gray-800,
+.light-mode .bg-gray-800\/60,
+.light-mode .bg-gray-800\/80 {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+/* --- Light mode: hover --- */
+.light-mode .hover\:bg-gray-800\/80:hover { background-color: rgba(248,250,252,0.95) !important; }
+.light-mode .hover\:bg-gray-700\/30:hover { background-color: rgba(226,232,240,0.4) !important; }
+.light-mode .hover\:border-gray-600\/60:hover { border-color: #94a3b8 !important; }
+.light-mode .hover\:border-gray-600\/50:hover { border-color: #94a3b8 !important; }
+
+/* --- Light mode: accent colors shift to Samsung blue --- */
+.light-mode .text-cyan-400 { color: #1a73e8 !important; }
+.light-mode .text-cyan-500 { color: #1a73e8 !important; }
+.light-mode .bg-cyan-600 { background-color: #1a73e8 !important; }
+.light-mode .bg-cyan-500\/20 { background-color: rgba(26,115,232,0.1) !important; }
+.light-mode .bg-cyan-500\/15 { background-color: rgba(26,115,232,0.08) !important; }
+.light-mode .bg-cyan-500\/10 { background-color: rgba(26,115,232,0.06) !important; }
+.light-mode .bg-cyan-500\/5 { background-color: rgba(26,115,232,0.03) !important; }
+.light-mode .border-cyan-500\/20 { border-color: rgba(26,115,232,0.15) !important; }
+.light-mode .border-cyan-500\/10 { border-color: rgba(26,115,232,0.08) !important; }
+.light-mode .hover\:bg-cyan-500:hover { background-color: #4285f4 !important; }
+.light-mode .shadow-cyan-500\/10 { --tw-shadow-color: rgba(26,115,232,0.06) !important; }
+
+/* --- Light mode: gradient text --- */
+.light-mode .text-gradient {
+  background: linear-gradient(135deg, #1a73e8, #4285f4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Light mode: accent bar --- */
+.light-mode .accent-bar {
+  background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8);
+}
+
+/* --- Light mode: RadialBar background --- */
+.light-mode [fill="#1e293b"],
+.light-mode [fill="rgba(30,41,59,0.8)"] {
+  fill: #e8edf2 !important;
+}
+.light-mode [fill="#2d3748"] {
+  fill: #e8edf2 !important;
 }

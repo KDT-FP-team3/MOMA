@@ -121,7 +121,7 @@ function CustomBarTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm">
-      <p className="text-gray-300">{label}요일</p>
+      <p className="text-white">{label}요일</p>
       <p className="font-bold" style={{ color: scoreColor(payload[0].value) }}>{payload[0].value}점</p>
     </div>
   );
@@ -192,7 +192,7 @@ export default function ReportPage() {
           <h1 className="text-3xl font-bold text-white">
             {"📊"} 주간 건강 리포트
           </h1>
-          <p className="text-gray-400 text-lg">{weekRange}</p>
+          <p className="text-white text-lg">{weekRange}</p>
         </div>
 
         {/* Top 3 좋았던 / 나빴던 선택 */}
@@ -306,10 +306,10 @@ export default function ReportPage() {
           <h2 className="text-lg font-semibold text-white mb-2">
             {"📉"} 건강 트렌드 (신뢰구간)
           </h2>
-          <p className="text-sm text-gray-400 mb-1">
+          <p className="text-sm text-white mb-1">
             미래로 갈수록 불확실성이 커지는 예측 밴드를 보여줍니다.
           </p>
-          <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-4">
+          <div className="flex flex-wrap gap-4 text-xs text-white mb-4">
             <span className="flex items-center gap-1">
               <span className="inline-block w-4 h-0.5 bg-blue-400 opacity-50" style={{borderTop: "2px dashed #3b82f6"}} /> 토요일
             </span>
@@ -338,11 +338,11 @@ export default function ReportPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
             {/* Before */}
             <div className="flex flex-col items-center gap-3">
-              <span className="text-sm font-medium text-gray-400 bg-gray-700/50 px-3 py-1 rounded-full">
+              <span className="text-sm font-medium text-white bg-gray-700/50 px-3 py-1 rounded-full">
                 주 시작
               </span>
               <AvatarBody {...avatarStart} size={180} />
-              <div className="text-xs text-gray-500 space-y-0.5 text-center">
+              <div className="text-xs text-white space-y-0.5 text-center">
                 <p>기분 {avatarStart.mood} · 에너지 {avatarStart.energy}</p>
                 <p>스트레스 {avatarStart.stress} · 수면 {avatarStart.sleep}</p>
               </div>
@@ -362,7 +362,7 @@ export default function ReportPage() {
                 주 끝
               </span>
               <AvatarBody {...avatarEnd} size={180} />
-              <div className="text-xs text-gray-500 space-y-0.5 text-center">
+              <div className="text-xs text-white space-y-0.5 text-center">
                 <p>기분 {avatarEnd.mood} · 에너지 {avatarEnd.energy}</p>
                 <p>스트레스 {avatarEnd.stress} · 수면 {avatarEnd.sleep}</p>
               </div>
@@ -375,7 +375,7 @@ export default function ReportPage() {
           <h2 className="text-lg font-semibold text-white mb-4">
             {"⛓️"} 크로스 도메인 연쇄 효과
           </h2>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-white text-sm mb-4">
             하나의 선택이 다른 영역으로 어떻게 연쇄적으로 영향을 미치는지 보여줍니다.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -387,7 +387,7 @@ export default function ReportPage() {
                   {step.label}
                 </span>
                 {idx < cascadeSteps.length - 1 && (
-                  <span className="text-gray-500 text-lg font-bold">{"→"}</span>
+                  <span className="text-white text-lg font-bold">{"→"}</span>
                 )}
               </div>
             ))}
@@ -399,7 +399,7 @@ export default function ReportPage() {
           <h2 className="text-lg font-semibold text-white mb-4">
             {"💡"} 이번 주 종합 요약
           </h2>
-          <div className="space-y-3 text-gray-300 text-sm leading-relaxed">
+          <div className="space-y-3 text-white text-sm leading-relaxed">
             <p>
               이번 주 종합 점수는 <span className="text-cyan-400 font-semibold">69.3점</span>입니다.
               주 전반에 비해 후반으로 갈수록 개선되는 경향을 보였습니다.

@@ -82,7 +82,7 @@ export default function CascadeAlert({ alerts = [] }) {
       </h2>
 
       {visibleAlerts.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">현재 연쇄 경고 없음</p>
+        <p className="text-white text-center py-8">현재 연쇄 경고 없음</p>
       ) : (
         <div className="space-y-4">
           {visibleAlerts.map((alert) => {
@@ -119,7 +119,7 @@ export default function CascadeAlert({ alerts = [] }) {
                           key={idx}
                           className="flex items-center gap-2 text-sm"
                         >
-                          <span className="text-gray-500">→</span>
+                          <span className="text-white">→</span>
                           <span>{domainIcons[effect.domain]}</span>
                           <span
                             className={
@@ -142,7 +142,7 @@ export default function CascadeAlert({ alerts = [] }) {
 
                   <button
                     onClick={() => dismiss(alert.id)}
-                    className="text-gray-500 hover:text-gray-300 text-lg"
+                    className="text-white hover:text-white text-lg"
                   >
                     ✕
                   </button>

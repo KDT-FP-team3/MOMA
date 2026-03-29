@@ -191,14 +191,14 @@ export default function SchedulePage() {
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
         <div>
           <h1 className="text-xl font-bold">생활 패턴 <span className="text-cyan-400">시뮬레이터</span></h1>
-          <p className="text-sm text-gray-500 mt-0.5">24시간 시계에 일과를 배치하고, 장기 건강 변화를 예측합니다</p>
+          <p className="text-sm text-white mt-0.5">24시간 시계에 일과를 배치하고, 장기 건강 변화를 예측합니다</p>
         </div>
 
         {/* Activity palette — grouped by category */}
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
             <GripVertical size={16} className="text-cyan-400" />
-            활동 팔레트 <span className="text-[10px] text-gray-500 font-normal ml-1">— 아래 스케줄 목록으로 드래그하여 추가</span>
+            활동 팔레트 <span className="text-[10px] text-white font-normal ml-1">— 아래 스케줄 목록으로 드래그하여 추가</span>
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
@@ -223,7 +223,7 @@ export default function SchedulePage() {
                         style={{ borderLeftColor: style.color, borderLeftWidth: 3 }}
                       >
                         <span className="text-sm">{style.emoji}</span>
-                        <span className="text-[11px] text-gray-300">{style.label}</span>
+                        <span className="text-[11px] text-white">{style.label}</span>
                       </div>
                     );
                   })}
@@ -236,7 +236,7 @@ export default function SchedulePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 원형 시계 */}
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-            <h3 className="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <Clock size={16} className="text-cyan-400" />
               24시간 일과표
             </h3>
@@ -255,7 +255,7 @@ export default function SchedulePage() {
             onDrop={handleScheduleDrop}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-400">
+              <h3 className="text-sm font-semibold text-white">
                 스케줄 항목
                 {dragOverSchedule && (
                   <span className="ml-2 text-cyan-400 text-xs font-normal animate-pulse">여기에 놓으세요!</span>
@@ -271,19 +271,19 @@ export default function SchedulePage() {
               <div className="bg-gray-700/50 rounded-lg p-3 mb-3 space-y-2">
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[10px] text-gray-500">시작</label>
+                    <label className="text-[10px] text-white">시작</label>
                     <select value={newEntry.start_hour} onChange={e => setNewEntry(p => ({...p, start_hour: +e.target.value}))} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm">
                       {Array.from({length: 24}, (_, i) => <option key={i} value={i}>{i}시</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500">종료</label>
+                    <label className="text-[10px] text-white">종료</label>
                     <select value={newEntry.end_hour} onChange={e => setNewEntry(p => ({...p, end_hour: +e.target.value}))} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm">
                       {Array.from({length: 25}, (_, i) => <option key={i} value={i}>{i === 24 ? "24(익일)" : `${i}시`}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500">반복주기</label>
+                    <label className="text-[10px] text-white">반복주기</label>
                     <select value={newEntry.repeat_cycle} onChange={e => setNewEntry(p => ({...p, repeat_cycle: +e.target.value}))} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm">
                       <option value={1}>매일</option>
                       <option value={2}>격일</option>
@@ -294,13 +294,13 @@ export default function SchedulePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[10px] text-gray-500">활동</label>
+                    <label className="text-[10px] text-white">활동</label>
                     <select value={newEntry.activity} onChange={e => setNewEntry(p => ({...p, activity: e.target.value}))} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm">
                       {Object.entries(ACTIVITY_STYLES).map(([key, s]) => <option key={key} value={key}>{s.emoji} {s.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500">메모</label>
+                    <label className="text-[10px] text-white">메모</label>
                     <input value={newEntry.label} onChange={e => setNewEntry(p => ({...p, label: e.target.value}))} placeholder="선택사항" className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm" />
                   </div>
                 </div>
@@ -311,14 +311,14 @@ export default function SchedulePage() {
             {/* 항목 리스트 */}
             <div className="flex-1 overflow-y-auto space-y-1.5 max-h-80">
               {schedule.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                <div className="flex flex-col items-center justify-center py-10 text-white">
                   <GripVertical size={24} className="mb-2 opacity-50" />
                   <p className="text-sm">위 팔레트에서 활동을 드래그하여 추가하세요</p>
                 </div>
               )}
               {schedule.map((entry, idx) => {
                 const style = ACTIVITY_STYLES[entry.activity] || ACTIVITY_STYLES.other;
-                const duration = entry.end_hour > entry.start_hour ? entry.end_hour - entry.start_hour : entry.end_hour + 24 - entry.start_hour;
+                const duration = entry.end_hour >= entry.start_hour ? entry.end_hour - entry.start_hour : (24 - entry.start_hour) + entry.end_hour;
                 const isEditing = editingIdx === idx;
                 const isDragging = dragIdx === idx;
                 const isDragOver = dragOverIdx === idx;
@@ -344,7 +344,7 @@ export default function SchedulePage() {
                         <select value={editData.start_hour} onChange={e => setEditData(d => ({...d, start_hour: +e.target.value}))} className="bg-gray-700 border border-gray-600 rounded px-1 py-0.5 text-xs w-14">
                           {Array.from({length: 24}, (_, i) => <option key={i} value={i}>{i}시</option>)}
                         </select>
-                        <span className="text-gray-500 text-xs">~</span>
+                        <span className="text-white text-xs">~</span>
                         <select value={editData.end_hour} onChange={e => setEditData(d => ({...d, end_hour: +e.target.value}))} className="bg-gray-700 border border-gray-600 rounded px-1 py-0.5 text-xs w-14">
                           {Array.from({length: 25}, (_, i) => <option key={i} value={i}>{i === 24 ? "24" : `${i}시`}</option>)}
                         </select>
@@ -353,14 +353,14 @@ export default function SchedulePage() {
                         </select>
                         <input value={editData.label} onChange={e => setEditData(d => ({...d, label: e.target.value}))} placeholder="메모" className="bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-xs w-16" />
                         <button onClick={saveEdit} className="text-emerald-400 hover:text-emerald-300"><Check size={14} /></button>
-                        <button onClick={cancelEdit} className="text-gray-500 hover:text-red-400"><X size={14} /></button>
+                        <button onClick={cancelEdit} className="text-white hover:text-red-400"><X size={14} /></button>
                       </div>
                     ) : (
                       /* 보기 모드 */
                       <>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{entry.label || style.label}</p>
-                          <p className="text-[10px] text-gray-500">{entry.start_hour}:00~{entry.end_hour === 24 ? "0" : entry.end_hour}:00 ({duration}h) · {entry.repeat_cycle === 1 ? "매일" : `${entry.repeat_cycle}일 주기`}</p>
+                          <p className="text-[10px] text-white">{entry.start_hour}:00~{entry.end_hour === 24 ? "0" : entry.end_hour}:00 ({duration}h) · {entry.repeat_cycle === 1 ? "매일" : `${entry.repeat_cycle}일 주기`}</p>
                         </div>
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: style.color }} />
                         <button onClick={() => startEdit(idx)} className="opacity-0 group-hover:opacity-100 px-2 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-all text-[11px] font-medium flex items-center gap-1">
@@ -497,13 +497,13 @@ function ClockDial({ schedule }) {
 function SimulationResults({ results }) {
   const { initial_state, final_state, daily_history, analysis, days } = results;
 
-  const severityColors = { high: "text-red-400", medium: "text-yellow-400", low: "text-gray-400" };
+  const severityColors = { high: "text-red-400", medium: "text-yellow-400", low: "text-white" };
   const rhythmColors = { "우수": "text-green-400", "양호": "text-cyan-400", "주의": "text-yellow-400", "위험": "text-red-400" };
 
   return (
     <div className="space-y-5">
       {/* 종합 결과 카드 */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
         <h2 className="text-lg font-bold mb-4">{days}일 시뮬레이션 <span className="text-cyan-400">결과</span></h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <ResultCard label="체중 변화" value={`${analysis.weight_change > 0 ? "+" : ""}${analysis.weight_change}kg`} color={Math.abs(analysis.weight_change) < 1 ? "#51cf66" : "#ff6b6b"} sub={`${initial_state.weight_kg} → ${final_state.weight_kg}kg`} />
@@ -517,7 +517,7 @@ function SimulationResults({ results }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Before/After */}
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">상태 변화 (Before → After)</h3>
+          <h3 className="text-sm font-semibold text-white mb-3">상태 변화 (Before → After)</h3>
           <div className="space-y-2">
             {analysis.changes.map((ch, i) => {
               const label = { weight_kg: "체중", sleep_score: "수면점수", stress_level: "스트레스", mood_score: "기분", hair_loss_risk: "탈모위험", blood_purity: "혈액청정도" }[ch.metric] || ch.metric;
@@ -525,9 +525,9 @@ function SimulationResults({ results }) {
               return (
                 <div key={i} className="flex items-center gap-3 text-sm">
                   {good ? <TrendingUp size={14} className="text-green-400" /> : <TrendingDown size={14} className="text-red-400" />}
-                  <span className="text-gray-400 w-20">{label}</span>
-                  <span className="text-gray-500">{ch.initial}</span>
-                  <span className="text-gray-600">→</span>
+                  <span className="text-white w-20">{label}</span>
+                  <span className="text-white">{ch.initial}</span>
+                  <span className="text-white">→</span>
                   <span className="font-medium">{ch.final}</span>
                   <span className={`text-xs ml-auto ${good ? "text-green-400" : "text-red-400"}`}>
                     {ch.delta > 0 ? "+" : ""}{ch.delta}
@@ -547,7 +547,7 @@ function SimulationResults({ results }) {
                 {analysis.problems.map((p, i) => (
                   <div key={i} className="text-sm bg-red-500/5 border border-red-500/20 rounded-lg p-2.5">
                     <span className={`text-[10px] font-medium ${severityColors[p.severity]}`}>[{p.category}]</span>
-                    <p className="text-gray-300 mt-0.5">{p.message}</p>
+                    <p className="text-white mt-0.5">{p.message}</p>
                   </div>
                 ))}
               </div>
@@ -559,7 +559,7 @@ function SimulationResults({ results }) {
               {analysis.advice.map((a, i) => (
                 <div key={i} className="text-sm bg-green-500/5 border border-green-500/20 rounded-lg p-2.5">
                   <span className="text-[10px] font-medium text-green-400">[{a.category}]</span>
-                  <p className="text-gray-300 mt-0.5">{a.message}</p>
+                  <p className="text-white mt-0.5">{a.message}</p>
                 </div>
               ))}
             </div>
@@ -569,7 +569,7 @@ function SimulationResults({ results }) {
 
       {/* 건강 변화 그래프 */}
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-gray-400 mb-3">일별 건강 변화 추이</h3>
+        <h3 className="text-sm font-semibold text-white mb-3">일별 건강 변화 추이</h3>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={daily_history}>
@@ -586,7 +586,7 @@ function SimulationResults({ results }) {
         </div>
         <div className="flex gap-4 mt-2 justify-center">
           {[["체중", "#ff6b6b"], ["수면", "#748ffc"], ["스트레스", "#ff922b"], ["기분", "#20c997"]].map(([l, c]) => (
-            <div key={l} className="flex items-center gap-1.5 text-[10px] text-gray-400">
+            <div key={l} className="flex items-center gap-1.5 text-[10px] text-white">
               <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: c }} /> {l}
             </div>
           ))}
@@ -596,7 +596,7 @@ function SimulationResults({ results }) {
       {/* 신뢰구간 포함 예측 차트 */}
       {daily_history && daily_history.length > 0 && (
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">예측 신뢰구간 (95% CI)</h3>
+          <h3 className="text-sm font-semibold text-white mb-3">예측 신뢰구간 (95% CI)</h3>
           <ErrorBarChart
             data={daily_history.map((d, i) => {
               const dayIdx = i + 1;
@@ -634,9 +634,9 @@ function SimulationResults({ results }) {
 function ResultCard({ label, value, color, sub }) {
   return (
     <div className="bg-gray-700/40 rounded-xl p-4 text-center">
-      <p className="text-[11px] text-gray-500">{label}</p>
+      <p className="text-[11px] text-white">{label}</p>
       <p className="text-2xl font-bold mt-1" style={{ color }}>{value}</p>
-      <p className="text-[10px] text-gray-500 mt-0.5">{sub}</p>
+      <p className="text-[10px] text-white mt-0.5">{sub}</p>
     </div>
   );
 }

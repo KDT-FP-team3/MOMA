@@ -82,7 +82,7 @@ export default function QuickInput({ allChoices, onMatch }) {
           <span className="text-lg">{suggestion.icon}</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-white font-medium">{suggestion.label}</p>
-            <p className="text-[10px] text-gray-500">{suggestion.category}</p>
+            <p className="text-[10px] text-white">{suggestion.category}</p>
           </div>
           <span className={`text-xs px-2 py-0.5 rounded-full ${suggestion.type === "positive" ? "bg-emerald-900/40 text-emerald-400" : "bg-red-900/40 text-red-400"}`}>
             {suggestion.type === "positive" ? "긍정" : "부정"}

@@ -68,7 +68,7 @@ export default function AdminPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-400 text-lg">시스템 상태 조회 중...</div>
+          <div className="text-white text-lg">시스템 상태 조회 중...</div>
         </div>
       </Layout>
     );
@@ -79,7 +79,7 @@ export default function AdminPage() {
       <Layout>
         <div className="flex flex-col items-center justify-center h-96 gap-4">
           <div className="text-red-400 text-lg">서버 연결 실패</div>
-          <div className="text-gray-500 text-sm">{error}</div>
+          <div className="text-white text-sm">{error}</div>
           <button
             onClick={fetchStatus}
             className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm"
@@ -105,13 +105,13 @@ export default function AdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-white">관리자 패널</h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-white text-sm mt-1">
               시스템 전체 상태를 한 눈에 확인합니다
             </p>
           </div>
           <div className="flex items-center gap-3">
             {lastRefresh && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-white">
                 마지막 갱신: {lastRefresh}
               </span>
             )}
@@ -131,25 +131,25 @@ export default function AdminPage() {
             <div className="text-2xl font-bold text-emerald-400">
               {api_keys?.configured || 0}/{api_keys?.total || 0}
             </div>
-            <div className="text-xs text-gray-400 mt-1">API 키</div>
+            <div className="text-xs text-white mt-1">API 키</div>
           </div>
           <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-cyan-400">
               {activePlugins}/{pluginEntries.length}
             </div>
-            <div className="text-xs text-gray-400 mt-1">플러그인 활성</div>
+            <div className="text-xs text-white mt-1">플러그인 활성</div>
           </div>
           <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-purple-400">
               {device?.device === "cuda" ? "GPU" : "CPU"}
             </div>
-            <div className="text-xs text-gray-400 mt-1">디바이스</div>
+            <div className="text-xs text-white mt-1">디바이스</div>
           </div>
           <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-amber-400">
               {server?.version || "?"}
             </div>
-            <div className="text-xs text-gray-400 mt-1">서버 버전</div>
+            <div className="text-xs text-white mt-1">서버 버전</div>
           </div>
         </div>
 
@@ -159,15 +159,15 @@ export default function AdminPage() {
           <Card title="서버 상태" icon="🚀">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-400">상태</span>
+                <span className="text-white">상태</span>
                 <span className="text-emerald-400 font-medium">{server?.status}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">버전</span>
+                <span className="text-white">버전</span>
                 <span className="text-white">{server?.version}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">환경</span>
+                <span className="text-white">환경</span>
                 <span className={`font-medium ${server?.env === "production" ? "text-red-400" : "text-cyan-400"}`}>
                   {server?.env}
                 </span>
@@ -180,7 +180,7 @@ export default function AdminPage() {
             <div className="space-y-1.5 text-sm">
               {Object.entries(api_keys?.details || {}).map(([key, ok]) => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-gray-400 font-mono text-xs">{key}</span>
+                  <span className="text-white font-mono text-xs">{key}</span>
                   <span className="flex items-center gap-1.5">
                     <StatusDot ok={ok} />
                     <span className={ok ? "text-emerald-400" : "text-red-400"}>
@@ -197,7 +197,7 @@ export default function AdminPage() {
             <div className="space-y-1.5 text-sm">
               {pluginEntries.map(([slot, info]) => (
                 <div key={slot} className="flex items-center justify-between">
-                  <span className="text-gray-400 font-mono text-xs">{slot}</span>
+                  <span className="text-white font-mono text-xs">{slot}</span>
                   <span className="flex items-center gap-1.5">
                     <StatusDot ok={info.status === "plugin"} />
                     <span
@@ -219,30 +219,30 @@ export default function AdminPage() {
           <Card title="디바이스 정보" icon="🖥️">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-400">디바이스</span>
-                <span className={`font-bold ${device?.device === "cuda" ? "text-emerald-400" : "text-gray-300"}`}>
+                <span className="text-white">디바이스</span>
+                <span className={`font-bold ${device?.device === "cuda" ? "text-emerald-400" : "text-white"}`}>
                   {device?.device?.toUpperCase()}
                 </span>
               </div>
               {device?.gpu_name && (
                 <div className="flex justify-between">
-                  <span className="text-gray-400">GPU</span>
+                  <span className="text-white">GPU</span>
                   <span className="text-white">{device.gpu_name}</span>
                 </div>
               )}
               {device?.vram_gb > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-400">VRAM</span>
+                  <span className="text-white">VRAM</span>
                   <span className="text-white">{device.vram_gb} GB</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-400">PyTorch</span>
+                <span className="text-white">PyTorch</span>
                 <span className="text-white">{device?.torch_version || "미설치"}</span>
               </div>
               {device?.cuda_version && (
                 <div className="flex justify-between">
-                  <span className="text-gray-400">CUDA</span>
+                  <span className="text-white">CUDA</span>
                   <span className="text-white">{device.cuda_version}</span>
                 </div>
               )}
@@ -254,7 +254,7 @@ export default function AdminPage() {
             <div className="space-y-1.5 text-sm">
               {Object.entries(services || {}).map(([name, ok]) => (
                 <div key={name} className="flex items-center justify-between">
-                  <span className="text-gray-400">{name}</span>
+                  <span className="text-white">{name}</span>
                   <span className="flex items-center gap-1.5">
                     <StatusDot ok={ok} />
                     <span className={ok ? "text-emerald-400" : "text-red-400"}>

@@ -84,10 +84,10 @@ export default function PhotoAnalysis({ onCascade }) {
             className="max-h-48 mx-auto rounded-lg"
           />
         ) : (
-          <div className="text-gray-400">
-            <p className="text-4xl mb-2 text-gray-500">[+]</p>
+          <div className="text-white">
+            <p className="text-4xl mb-2 text-white">[+]</p>
             <p>사진을 드래그하거나 클릭하여 업로드</p>
-            <p className="text-sm text-gray-500 mt-1">얼굴 + 전신 사진 권장</p>
+            <p className="text-sm text-white mt-1">얼굴 + 전신 사진 권장</p>
           </div>
         )}
       </div>
@@ -96,14 +96,14 @@ export default function PhotoAnalysis({ onCascade }) {
       {loading && (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400" />
-          <span className="ml-3 text-gray-400">분석 중...</span>
+          <span className="ml-3 text-white">분석 중...</span>
         </div>
       )}
 
       {/* Top-5 결과 */}
       {results?.top_5 && (
         <div className="mt-4 space-y-3">
-          <h3 className="text-sm font-medium text-gray-400">Top-5 맞춤 조언</h3>
+          <h3 className="text-sm font-medium text-white">Top-5 맞춤 조언</h3>
           {results.top_5.map((item, idx) => (
             <div
               key={item.id}
@@ -117,13 +117,13 @@ export default function PhotoAnalysis({ onCascade }) {
                   <span className="font-medium">{item.title}</span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
-                      domainColors[item.domain] || "text-gray-400"
+                      domainColors[item.domain] || "text-white"
                     }`}
                   >
                     {item.domain}
                   </span>
                 </div>
-                <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+                <p className="text-sm text-white mt-1">{item.description}</p>
               </div>
               <div className="text-right">
                 <div className="w-16 bg-gray-600 rounded-full h-2">
@@ -132,7 +132,7 @@ export default function PhotoAnalysis({ onCascade }) {
                     style={{ width: `${item.similarity * 100}%` }}
                   />
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-white">
                   {(item.similarity * 100).toFixed(0)}%
                 </span>
               </div>
@@ -145,13 +145,13 @@ export default function PhotoAnalysis({ onCascade }) {
       {results?.face_analysis && (
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="bg-gray-700/50 rounded-lg p-3">
-            <span className="text-xs text-gray-400">피부 상태</span>
+            <span className="text-xs text-white">피부 상태</span>
             <p className="text-lg font-bold">
               {results.face_analysis.skin_condition?.toFixed(0) || 0}/100
             </p>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-3">
-            <span className="text-xs text-gray-400">자세 점수</span>
+            <span className="text-xs text-white">자세 점수</span>
             <p className="text-lg font-bold">
               {results.body_analysis?.posture_score?.toFixed(0) || 0}/100
             </p>

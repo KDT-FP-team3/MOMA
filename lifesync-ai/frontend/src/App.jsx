@@ -18,13 +18,14 @@ const AvatarSimPage = React.lazy(() => import("./pages/AvatarSimPage"));
 const ReportPage = React.lazy(() => import("./pages/ReportPage"));
 const OnboardingPage = React.lazy(() => import("./pages/OnboardingPage"));
 const AdminPage = React.lazy(() => import("./pages/AdminPage"));
+const TeamLeaderPage = React.lazy(() => import("./pages/TeamLeaderPage"));
 
 function PageLoader() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <div className="text-center">
         <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-gray-400 text-sm">로딩 중...</p>
+        <p className="text-white text-sm">로딩 중...</p>
       </div>
     </div>
   );
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/report" element={<ReportPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/team-leader" element={<TeamLeaderPage />} />
           </Routes>
         </Suspense>
       </HashRouter>

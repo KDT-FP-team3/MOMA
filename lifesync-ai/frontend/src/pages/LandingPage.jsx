@@ -39,7 +39,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#050a18] via-[#0c1222] to-[#050a18] text-white overflow-hidden">
+    <div className="min-h-screen bg-gray-900 text-white overflow-hidden">
 
       {/* ──── Hero Section (SCL-inspired: clean, spacious, confident) ──── */}
       <section className="relative">
@@ -54,7 +54,7 @@ export default function LandingPage() {
             </div>
             <span className="text-lg font-bold tracking-tight text-gradient">LifeSync AI</span>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-400">
+          <div className="hidden md:flex items-center gap-6 text-sm text-white">
             <button onClick={() => navigate("/dashboard")} className="hover:text-white transition">대시보드</button>
             <button onClick={() => navigate("/schedule")} className="hover:text-white transition">스케줄러</button>
             <button onClick={() => navigate("/architecture")} className="hover:text-white transition">아키텍처</button>
@@ -76,20 +76,11 @@ export default function LandingPage() {
             <br />관리하는 AI
           </h1>
 
-          <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg md:text-xl text-white max-w-2xl mx-auto leading-relaxed">
             요리 · 운동 · 건강 · 취미를 하나의 유기체로 통합 관리합니다.
             <br className="hidden md:block" />
             한 가지 선택이 모든 영역에 연쇄 효과를 만듭니다.
           </p>
-
-          {/* Tech tags - subtle, SCL-style */}
-          <div className="flex flex-wrap justify-center gap-2 mt-8">
-            {TECH_TAGS.map((tag) => (
-              <span key={tag} className="px-3 py-1 rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-500 text-xs">
-                {tag}
-              </span>
-            ))}
-          </div>
 
           {/* Dual CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
@@ -102,7 +93,7 @@ export default function LandingPage() {
             </button>
             <button
               onClick={() => navigate("/simulator")}
-              className="inline-flex items-center gap-2 border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white font-medium px-8 py-4 rounded-xl transition-all"
+              className="inline-flex items-center gap-2 border border-gray-600 hover:border-gray-400 text-white hover:text-white font-medium px-8 py-4 rounded-xl transition-all"
             >
               시뮬레이터 체험
             </button>
@@ -114,7 +105,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold">4개 도메인 통합 관리</h2>
-          <p className="mt-3 text-gray-500">각 도메인의 AI 에이전트가 유기적으로 연결됩니다</p>
+          <p className="mt-3 text-white">각 도메인의 AI 에이전트가 유기적으로 연결됩니다</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {DOMAINS.map(({ icon: Icon, label, color, desc, stat }) => (
@@ -123,7 +114,7 @@ export default function LandingPage() {
                 <Icon size={28} style={{ color }} />
               </div>
               <h3 className="text-xl font-bold mb-2">{label}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-3">{desc}</p>
+              <p className="text-sm text-white leading-relaxed mb-3">{desc}</p>
               <span className="text-xs font-medium px-2.5 py-1 rounded-md" style={{ backgroundColor: color + "15", color }}>{stat}</span>
             </div>
           ))}
@@ -134,7 +125,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="bg-gradient-to-r from-red-500/5 via-amber-500/5 to-cyan-500/5 border border-gray-700/30 rounded-3xl p-8 md:p-12">
           <h2 className="text-2xl font-bold text-center mb-2">크로스 도메인 연쇄 효과</h2>
-          <p className="text-center text-gray-500 mb-8">하나의 선택이 만드는 나비효과를 실시간 추적합니다</p>
+          <p className="text-center text-white mb-8">하나의 선택이 만드는 나비효과를 실시간 추적합니다</p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 text-sm">
             {[
               { text: "야식 라면 (23시)", color: "bg-red-500/10 text-red-400 border-red-500/30" },
@@ -147,7 +138,7 @@ export default function LandingPage() {
                 <span className={`px-4 py-2.5 rounded-xl border font-medium whitespace-nowrap ${step.color}`}>
                   {step.text}
                 </span>
-                {i < 4 && <span className="text-gray-600 hidden md:block">→</span>}
+                {i < 4 && <span className="text-white hidden md:block">→</span>}
               </div>
             ))}
           </div>
@@ -158,7 +149,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold">핵심 기술</h2>
-          <p className="mt-3 text-gray-500">기존 헬스케어 앱에서 불가능했던 기능을 제공합니다</p>
+          <p className="mt-3 text-white">기존 헬스케어 앱에서 불가능했던 기능을 제공합니다</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map(({ icon: Icon, title, desc, badge }) => (
@@ -167,10 +158,10 @@ export default function LandingPage() {
                 <div className="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center">
                   <Icon size={22} className="text-cyan-400" />
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-700/60 text-gray-500 font-mono">{badge}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-700/60 text-white font-mono">{badge}</span>
               </div>
               <h3 className="font-bold text-lg mb-2">{title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+              <p className="text-sm text-white leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -178,13 +169,13 @@ export default function LandingPage() {
 
       {/* ──── Gamification Section ──── */}
       <section className="max-w-6xl mx-auto px-6 py-16">
-        <div className="bg-gradient-to-br from-purple-500/5 via-gray-900 to-cyan-500/5 border border-gray-700/30 rounded-3xl p-8 md:p-12">
+        <div className="bg-gray-800 border border-gray-700 rounded-3xl p-8 md:p-12">
           <div className="text-center mb-10">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-medium mb-4">
               <Trophy size={14} /> NEW
             </span>
             <h2 className="text-3xl font-bold">건강을 게임처럼</h2>
-            <p className="mt-3 text-gray-500">캐릭터를 키우면서 자연스럽게 건강해집니다</p>
+            <p className="mt-3 text-white">캐릭터를 키우면서 자연스럽게 건강해집니다</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {GAME_FEATURES.map(({ icon: Icon, label, desc }) => (
@@ -193,7 +184,7 @@ export default function LandingPage() {
                   <Icon size={24} className="text-purple-400" />
                 </div>
                 <h3 className="font-bold mb-1.5">{label}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+                <p className="text-xs text-white leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -225,11 +216,11 @@ export default function LandingPage() {
               <div className="space-y-3">
                 <div className="flex items-start gap-2">
                   <span className="text-red-500 text-xs mt-0.5">✕</span>
-                  <p className="text-sm text-gray-500">{existing}</p>
+                  <p className="text-sm text-white">{existing}</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-500 text-xs mt-0.5">✓</span>
-                  <p className="text-sm text-gray-300">{ours}</p>
+                  <p className="text-sm text-white">{ours}</p>
                 </div>
               </div>
             </div>
@@ -242,7 +233,7 @@ export default function LandingPage() {
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
           지금 바로 <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">시작하세요</span>
         </h2>
-        <p className="text-gray-500 mb-8 max-w-lg mx-auto">
+        <p className="text-white mb-8 max-w-lg mx-auto">
           3단계 온보딩으로 1분 만에 당신만의 AI 건강 관리 캐릭터가 생성됩니다.
         </p>
         <button
@@ -259,15 +250,15 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-md bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-[10px]">LS</div>
-            <span className="text-sm font-semibold text-gray-400">LifeSync AI</span>
+            <span className="text-sm font-semibold text-white">LifeSync AI</span>
           </div>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-white">
             KDT Team Chainers · 6명 · Python + FastAPI + LangGraph + PPO + React
           </p>
-          <div className="flex items-center gap-4 text-xs text-gray-600">
-            <button onClick={() => navigate("/architecture")} className="hover:text-gray-400 transition">아키텍처</button>
+          <div className="flex items-center gap-4 text-xs text-white">
+            <button onClick={() => navigate("/architecture")} className="hover:text-white transition">아키텍처</button>
             <span>·</span>
-            <button onClick={() => navigate("/report")} className="hover:text-gray-400 transition">리포트</button>
+            <button onClick={() => navigate("/report")} className="hover:text-white transition">리포트</button>
           </div>
         </div>
       </footer>

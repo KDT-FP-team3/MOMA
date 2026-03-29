@@ -94,10 +94,10 @@ export default function RoadmapTimeline() {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-white">
                         {week.expected_progress}
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-white">
                         {isExpanded ? "▲" : "▼"}
                       </span>
                     </div>
@@ -123,16 +123,16 @@ export default function RoadmapTimeline() {
                         >
                           <span
                             className={
-                              domainColors[goal.domain] || "text-gray-400"
+                              domainColors[goal.domain] || "text-white"
                             }
                           >
                             {goal.name}
                           </span>
-                          <span className="text-gray-500">
+                          <span className="text-white">
                             강도 {(goal.intensity * 100).toFixed(0)}%
                           </span>
                           {goal.description && (
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-white text-xs">
                               — {goal.description}
                             </span>
                           )}

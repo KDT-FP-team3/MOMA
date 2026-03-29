@@ -144,7 +144,7 @@ export default function AnalysisPage() {
       <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
         <div>
           <h1 className="text-xl font-bold">사진 분석</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-white mt-0.5">
             사진 한 장으로 얼굴 + 체형 분석 → 맞춤 Top-5 조언
           </p>
         </div>
@@ -240,8 +240,8 @@ export default function AnalysisPage() {
           {preview ? (
             <img src={preview} alt="Preview" className="max-h-56 mx-auto rounded-lg" />
           ) : (
-            <div className="text-gray-500">
-              <Upload size={40} className="mx-auto mb-3 text-gray-600" />
+            <div className="text-white">
+              <Upload size={40} className="mx-auto mb-3 text-white" />
               <p className="font-medium">사진을 드래그하거나 클릭하여 업로드</p>
               <p className="text-sm mt-1">얼굴 + 전신이 보이는 사진을 권장합니다</p>
             </div>
@@ -281,7 +281,7 @@ export default function AnalysisPage() {
         {loading && (
           <div className="flex items-center justify-center py-10">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400" />
-            <span className="ml-4 text-gray-400">AI가 분석 중입니다...</span>
+            <span className="ml-4 text-white">AI가 분석 중입니다...</span>
           </div>
         )}
 
@@ -311,7 +311,7 @@ export default function AnalysisPage() {
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">체형 유형</span>
+                    <span className="text-white">체형 유형</span>
                     <span className="font-medium">{body?.body_type || "분석 중"}</span>
                   </div>
                   <Metric label="자세 점수" value={body?.posture_score} />
@@ -324,7 +324,7 @@ export default function AnalysisPage() {
                   <ListChecks size={18} className="text-cyan-400" />
                   <h3 className="font-semibold text-sm">Top-5 맞춤 조언</h3>
                 </div>
-                <p className="text-xs text-gray-500 mb-3">원하는 항목을 복수 선택하세요</p>
+                <p className="text-xs text-white mb-3">원하는 항목을 복수 선택하세요</p>
                 <div className="space-y-2">
                   {(results.top_5 || []).map((item, idx) => {
                     const dc = domainColors[item.domain] || domainColors.health;
@@ -342,11 +342,11 @@ export default function AnalysisPage() {
                         <span className="text-sm font-bold text-cyan-400 mt-0.5 w-4">{idx + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.title}</p>
-                          <p className="text-[11px] text-gray-500">{item.description}</p>
+                          <p className="text-[11px] text-white">{item.description}</p>
                         </div>
                         <CheckSquare
                           size={16}
-                          className={checked ? "text-cyan-400 flex-shrink-0" : "text-gray-600 flex-shrink-0"}
+                          className={checked ? "text-cyan-400 flex-shrink-0" : "text-white flex-shrink-0"}
                         />
                       </button>
                     );
@@ -358,7 +358,7 @@ export default function AnalysisPage() {
             {/* 연결 3: 사진 분석 결과 → FoodAgent → 게이지 업데이트 */}
             {selected.size > 0 && (
               <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-700/30 rounded-xl p-5 text-center">
-                <p className="text-sm text-gray-300 mb-3">
+                <p className="text-sm text-white mb-3">
                   {selected.size}개 목표를 선택했습니다. AI 분석 결과를 적용하시겠습니까?
                 </p>
                 <div className="flex justify-center gap-3">
@@ -419,7 +419,7 @@ function Metric({ label, value, invert = false }) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
-        <span className="text-gray-400">{label}</span>
+        <span className="text-white">{label}</span>
         <span className="font-medium">{v}/100</span>
       </div>
       <div className="w-full bg-gray-700 rounded-full h-1.5">
