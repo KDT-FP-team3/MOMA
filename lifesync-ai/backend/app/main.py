@@ -100,7 +100,7 @@ app.add_middleware(
 PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
-    "/api/onboarding", "/api/plugins/status",
+    "/api/onboarding", "/api/plugins/status", "/api/admin/status", "/api/device/info",
 }
 
 
@@ -220,9 +220,48 @@ async def plugin_status():
 
 @app.get("/api/device/info")
 async def device_info():
-    """GPU/CPU 디바이스 정보 — 팀원이 자기 PC의 GPU 상태를 확인."""
+    """GPU/CPU 디바이스 정보."""
     from backend.core.device import get_device_info
     return get_device_info()
+
+
+@app.get("/api/admin/status")
+async def admin_status():
+    """관리자 통합 상태 — 모든 시스템 정보를 한 번에 조회.
+
+    플러그인, GPU, API 키, 서비스 상태를 단일 응답으로 반환.
+    """
+    from backend.core.plugin_registry import registry
+    from backend.core.device import get_device_info
+
+    # API 키 상태 (값은 노출하지 않고 설정 여부만)
+    env_keys = {
+        "OPENAI_API_KEY": bool(os.getenv("OPENAI_API_KEY", "")),
+        "DATABASE_URL": bool(os.getenv("DATABASE_URL", "")),
+        "KMA_API_KEY": bool(os.getenv("KMA_API_KEY", "")),
+        "AIRKOREA_API_KEY": bool(os.getenv("AIRKOREA_API_KEY", "")),
+        "JWT_SECRET": bool(os.getenv("JWT_SECRET", "")),
+        "KAKAO_CLIENT_ID": bool(os.getenv("KAKAO_CLIENT_ID", "")),
+        "KAKAO_CLIENT_SECRET": bool(os.getenv("KAKAO_CLIENT_SECRET", "")),
+    }
+    keys_ok = sum(env_keys.values())
+    keys_total = len(env_keys)
+
+    # 서비스 상태
+    from backend.app.services_init import gauge_calculator, retrain_scheduler, ppo_agent
+    services = {
+        "gauge_calculator": gauge_calculator is not None,
+        "retrain_scheduler": retrain_scheduler is not None,
+        "ppo_agent": ppo_agent is not None,
+    }
+
+    return {
+        "server": {"status": "running", "version": app.version, "env": os.getenv("ENV", "development")},
+        "api_keys": {"configured": keys_ok, "total": keys_total, "details": env_keys},
+        "plugins": registry.status(),
+        "device": get_device_info(),
+        "services": services,
+    }
 
 
 # ============================================================

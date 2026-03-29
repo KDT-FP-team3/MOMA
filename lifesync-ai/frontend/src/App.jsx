@@ -17,6 +17,7 @@ const ArchitecturePage = React.lazy(() => import("./pages/ArchitecturePage"));
 const AvatarSimPage = React.lazy(() => import("./pages/AvatarSimPage"));
 const ReportPage = React.lazy(() => import("./pages/ReportPage"));
 const OnboardingPage = React.lazy(() => import("./pages/OnboardingPage"));
+const AdminPage = React.lazy(() => import("./pages/AdminPage"));
 
 function PageLoader() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/avatar" element={<AvatarSimPage />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Suspense>
       </HashRouter>
