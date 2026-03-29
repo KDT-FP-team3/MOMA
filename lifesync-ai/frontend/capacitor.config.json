@@ -4,6 +4,11 @@
   "webDir": "dist",
   "server": {
     "cleartext": true,
-    "allowNavigation": ["192.168.*.*", "10.*.*.*"]
+    "allowNavigation": ["moma-production.up.railway.app", "*.railway.app", "*"]
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }
