@@ -36,3 +36,10 @@ class WeatherExerciseAgent:
 1. `plugin.py`의 `register()` 주석 해제
 2. `GET /api/plugins/status`에서 `exercise_agent: "plugin"` 표시
 3. 미세먼지 높은 날 실내 운동 자동 추천 동작
+
+## 에이전트 피드백 (자동)
+- 점검 시각: 2026-03-29 10:03 UTC
+- 인터페이스 점검: PASS
+  - 모든 인터페이스 준수
+- 플러그인 상태: active (WeatherExerciseAgent)
+- CASCADE 연결: exercise -> health, food (2개)

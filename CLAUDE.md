@@ -1,4 +1,4 @@
-# LifeSync AI — Claude Code 프로젝트 컨텍스트 (v0.3.0)
+# LifeSync AI — Claude Code 프로젝트 컨텍스트 (v0.4.0)
 
 ## 프로젝트 개요
 - 프로젝트명: LifeSync AI
@@ -16,23 +16,28 @@
 
 ## 아키텍처: Router 분리 패턴
 ```
-main.py (234줄 — 미들웨어 + 플러그인 등록 + 라우터 등록만. 관리자만 수정)
+main.py (290줄 — 미들웨어 + 플러그인 등록 + 라우터 등록만. 관리자만 수정)
   ├→ routers/ai_router.py    ← 그룹 A 전담 (사진분석, 시뮬레이션, 모델동기화)
   ├→ routers/api_router.py   ← 그룹 B 전담 (쿼리, 인증, 대시보드, WebSocket)
-  └→ frontend/src/           ← 그룹 C 전담 (11개 페이지, 컴포넌트)
+  ├→ routers/admin_router.py ← 전체 관리 (팀 진행, 충돌 감지, 백업, 보안 감사)
+  └→ frontend/src/           ← 그룹 C 전담 (14개 페이지, 컴포넌트)
 ```
 
-## 데이터 흐름 (v0.3.0 — 5개 연결 완료)
+## 데이터 흐름 (v0.4.0 — 7개 연결)
 ```
 [온보딩] → POST /api/onboarding → Supabase → LifeEnv 초기 상태
     ↓
-[대시보드] ← GET /api/dashboard/{uid} + WebSocket gauge_update
+[대시보드] ← GET /api/dashboard/{uid} + WebSocket gauge_update (Samsung Health 스타일)
     ↓
-[채팅] → POST /api/query → Orchestrator → Agent → CASCADE → updated_gauges
+[채팅/솔루션] → POST /api/query → Orchestrator → Agent → CASCADE → updated_gauges
     ↓
 [시뮬레이터] → POST /api/simulation/step → PPO optimal_action 추천
     ↓
 [사진] → POST /api/photo/upload → YOLO → POST /api/query → 게이지 업데이트
+    ↓
+[전체 관리] → GET /api/admin/* → git 통계, 충돌 감지, 백업, 보안 감사
+    ↓
+[피드백] → POST /api/feedback → reward → RetainScheduler → PPO 재학습
 ```
 
 ## 폴더 구조
@@ -43,7 +48,8 @@ lifesync-ai/
 │   │   ├── main.py                    # 미들웨어(보안헤더/CORS/JWT/RateLimit) + 라우터 등록
 │   │   └── routers/
 │   │       ├── ai_router.py           # 그룹A: /api/photo, /api/simulation, /api/models, /api/rl
-│   │       └── api_router.py          # 그룹B: /api/query, /api/dashboard, /api/auth, /api/onboarding, /ws
+│   │       ├── api_router.py          # 그룹B: /api/query, /api/dashboard, /api/auth, /api/onboarding, /ws
+│   │       └── admin_router.py        # 전체관리: /api/admin/team-progress, conflicts, backup, security-audit
 │   ├── agents/
 │   │   ├── orchestrator.py            # LangGraph StateGraph (8노드 DAG, CASCADE_RULES)
 │   │   ├── food_agent.py              # GPT-4o-mini + ChromaDB RAG (레시피 추천)
@@ -91,10 +97,11 @@ lifesync-ai/
 │       ├── weather_monitor.py         # 기상청 단기예보 + 에어코리아 대기오염 API
 │       └── plan_adjuster.py           # 날씨 → 운동 플랜 자동 조정
 ├── frontend/src/
-│   ├── pages/ (11개)                  # Landing, Login, Onboarding, Dashboard, Analysis,
-│   │                                  # Simulator, Schedule, Roadmap, Avatar, Report, Architecture
-│   ├── components/                    # GaugePanel, QuickChat, ErrorBarChart, AvatarBody 등
-│   ├── context/                       # AppStateContext (전역 상태), ThemeContext
+│   ├── pages/ (14개)                  # Landing, Login, Onboarding, Dashboard(Samsung Health),
+│   │                                  # Analysis, Simulator, Schedule, Roadmap, Avatar, Report,
+│   │                                  # Architecture, Admin, TeamLeader (전체 관리)
+│   ├── components/                    # GaugePanel, QuickChat, CascadeAlert, AvatarBody(걷기) 등
+│   ├── context/                       # AppStateContext (전역 상태), ThemeContext (라이트/다크)
 │   └── services/offlineEngine.js      # IndexedDB 모델 캐싱 + smartSimulate
 ├── data/                              # recipes.csv, exercises.json, health_guidelines.json
 ├── scripts/                           # start.bat, train_and_upload.py
@@ -141,13 +148,15 @@ lifesync-ai/
 3. 각 팀원은 자기 브랜치에서 작업 → PR로 main 병합
 4. CODEOWNERS: 파일별 자동 리뷰어 배정
 
-## 보안 (v0.3.0)
+## 보안 (v0.4.0)
 - JWT 인증: 프로덕션에서 JWT_SECRET 필수 (미설정 시 서버 시작 거부)
 - WebSocket: 프로덕션에서 토큰 없으면 연결 거부
 - Rate Limit: IP별 분당 60회
 - 보안 헤더: XSS, Clickjacking, HSTS
 - 입력 검증: user_id 정규식, 모델명 정규식, 파일 확장자 화이트리스트
 - 경로 트래버설 방지: models/ 디렉터리 밖 접근 차단
+- PUBLIC_PATHS: 관리 API(backup 등)는 인증 필요 (v0.4.0 강화)
+- WebSocket 데이터 검증: VALID_KEYS 화이트리스트로 게이지 값 검증 (v0.4.0)
 
 ## 보상 함수
 ```
@@ -194,9 +203,15 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:8000
 
 ### 인터페이스 계약 (변경 불가)
 ```python
-# DomainAgent — food/exercise/health/hobby 에이전트
+# DomainAgent — food/exercise/hobby 에이전트
 def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
     # 반환 필수 키: recommendations(list), explanation(str)
+
+# HealthAgent — 건강 에이전트 (오케스트레이터가 analyze_checkup() 호출)
+def analyze_checkup(self, user_state: dict[str, Any]) -> dict[str, Any]:
+    # 반환 필수 키: recommendations(list), explanation(str)
+def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+    # analyze_checkup()으로 위임
 
 # KnowledgeBase — RAG 지식베이스
 def search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
@@ -224,3 +239,38 @@ plugins/vision_korean/CLAUDE.md    ← 팀원 E 전용 컨텍스트
 plugins/voice_stt/CLAUDE.md        ← 팀원 F 전용 컨텍스트
 ```
 Claude Code / Cursor가 해당 폴더에서 작업 시 자동으로 읽습니다.
+
+## v0.4.0 주요 변경 사항
+
+### 신규 기능
+- 전체 관리 대시보드 (TeamLeaderPage): 4탭 (아키텍처/팀활동/백업/보안)
+- Samsung Health 스타일 대시보드: 모니터링 허브 + 솔루션/인사이트/코칭 3탭
+- 라이트 모드 전역 전환: Samsung Blue (#1a73e8), 다크/라이트 토글
+- 걸어다니는 아바타 캐릭터: CSS 걷기 애니메이션, BMI별 보폭/속도
+- admin_router.py: 7개 관리 API (team-progress, conflicts, backup, security-audit 등)
+
+### 버그 수정 19건 + 품질 개선 5건
+- WebSocket 재연결 타이머/의존성/데이터 검증 수정 (B1,B2,N5,F1)
+- BasicHealthAgent analyze_checkup() 메서드 추가 (B5)
+- PUBLIC_PATHS 보안 강화 (N1)
+- GaugePanel 이중 state 제거 → 전역만 사용 (C2)
+- 폴백 에이전트에 is_fallback: true 표시 + 로그 추가 (C3)
+- 플러그인 등록 시 인터페이스 검증 추가 (C4)
+- 게이지 RadialBarChart domain=[0,100] 스케일 수정
+
+### 문서
+- docs/architecture-report-v7.docx: 24개 섹션, 262 paragraphs
+- docs/report.html: v0.4.0 변경 이력 + 다이어그램 업데이트
+- ArchitecturePage: admin_router, TeamLeader, Dashboard v2 노드 추가
+
+## 에이전트 점검 현황 (자동 업데이트)
+- 마지막 점검: 2026-03-29 10:03 UTC
+- 전체 건강도: 82/100
+- 코드 품질: 80/100 (pass:5 fail:1 warn:0)
+- 플러그인: active 6개 / fallback 5개
+- CASCADE 규칙: 9개 활성
+- API 서비스: 3개 정상 / 환경변수 3개 설정
+- 보안 점수: 100/100 (이슈 1건)
+
+### 보안 주의사항
+- ENV=development - 인증 우회 활성 (개발 전용)

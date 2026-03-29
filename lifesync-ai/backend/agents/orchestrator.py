@@ -221,7 +221,16 @@ class Orchestrator:
             "evaluation": {},
         }
 
-        final_state = self._graph.invoke(initial_state)
+        try:
+            final_state = self._graph.invoke(initial_state)
+        except Exception:
+            logger.exception("LangGraph 실행 실패: user=%s, domain=%s", user_id, domain)
+            final_state = {
+                **initial_state,
+                "result": {"recommendations": [], "explanation": "처리 중 오류가 발생했습니다."},
+                "cascade_effects": {},
+                "evaluation": {"has_result": False, "error": True},
+            }
 
         # 히스토리 저장
         turn = {

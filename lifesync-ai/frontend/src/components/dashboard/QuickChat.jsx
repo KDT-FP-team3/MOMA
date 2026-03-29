@@ -7,10 +7,10 @@ import axios from "axios";
 import { useAppState } from "../../context/AppStateContext";
 
 const DOMAIN_CONFIG = {
-  food:     { label: "요리", emoji: "", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
-  exercise: { label: "운동", emoji: "", color: "text-blue-400",   border: "border-blue-500/30",   bg: "bg-blue-500/5" },
-  health:   { label: "건강", emoji: "", color: "text-green-400",  border: "border-green-500/30",  bg: "bg-green-500/5" },
-  hobby:    { label: "취미", emoji: "", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5" },
+  food:     { label: "요리", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
+  exercise: { label: "운동", color: "text-blue-400",   border: "border-blue-500/30",   bg: "bg-blue-500/5" },
+  health:   { label: "건강", color: "text-green-400",  border: "border-green-500/30",  bg: "bg-green-500/5" },
+  hobby:    { label: "취미", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5" },
 };
 
 // 키워드 기반 도메인 자동 감지
@@ -59,7 +59,7 @@ function formatResponse(domain, result, cascade) {
   // 크로스 도메인 연쇄 효과
   if (cascade?.effects && Object.keys(cascade.effects).length > 0) {
     const effects = Object.entries(cascade.effects)
-      .map(([d, e]) => `${DOMAIN_CONFIG[d]?.emoji || "→"} ${e.description}`)
+      .map(([d, e]) => `[${DOMAIN_CONFIG[d]?.label || d}] ${e.description}`)
       .join("\n");
     parts.push(`\n 연쇄 효과:\n${effects}`);
   }
@@ -227,7 +227,7 @@ export default function QuickChat() {
             >
               {msg.domain && DOMAIN_CONFIG[msg.domain] && (
                 <span className={`text-[10px] font-medium ${DOMAIN_CONFIG[msg.domain].color} block mb-1`}>
-                  {DOMAIN_CONFIG[msg.domain].emoji} {DOMAIN_CONFIG[msg.domain].label}
+                  {DOMAIN_CONFIG[msg.domain].label}
                 </span>
               )}
               <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>

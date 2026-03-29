@@ -121,61 +121,47 @@ class BasicHobbyAgent:
 # ── 기본 RL (규칙 기반 행동 선택) ────────────────────────
 
 class BasicRLAgent:
-    """규칙 기반 행동 선택 (PPO 없이 동작).
-
-    ACTION_MAP:
-        0=건강식, 1=불건강식, 2=식사건너뛰기,
-        3=유산소, 4=근력, 5=운동건너뛰기,
-        6=건강체크, 7=수면최적화, 8=취미, 9=휴식
-    """
+    """규칙 기반 행동 선택 (PPO 없이 동작)."""
 
     def predict(self, state: Any) -> tuple[int, float]:
-        # 간단한 규칙: 항상 건강식(0) + 유산소(3) 반복
+        logger.info("BasicRLAgent (fallback) 사용 중 - PPO 미등록")
         import time
         hour = time.localtime().tm_hour
-        if hour < 9:
-            return (0, 0.5)   # 아침: 건강식
-        elif hour < 12:
-            return (3, 0.5)   # 오전: 유산소
-        elif hour < 14:
-            return (0, 0.5)   # 점심: 건강식
-        elif hour < 18:
-            return (4, 0.5)   # 오후: 근력운동
-        elif hour < 21:
-            return (8, 0.5)   # 저녁: 취미
-        else:
-            return (7, 0.5)   # 밤: 수면최적화
+        if hour < 9:    return (0, 0.5)
+        elif hour < 12: return (3, 0.5)
+        elif hour < 14: return (0, 0.5)
+        elif hour < 18: return (4, 0.5)
+        elif hour < 21: return (8, 0.5)
+        else:           return (7, 0.5)
 
     def train(self, total_timesteps: int = 10000) -> dict[str, Any]:
-        return {"status": "skipped", "reason": "기본 규칙 모드 (PPO 미설치)"}
+        logger.info("BasicRLAgent.train (fallback) - PPO 미설치")
+        return {"status": "skipped", "reason": "기본 규칙 모드", "is_fallback": True}
 
-
-# ── 기본 이미지 분석 ─────────────────────────────────────
 
 class BasicImageAnalyzer:
     """이미지 분석 폴백 (CLIP/YOLO 없이 동작)."""
 
     def analyze(self, image_bytes: bytes) -> dict[str, Any]:
+        logger.info("BasicImageAnalyzer (fallback) 사용 중 - 플러그인 미등록")
         return {
-            "status": "basic_mode",
-            "message": "이미지 분석 모델이 로드되지 않았습니다. 텍스트 입력을 이용해주세요.",
+            "message": "이미지 분석 모델이 로드되지 않았습니다.",
             "size_bytes": len(image_bytes),
+            "is_fallback": True,
         }
 
-
-# ── 기본 음성 처리 ───────────────────────────────────────
 
 class BasicVoiceProcessor:
     """음성 처리 폴백 (Whisper/gTTS 없이 동작)."""
 
     def speech_to_text(self, audio_bytes: bytes) -> str:
+        logger.info("BasicVoiceProcessor.stt (fallback) 사용 중")
         return "[음성 인식 모듈이 비활성 상태입니다. 텍스트로 입력해주세요.]"
 
     def text_to_speech(self, text: str) -> bytes:
-        return b""  # 빈 오디오 바이트
+        logger.info("BasicVoiceProcessor.tts (fallback) 사용 중")
+        return b""
 
-
-# ── 기본 지식베이스 ──────────────────────────────────────
 
 class BasicKnowledgeBase:
     """키워드 기반 검색 폴백 (ChromaDB 없이 동작)."""
@@ -184,6 +170,7 @@ class BasicKnowledgeBase:
         self._data = data or []
 
     def search(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
+        logger.info("BasicKnowledgeBase (fallback) 사용 중")
         query_lower = query.lower()
         scored = []
         for item in self._data:

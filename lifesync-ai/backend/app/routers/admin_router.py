@@ -375,3 +375,25 @@ async def orchestrator_stats() -> dict[str, Any]:
         "error_count": _orchestrator_stats["errors"],
         "error_rate": round(_orchestrator_stats["errors"] / total * 100, 1) if total else 0,
     }
+
+
+# ============================================================
+# 8. 모니터링 에이전트
+# ============================================================
+
+@router.get("/monitoring/status")
+async def monitoring_status() -> dict[str, Any]:
+    """모니터링 에이전트 최근 점검 결과 조회."""
+    from backend.agents.monitoring.core_agent import get_latest_result
+    result = get_latest_result()
+    if not result:
+        return {"status": "no_data", "message": "아직 점검이 실행되지 않았습니다."}
+    return result
+
+
+@router.post("/monitoring/run")
+async def monitoring_run() -> dict[str, Any]:
+    """모니터링 에이전트 수동 실행."""
+    from backend.agents.monitoring.core_agent import run_all_checks
+    result = run_all_checks()
+    return {"status": "completed", "overall_score": result.get("overall", {}).get("score", 0)}

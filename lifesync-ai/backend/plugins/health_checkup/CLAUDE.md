@@ -35,3 +35,10 @@ class CheckupHealthAgent:
 1. `plugin.py`의 `register()` 주석 해제
 2. `GET /api/plugins/status`에서 `health_agent: "plugin"` 표시
 3. 건강 관련 질문에 검진 수치 기반 분석 응답
+
+## 에이전트 피드백 (자동)
+- 점검 시각: 2026-03-29 10:03 UTC
+- 인터페이스 점검: FAIL
+  - analyze_checkup() 메서드 미구현
+- 플러그인 상태: active (CheckupHealthAgent)
+- CASCADE 연결: health -> exercise, food (2개)

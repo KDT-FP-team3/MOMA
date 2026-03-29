@@ -23,7 +23,7 @@ import {
   Lightbulb, BarChart3, MessageCircle, Sparkles, Moon, Brain,
   Droplets, Target, ChevronRight, Zap, ArrowRight, CheckCircle,
 } from "lucide-react";
-import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
+// Recharts는 GaugePanel에서 사용 (DashboardPage에서는 SVG 직접 사용)
 import axios from "axios";
 
 /* ─── 도메인 설정 ─── */
@@ -196,18 +196,15 @@ export default function DashboardPage() {
 
             {/* 중앙 링 차트 */}
             <div className="relative w-44 h-44 md:w-52 md:h-52 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart
-                  innerRadius="65%"
-                  outerRadius="100%"
-                  data={[{ value: 100, fill: "transparent" }, { value: overallScore, fill: scoreColor }]}
-                  startAngle={225}
-                  endAngle={-45}
-                  barSize={14}
-                >
-                  <RadialBar dataKey="value" cornerRadius={10} background={{ fill: "#1e293b" }} />
-                </RadialBarChart>
-              </ResponsiveContainer>
+              <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
+                <circle cx="100" cy="100" r="80" fill="none" stroke="#e5e7eb" strokeWidth="14"
+                  strokeDasharray={`${Math.PI * 80 * 270 / 360} ${Math.PI * 80 * 90 / 360}`}
+                  strokeLinecap="round" transform="rotate(135 100 100)" opacity="0.3" />
+                <circle cx="100" cy="100" r="80" fill="none" stroke={scoreColor} strokeWidth="14"
+                  strokeDasharray={`${Math.PI * 80 * 270 * overallScore / 36000} ${Math.PI * 80 * 2}`}
+                  strokeLinecap="round" transform="rotate(135 100 100)"
+                  style={{ transition: "stroke-dasharray 0.5s ease" }} />
+              </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl md:text-4xl font-black" style={{ color: scoreColor }}>
                   {overallScore}

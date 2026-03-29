@@ -52,11 +52,11 @@ const severityConfig = {
   positive: { color: "border-green-500", bg: "bg-green-900/20", badge: "bg-green-600", label: "보너스" },
 };
 
-const domainIcons = {
-  food: "",
-  exercise: "",
-  health: "",
-  hobby: "",
+const domainLabels = {
+  food: "[요리]",
+  exercise: "[운동]",
+  health: "[건강]",
+  hobby: "[취미]",
 };
 
 export default function CascadeAlert({ alerts = [] }) {
@@ -95,7 +95,7 @@ export default function CascadeAlert({ alerts = [] }) {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <span>{domainIcons[alert.source]}</span>
+                      <span>{domainLabels[alert.source]}</span>
                       <span className="font-medium">{alert.trigger}</span>
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${config.badge} text-white`}
@@ -120,7 +120,7 @@ export default function CascadeAlert({ alerts = [] }) {
                           className="flex items-center gap-2 text-sm"
                         >
                           <span className="text-white">→</span>
-                          <span>{domainIcons[effect.domain]}</span>
+                          <span>{domainLabels[effect.domain]}</span>
                           <span
                             className={
                               effect.delta > 0 ? "text-green-400" : "text-red-400"

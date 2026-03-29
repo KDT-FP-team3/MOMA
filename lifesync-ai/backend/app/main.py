@@ -37,7 +37,23 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """앱 시작/종료 이벤트."""
     logger.info("LifeSync AI 서버 시작")
+
+    # 모니터링 에이전트 스케줄러 시작
+    monitoring_scheduler = None
+    try:
+        from backend.agents.monitoring.core_agent import MonitoringScheduler
+        monitoring_scheduler = MonitoringScheduler(interval_hours=6.0)
+        monitoring_scheduler.start()
+        logger.info("모니터링 에이전트 스케줄러 시작 (6시간 주기)")
+    except Exception:
+        logger.warning("모니터링 에이전트 시작 실패 (서비스 영향 없음)")
+
     yield
+
+    # 모니터링 스케줄러 종료
+    if monitoring_scheduler:
+        monitoring_scheduler.stop()
+
     # api_router의 state_manager가 있으면 정리
     try:
         from backend.app.routers.api_router import state_manager

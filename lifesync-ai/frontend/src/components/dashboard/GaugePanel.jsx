@@ -1,11 +1,10 @@
 /**
- * GaugePanel — 6개 건강 계기판 (Samsung Health 스타일 카드 리디자인)
+ * GaugePanel — 6개 건강 계기판 (SVG 게이지 + WebSocket 실시간)
  *
- * 기능 100% 유지: RadialBarChart + WebSocket 실시간 + 전역 상태 동기화
- * 디자인 개선: 개별 카드 래핑 + 호버 효과 + 그라데이션 배경 + 부드러운 전환
+ * SVG circle로 직접 게이지를 그려 정확한 비율 표시.
+ * WebSocket 실시간 + 전역 상태 동기화.
  */
-import { useState, useEffect, useCallback } from "react";
-import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
+import { useEffect } from "react";
 import { useAppState } from "../../context/AppStateContext";
 
 const GAUGE_CONFIG = [
@@ -99,11 +98,10 @@ export default function GaugePanel() {
         {GAUGE_CONFIG.map(({ key, label, unit, color, gradient, borderHover, invert }) => {
           const value = Math.round(gauges[key] || 0);
           const status = getStatus(value, invert);
-          // 더미 max(100)를 먼저 넣어 스케일 고정, 실제 값을 위에 표시
-          const data = [
-            { value: 100, fill: "transparent" },
-            { value, fill: color },
-          ];
+          // SVG 게이지: 240도 범위 (210 ~ -30)
+          const R = 36;
+          const arcLen = Math.PI * R * 240 / 180;
+          const filled = arcLen * value / 100;
 
           return (
             <div
@@ -111,22 +109,15 @@ export default function GaugePanel() {
               className={`flex flex-col items-center bg-gradient-to-b ${gradient} rounded-xl p-3 border border-gray-700/30 ${borderHover} transition-all duration-300 group cursor-default`}
             >
               <div className="relative w-20 h-20 md:w-24 md:h-24 group-hover:scale-105 transition-transform duration-300">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart
-                    innerRadius="60%"
-                    outerRadius="100%"
-                    data={data}
-                    startAngle={210}
-                    endAngle={-30}
-                    barSize={10}
-                  >
-                    <RadialBar
-                      dataKey="value"
-                      cornerRadius={8}
-                      background={{ fill: "rgba(30,41,59,0.8)" }}
-                    />
-                  </RadialBarChart>
-                </ResponsiveContainer>
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <circle cx="50" cy="50" r={R} fill="none" stroke="#e5e7eb" strokeWidth="8"
+                    strokeDasharray={`${arcLen} ${Math.PI * R * 2 - arcLen}`}
+                    strokeLinecap="round" transform="rotate(150 50 50)" opacity="0.25" />
+                  <circle cx="50" cy="50" r={R} fill="none" stroke={color} strokeWidth="8"
+                    strokeDasharray={`${filled} ${Math.PI * R * 2 - filled}`}
+                    strokeLinecap="round" transform="rotate(150 50 50)"
+                    style={{ transition: "stroke-dasharray 0.5s ease" }} />
+                </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-lg md:text-xl font-bold transition-colors duration-500" style={{ color }}>
                     {value}

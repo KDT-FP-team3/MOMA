@@ -4,14 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Base Layer ===== */
+/* ===== Base ===== */
 @layer base {
   html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
   * { -webkit-tap-highlight-color: transparent; }
 }
 
@@ -21,273 +17,116 @@
 ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
 
-/* ===== Custom Utilities ===== */
+/* ===== Utilities (Samsung Blue) ===== */
 @layer utilities {
-  /* Glass morphism card */
-  .glass-card {
-    background: rgba(17,24,39,0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-  .light-mode .glass-card {
-    background: rgba(255,255,255,0.7);
-    border: 1px solid rgba(0,0,0,0.06);
-  }
-
-  /* Gradient text */
-  .text-gradient {
-    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Accent gradient bar */
-  .accent-bar {
-    background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6, #ec4899);
-    background-size: 300% 100%;
-    animation: gradient-x 6s ease infinite;
-  }
-
-  /* Shimmer loading effect */
-  .shimmer {
-    background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
-    background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
-  }
-
-  /* Glow border */
-  .glow-border {
-    box-shadow: 0 0 0 1px rgba(6,182,212,0.2), 0 0 15px rgba(6,182,212,0.1);
-  }
-  .glow-border-violet {
-    box-shadow: 0 0 0 1px rgba(139,92,246,0.2), 0 0 15px rgba(139,92,246,0.1);
-  }
+  .glass-card { background: rgba(17,24,39,0.6); backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(255,255,255,0.06); }
+  .text-gradient { background: linear-gradient(135deg, #1a73e8, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .accent-bar { background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8); background-size: 300% 100%; animation: gradient-x 6s ease infinite; }
+  .shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 2s linear infinite; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(26,115,232,0.2), 0 0 15px rgba(26,115,232,0.1); }
 }
 
-/* ===== Dark Mode (Default) ===== */
+/* ===== Dark Mode ===== */
 .dark-mode {
-  --bg-primary: #0c1222;
-  --bg-card: #111827;
-  --bg-elevated: #1a2332;
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-default: rgba(255,255,255,0.1);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-}
-
-/* --- Dark mode: accent 색상 통일 (cyan → blue 계열) --- */
-.dark-mode .text-cyan-400 { color: #60a5fa !important; }
-.dark-mode .text-cyan-500 { color: #3b82f6 !important; }
-.dark-mode .bg-cyan-600 { background-color: #2563eb !important; }
-.dark-mode .bg-cyan-500\/20 { background-color: rgba(59,130,246,0.12) !important; }
-.dark-mode .bg-cyan-500\/15 { background-color: rgba(59,130,246,0.09) !important; }
-.dark-mode .bg-cyan-500\/10 { background-color: rgba(59,130,246,0.06) !important; }
-.dark-mode .border-cyan-500\/20 { border-color: rgba(59,130,246,0.15) !important; }
-.dark-mode .hover\:bg-cyan-500:hover { background-color: #3b82f6 !important; }
-.dark-mode .text-gradient {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.dark-mode .accent-bar {
-  background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #2563eb);
-  background-size: 300% 100%;
-  animation: gradient-x 6s ease infinite;
+  --bg-primary: #0f1724; --bg-card: #1a2332; --bg-elevated: #243044;
+  --border-subtle: rgba(255,255,255,0.06); --border-default: rgba(255,255,255,0.1);
+  --text-primary: #f1f5f9; --text-secondary: #cbd5e1; --text-muted: #94a3b8;
 }
 
 /* ===== Light Mode ===== */
 .light-mode {
-  --bg-primary: #f0f5fa;
-  --bg-card: #ffffff;
-  --bg-elevated: #f8fbff;
-  --border-subtle: rgba(0,0,0,0.04);
-  --border-default: rgba(0,0,0,0.08);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --bg-primary: #f5f7fa; --bg-card: #ffffff; --bg-elevated: #f0f4f8;
+  --border-subtle: rgba(0,0,0,0.06); --border-default: rgba(0,0,0,0.1);
+  --text-primary: #111827; --text-secondary: #374151; --text-muted: #4b5563;
 }
 
-/* --- Light mode background overrides --- */
+/* ===== Light Mode Overrides ===== */
+
+/* Background */
+.light-mode .bg-gray-950,
 .light-mode .bg-gray-900 { background-color: var(--bg-primary) !important; }
-.light-mode .bg-gray-800 { background-color: var(--bg-card) !important; }
-.light-mode .bg-gray-800\/50 { background-color: rgba(255,255,255,0.8) !important; }
-.light-mode .bg-gray-800\/95 { background-color: rgba(255,255,255,0.95) !important; }
-.light-mode .bg-gray-800\/40 { background-color: rgba(255,255,255,0.6) !important; }
+.light-mode .bg-gray-800 { background-color: var(--bg-card) !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
 .light-mode .bg-gray-700 { background-color: #f1f5f9 !important; }
-.light-mode .bg-gray-700\/30 { background-color: rgba(241,245,249,0.5) !important; }
-.light-mode .bg-gray-700\/50 { background-color: rgba(241,245,249,0.7) !important; }
-.light-mode .bg-gray-950\/60 { background-color: rgba(255,255,255,0.95) !important; }
-.light-mode .bg-gray-900\/80 { background-color: rgba(248,250,252,0.9) !important; }
-.light-mode .bg-gray-900\/20 { background-color: rgba(241,245,249,0.4) !important; }
+.light-mode .bg-gray-950\/60, .light-mode .bg-gray-900\/80, .light-mode .bg-gray-800\/95 { background-color: rgba(255,255,255,0.95) !important; }
+.light-mode .bg-gray-900\/70, .light-mode .bg-gray-800\/80 { background-color: rgba(255,255,255,0.9) !important; }
+.light-mode .bg-gray-900\/60, .light-mode .bg-gray-800\/60 { background-color: rgba(255,255,255,0.85) !important; }
+.light-mode .bg-gray-900\/50, .light-mode .bg-gray-800\/50 { background-color: rgba(255,255,255,0.8) !important; }
+.light-mode .bg-gray-900\/20, .light-mode .bg-gray-800\/40 { background-color: rgba(248,250,252,0.65) !important; }
+.light-mode .bg-gray-800\/30, .light-mode .bg-gray-700\/50 { background-color: rgba(241,245,249,0.7) !important; }
+.light-mode .bg-gray-700\/30, .light-mode .bg-gray-700\/40 { background-color: rgba(241,245,249,0.5) !important; }
 .light-mode .bg-gray-600\/50 { background-color: rgba(226,232,240,0.5) !important; }
-.light-mode .bg-slate-900 { background-color: #ffffff !important; }
-.light-mode .bg-slate-800 { background-color: #f8fafc !important; }
+.light-mode .bg-slate-900, .light-mode .bg-slate-800 { background-color: #f8fafc !important; }
 .light-mode .bg-black\/50 { background-color: rgba(0,0,0,0.4) !important; }
 .light-mode .bg-black\/60 { background-color: rgba(0,0,0,0.5) !important; }
 
-/* --- Light mode status card backgrounds --- */
-.light-mode .bg-emerald-900\/20 { background-color: rgba(16,185,129,0.06) !important; }
-.light-mode .bg-red-900\/20 { background-color: rgba(239,68,68,0.06) !important; }
-.light-mode .bg-red-900\/30 { background-color: rgba(239,68,68,0.08) !important; }
-.light-mode .bg-amber-900\/20 { background-color: rgba(245,158,11,0.06) !important; }
-.light-mode .bg-blue-900\/20 { background-color: rgba(59,130,246,0.06) !important; }
-.light-mode .bg-cyan-900\/10 { background-color: rgba(6,182,212,0.06) !important; }
-
-/* --- Light mode borders --- */
-.light-mode .border-gray-700 { border-color: #e2e8f0 !important; }
-.light-mode .border-gray-700\/50 { border-color: #e2e8f0 !important; }
-.light-mode .border-gray-600 { border-color: #cbd5e1 !important; }
-.light-mode .border-gray-600\/50 { border-color: #cbd5e1 !important; }
+/* Borders */
+.light-mode .border-gray-700, .light-mode .border-gray-700\/50,
+.light-mode .border-gray-700\/40, .light-mode .border-gray-700\/30,
+.light-mode .border-gray-800 { border-color: #e2e8f0 !important; }
+.light-mode .border-gray-600, .light-mode .border-gray-600\/50,
+.light-mode .border-gray-600\/60 { border-color: #cbd5e1 !important; }
 .light-mode .border-gray-500 { border-color: #94a3b8 !important; }
-.light-mode .border-red-800\/30 { border-color: rgba(239,68,68,0.15) !important; }
-.light-mode .border-amber-800\/30 { border-color: rgba(245,158,11,0.15) !important; }
-.light-mode .border-emerald-800\/30 { border-color: rgba(16,185,129,0.15) !important; }
-.light-mode .border-blue-500\/60 { border-color: rgba(59,130,246,0.3) !important; }
 
-/* --- Light mode text --- */
-.light-mode .text-white { color: var(--text-primary) !important; }
-.light-mode .text-gray-100 { color: #1e293b !important; }
-.light-mode .text-gray-200 { color: #334155 !important; }
-.light-mode .text-gray-300 { color: var(--text-secondary) !important; }
-.light-mode .text-gray-400 { color: #64748b !important; }
-.light-mode .text-gray-500 { color: #94a3b8 !important; }
-.light-mode .text-gray-600 { color: #64748b !important; }
-.light-mode .text-red-300 { color: #dc2626 !important; }
-.light-mode .text-red-400 { color: #ef4444 !important; }
-.light-mode .text-amber-300 { color: #d97706 !important; }
-.light-mode .text-emerald-300 { color: #059669 !important; }
-.light-mode .text-emerald-400 { color: #10b981 !important; }
-.light-mode .text-blue-300 { color: #2563eb !important; }
-.light-mode .text-cyan-300 { color: #0891b2 !important; }
-.light-mode .text-cyan-400 { color: #0891b2 !important; }
-.light-mode .text-purple-300 { color: #7c3aed !important; }
+/* Text — 흰 배경 대비 강화 */
+.light-mode .text-white { color: #111827 !important; }
+.light-mode .text-gray-100, .light-mode .text-gray-200 { color: #1e293b !important; }
+.light-mode .text-gray-300, .light-mode .text-gray-400 { color: #374151 !important; }
+.light-mode .text-gray-500, .light-mode .text-gray-600 { color: #4b5563 !important; }
 
-/* --- Light mode hover states --- */
-.light-mode .hover\:bg-gray-700:hover { background-color: #e2e8f0 !important; }
-.light-mode .hover\:bg-gray-700\/50:hover { background-color: rgba(226,232,240,0.6) !important; }
-.light-mode .hover\:bg-gray-600:hover { background-color: #e2e8f0 !important; }
-.light-mode .hover\:bg-gray-500:hover { background-color: #cbd5e1 !important; }
+/* Accent: cyan → Samsung Blue */
+.light-mode .text-cyan-400, .light-mode .text-cyan-500, .light-mode .text-cyan-300 { color: #1a73e8 !important; }
+.light-mode .bg-cyan-600 { background-color: #1a73e8 !important; }
+.light-mode .bg-cyan-500\/20, .light-mode .bg-cyan-500\/15 { background-color: rgba(26,115,232,0.1) !important; }
+.light-mode .bg-cyan-500\/10, .light-mode .bg-cyan-500\/5 { background-color: rgba(26,115,232,0.05) !important; }
+.light-mode .border-cyan-500\/20, .light-mode .border-cyan-500\/10 { border-color: rgba(26,115,232,0.15) !important; }
+.light-mode .hover\:bg-cyan-500:hover { background-color: #4285f4 !important; }
+.light-mode .shadow-cyan-500\/20, .light-mode .shadow-cyan-600\/20 { --tw-shadow-color: rgba(26,115,232,0.08) !important; }
+
+/* Hover */
+.light-mode .hover\:bg-gray-700:hover, .light-mode .hover\:bg-gray-600:hover { background-color: #e2e8f0 !important; }
+.light-mode .hover\:bg-gray-700\/50:hover, .light-mode .hover\:bg-gray-700\/30:hover { background-color: rgba(226,232,240,0.5) !important; }
+.light-mode .hover\:bg-gray-800\/80:hover { background-color: rgba(248,250,252,0.95) !important; }
 .light-mode .hover\:text-gray-200:hover { color: #1e293b !important; }
-.light-mode .hover\:border-gray-500:hover { border-color: #94a3b8 !important; }
-.light-mode .hover\:bg-red-900\/50:hover { background-color: rgba(239,68,68,0.12) !important; }
+.light-mode .hover\:border-gray-500:hover, .light-mode .hover\:border-gray-600\/60:hover,
+.light-mode .hover\:border-gray-600\/50:hover { border-color: #94a3b8 !important; }
 
-/* --- Light mode shadows --- */
+/* Shadows */
 .light-mode .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important; }
 .light-mode .shadow-xl { box-shadow: 0 10px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.03) !important; }
-.light-mode .shadow-cyan-500\/20 { --tw-shadow-color: rgba(6,182,212,0.08) !important; }
-.light-mode .shadow-cyan-600\/20 { --tw-shadow-color: rgba(8,145,178,0.08) !important; }
 
-/* --- Light mode scrollbar --- */
+/* Scrollbar */
 .light-mode ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); }
 .light-mode ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.6); }
 
-/* --- Light mode SVG fills --- */
-.light-mode [fill="#1f2937"] { fill: #ffffff !important; }
-.light-mode [fill="#e5e7eb"] { fill: #1e293b !important; }
+/* SVG fills */
+.light-mode [fill="#1f2937"], .light-mode [fill="#0f172a"] { fill: #f8fafc !important; }
+.light-mode [fill="#1e293b"], .light-mode [fill="rgba(30,41,59,0.8)"], .light-mode [fill="#2d3748"] { fill: #e8edf2 !important; }
 .light-mode [fill="#374151"] { fill: #cbd5e1 !important; }
-.light-mode [fill="#6b7280"] { fill: #94a3b8 !important; }
-.light-mode [fill="#4b5563"] { fill: #64748b !important; }
-.light-mode [fill="#0f172a"] { fill: #f8fafc !important; }
+.light-mode [fill="#e5e7eb"] { fill: #1e293b !important; }
 
-/* --- Light mode form elements --- */
-.light-mode select,
-.light-mode input[type="number"],
-.light-mode input[type="text"] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
+/* Forms */
+.light-mode select, .light-mode input[type="number"], .light-mode input[type="text"] {
+  background-color: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important;
 }
-.light-mode select:focus,
-.light-mode input:focus {
-  border-color: #06b6d4 !important;
-  outline-color: #06b6d4 !important;
-  box-shadow: 0 0 0 3px rgba(6,182,212,0.1) !important;
+.light-mode select:focus, .light-mode input:focus {
+  border-color: #1a73e8 !important; outline-color: #1a73e8 !important;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.1) !important;
 }
 
-/* --- Light mode Recharts --- */
-.light-mode .recharts-default-tooltip { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+/* Charts */
+.light-mode .recharts-default-tooltip { background-color: #fff !important; border-color: #e2e8f0 !important; }
 .light-mode .recharts-cartesian-grid line { stroke: #e2e8f0 !important; }
 
-/* --- Light mode glass card --- */
-.light-mode .glass-card {
-  background: rgba(255,255,255,0.7) !important;
-  border-color: rgba(0,0,0,0.06) !important;
-}
+/* Glass */
+.light-mode .glass-card { background: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,0.06) !important; }
+.light-mode .glow-border { box-shadow: 0 0 0 1px rgba(26,115,232,0.12), 0 0 8px rgba(26,115,232,0.06); }
+.light-mode .text-gradient { background: linear-gradient(135deg, #1a73e8, #4285f4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.light-mode .accent-bar { background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8); }
 
-/* --- Light mode glow --- */
-.light-mode .glow-border {
-  box-shadow: 0 0 0 1px rgba(26,115,232,0.15), 0 0 10px rgba(26,115,232,0.06);
-}
+/* Status badges */
+.light-mode .bg-emerald-900\/20 { background-color: rgba(16,185,129,0.06) !important; }
+.light-mode .bg-red-900\/20, .light-mode .bg-red-900\/30 { background-color: rgba(239,68,68,0.06) !important; }
+.light-mode .bg-amber-900\/20 { background-color: rgba(245,158,11,0.06) !important; }
+.light-mode .bg-blue-900\/20, .light-mode .bg-cyan-900\/10 { background-color: rgba(26,115,232,0.06) !important; }
 
-/* --- Light mode: additional bg overrides (Samsung Health style) --- */
-.light-mode .bg-gray-950 { background-color: #f5f7fa !important; }
-.light-mode .bg-gray-950\/60 { background-color: rgba(255,255,255,0.95) !important; }
-.light-mode .bg-gray-900 { background-color: #f5f7fa !important; }
-.light-mode .bg-gray-900\/70 { background-color: rgba(255,255,255,0.9) !important; }
-.light-mode .bg-gray-900\/60 { background-color: rgba(255,255,255,0.85) !important; }
-.light-mode .bg-gray-900\/50 { background-color: rgba(248,250,252,0.8) !important; }
-.light-mode .bg-gray-800\/80 { background-color: rgba(255,255,255,0.9) !important; }
-.light-mode .bg-gray-800\/60 { background-color: rgba(255,255,255,0.8) !important; }
-.light-mode .bg-gray-800\/50 { background-color: rgba(255,255,255,0.75) !important; }
-.light-mode .bg-gray-800\/40 { background-color: rgba(255,255,255,0.65) !important; }
-.light-mode .bg-gray-800\/30 { background-color: rgba(248,250,252,0.6) !important; }
-.light-mode .bg-gray-700\/40 { background-color: rgba(241,245,249,0.5) !important; }
-
-/* --- Light mode: border overrides --- */
-.light-mode .border-gray-700\/50 { border-color: #e2e8f0 !important; }
-.light-mode .border-gray-700\/40 { border-color: #e2e8f0 !important; }
-.light-mode .border-gray-700\/30 { border-color: rgba(226,232,240,0.7) !important; }
-.light-mode .border-gray-800 { border-color: #e2e8f0 !important; }
-.light-mode .border-gray-600\/60 { border-color: #cbd5e1 !important; }
-.light-mode .border-gray-600\/50 { border-color: #cbd5e1 !important; }
-
-/* --- Light mode: Samsung Health card style --- */
-.light-mode .bg-gray-800,
-.light-mode .bg-gray-800\/60,
-.light-mode .bg-gray-800\/80 {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
-}
-
-/* --- Light mode: hover --- */
-.light-mode .hover\:bg-gray-800\/80:hover { background-color: rgba(248,250,252,0.95) !important; }
-.light-mode .hover\:bg-gray-700\/30:hover { background-color: rgba(226,232,240,0.4) !important; }
-.light-mode .hover\:border-gray-600\/60:hover { border-color: #94a3b8 !important; }
-.light-mode .hover\:border-gray-600\/50:hover { border-color: #94a3b8 !important; }
-
-/* --- Light mode: accent colors shift to Samsung blue --- */
-.light-mode .text-cyan-400 { color: #1a73e8 !important; }
-.light-mode .text-cyan-500 { color: #1a73e8 !important; }
-.light-mode .bg-cyan-600 { background-color: #1a73e8 !important; }
-.light-mode .bg-cyan-500\/20 { background-color: rgba(26,115,232,0.1) !important; }
-.light-mode .bg-cyan-500\/15 { background-color: rgba(26,115,232,0.08) !important; }
-.light-mode .bg-cyan-500\/10 { background-color: rgba(26,115,232,0.06) !important; }
-.light-mode .bg-cyan-500\/5 { background-color: rgba(26,115,232,0.03) !important; }
-.light-mode .border-cyan-500\/20 { border-color: rgba(26,115,232,0.15) !important; }
-.light-mode .border-cyan-500\/10 { border-color: rgba(26,115,232,0.08) !important; }
-.light-mode .hover\:bg-cyan-500:hover { background-color: #4285f4 !important; }
-.light-mode .shadow-cyan-500\/10 { --tw-shadow-color: rgba(26,115,232,0.06) !important; }
-
-/* --- Light mode: gradient text --- */
-.light-mode .text-gradient {
-  background: linear-gradient(135deg, #1a73e8, #4285f4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* --- Light mode: accent bar --- */
-.light-mode .accent-bar {
-  background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8);
-}
-
-/* --- Light mode: RadialBar background --- */
-.light-mode [fill="#1e293b"],
-.light-mode [fill="rgba(30,41,59,0.8)"] {
-  fill: #e8edf2 !important;
-}
-.light-mode [fill="#2d3748"] {
-  fill: #e8edf2 !important;
-}
+@media print { body { background: #fff; color: #333; } .accent-bar { display: none; } }

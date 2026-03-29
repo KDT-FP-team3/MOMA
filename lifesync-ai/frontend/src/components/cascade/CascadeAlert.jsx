@@ -50,7 +50,7 @@ const severityStyles = {
   positive: { border: "border-l-green-500", icon: CheckCircle, iconColor: "text-green-400", badge: "bg-green-600", label: "보너스" },
 };
 
-const domainIcons = { food: "", exercise: "", health: "", hobby: "" };
+const domainLabels = { food: "[요리]", exercise: "[운동]", health: "[건강]", hobby: "[취미]" };
 
 export default function CascadeAlert({ alerts: propAlerts }) {
   const [alerts, setAlerts] = useState(EXAMPLE_CASCADES);
@@ -103,7 +103,7 @@ export default function CascadeAlert({ alerts: propAlerts }) {
                 >
                   <Icon size={14} className={style.iconColor} />
                   <span className="text-sm flex-1">
-                    {domainIcons[alert.source]} {alert.trigger}
+                    {domainLabels[alert.source]} {alert.trigger}
                   </span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full text-white ${style.badge}`}>
                     {alert.reward > 0 ? "+" : ""}{alert.reward}
@@ -123,7 +123,7 @@ export default function CascadeAlert({ alerts: propAlerts }) {
                     {alert.effects.map((eff, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs ml-5">
                         <span className="text-white">→</span>
-                        <span>{domainIcons[eff.domain]}</span>
+                        <span>{domainLabels[eff.domain]}</span>
                         <span className={eff.delta > 0 ? "text-green-400" : "text-red-400"}>
                           {eff.impact}
                         </span>
