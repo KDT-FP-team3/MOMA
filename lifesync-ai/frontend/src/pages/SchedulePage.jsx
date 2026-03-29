@@ -11,18 +11,18 @@ import { useAppState } from "../context/AppStateContext";
 
 // 활동별 스타일
 const ACTIVITY_STYLES = {
-  sleep:             { emoji: "😴", color: "#748ffc", label: "수면" },
-  meal_healthy:      { emoji: "🥗", color: "#51cf66", label: "건강한 식사" },
-  meal_normal:       { emoji: "🍚", color: "#ff922b", label: "일반 식사" },
-  meal_unhealthy:    { emoji: "🍔", color: "#ff6b6b", label: "불건강한 식사" },
-  night_snack:       { emoji: "🍜", color: "#e64980", label: "야식" },
-  exercise_cardio:   { emoji: "🏃", color: "#339af0", label: "유산소 운동" },
-  exercise_strength: { emoji: "🏋️", color: "#5c7cfa", label: "근력 운동" },
-  work:              { emoji: "💼", color: "#868e96", label: "업무/공부" },
-  hobby:             { emoji: "🎸", color: "#cc5de8", label: "취미" },
-  rest:              { emoji: "☕", color: "#20c997", label: "휴식" },
-  commute:           { emoji: "🚌", color: "#adb5bd", label: "통근" },
-  other:             { emoji: "📌", color: "#ced4da", label: "기타" },
+  sleep:             { emoji: "", color: "#748ffc", label: "수면" },
+  meal_healthy:      { emoji: "", color: "#51cf66", label: "건강한 식사" },
+  meal_normal:       { emoji: "", color: "#ff922b", label: "일반 식사" },
+  meal_unhealthy:    { emoji: "", color: "#ff6b6b", label: "불건강한 식사" },
+  night_snack:       { emoji: "", color: "#e64980", label: "야식" },
+  exercise_cardio:   { emoji: "", color: "#339af0", label: "유산소 운동" },
+  exercise_strength: { emoji: "", color: "#5c7cfa", label: "근력 운동" },
+  work:              { emoji: "", color: "#868e96", label: "업무/공부" },
+  hobby:             { emoji: "", color: "#cc5de8", label: "취미" },
+  rest:              { emoji: "", color: "#20c997", label: "휴식" },
+  commute:           { emoji: "", color: "#adb5bd", label: "통근" },
+  other:             { emoji: "", color: "#ced4da", label: "기타" },
 };
 
 const DEFAULT_SCHEDULE = [

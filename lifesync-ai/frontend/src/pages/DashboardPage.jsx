@@ -198,11 +198,12 @@ export default function DashboardPage() {
             <div className="relative w-44 h-44 md:w-52 md:h-52 flex-shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
-                  innerRadius="72%"
+                  innerRadius="65%"
                   outerRadius="100%"
-                  data={[{ value: overallScore, fill: scoreColor }]}
+                  data={[{ value: 100, fill: "transparent" }, { value: overallScore, fill: scoreColor }]}
                   startAngle={225}
                   endAngle={-45}
+                  barSize={14}
                 >
                   <RadialBar dataKey="value" cornerRadius={10} background={{ fill: "#1e293b" }} />
                 </RadialBarChart>
@@ -316,8 +317,8 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    {/* 추천 결과 */}
-                    {result && !result.error && recs.length > 0 && (
+                    {/* 추천 결과 (로딩 중에는 숨김) */}
+                    {!isLoading && result && !result.error && recs.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {recs.slice(0, 3).map((r, i) => (
                           <div key={i} className="flex items-center gap-2 bg-gray-900/50 rounded-lg px-3 py-2 text-xs">
@@ -415,7 +416,7 @@ export default function DashboardPage() {
                   <div className="space-y-2">
                     <InsightItem icon="+" color="text-emerald-400" text="운동 후 수면 점수가 평균 12% 상승했습니다" />
                     <InsightItem icon="!" color="text-amber-400" text="야식 빈도가 주 2회로 스트레스 상승에 영향" />
-                    <InsightItem icon="★" color="text-cyan-400" text="기타 연주가 가장 높은 스트레스 감소 효과" />
+                    <InsightItem icon="" color="text-cyan-400" text="기타 연주가 가장 높은 스트레스 감소 효과" />
                   </div>
                 </div>
               </div>

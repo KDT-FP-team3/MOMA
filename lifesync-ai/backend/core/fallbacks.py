@@ -8,8 +8,11 @@ LLM/GPU/외부 API 없이 순수 Python만으로 동작합니다.
 
 from __future__ import annotations
 
+import logging
 import random
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 # ── 기본 도메인 에이전트 (LLM 없이 동작) ─────────────────
@@ -29,8 +32,8 @@ class BasicFoodAgent:
     ]
 
     def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+        logger.info("BasicFoodAgent (fallback) 사용 중 - 플러그인 미등록")
         bmi = user_state.get("bmi", 22)
-        # BMI에 따라 칼로리 필터링
         max_cal = 400 if bmi > 25 else 600
         filtered = [m for m in self.HEALTHY_MEALS if m["calories"] <= max_cal]
         picks = random.sample(filtered or self.HEALTHY_MEALS, min(3, len(filtered or self.HEALTHY_MEALS)))
@@ -38,6 +41,7 @@ class BasicFoodAgent:
             "recommendations": picks,
             "rag_results": [],
             "explanation": f"BMI {bmi:.1f} 기준 {max_cal}kcal 이하 추천 (기본 모드)",
+            "is_fallback": True,
         }
 
 
@@ -53,8 +57,8 @@ class BasicExerciseAgent:
     ]
 
     def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+        logger.info("BasicExerciseAgent (fallback) 사용 중 - 플러그인 미등록")
         stress = user_state.get("stress", 50)
-        # 스트레스 높으면 저강도
         intensity = "low" if stress > 70 else "medium"
         filtered = [e for e in self.EXERCISES if e["intensity"] == intensity]
         picks = random.sample(filtered or self.EXERCISES, min(3, len(filtered or self.EXERCISES)))
@@ -62,6 +66,7 @@ class BasicExerciseAgent:
             "recommendations": picks,
             "rag_results": [],
             "explanation": f"스트레스 {stress} 기준 {intensity} 강도 추천 (기본 모드)",
+            "is_fallback": True,
         }
 
 
@@ -73,6 +78,7 @@ class BasicHealthAgent:
 
     def analyze_checkup(self, user_state: dict[str, Any]) -> dict[str, Any]:
         """오케스트레이터가 호출하는 건강 분석 메서드."""
+        logger.info("BasicHealthAgent (fallback) 사용 중 - 플러그인 미등록")
         bmi = user_state.get("bmi", 22)
         sleep = user_state.get("sleep_quality", 70)
         alerts = []
@@ -84,6 +90,7 @@ class BasicHealthAgent:
             "recommendations": alerts or ["현재 건강 상태가 양호합니다."],
             "rag_results": [],
             "explanation": f"BMI {bmi:.1f}, 수면 {sleep} 기준 분석 (기본 모드)",
+            "is_fallback": True,
         }
 
 
@@ -99,14 +106,15 @@ class BasicHobbyAgent:
     ]
 
     def recommend(self, user_state: dict[str, Any]) -> dict[str, Any]:
+        logger.info("BasicHobbyAgent (fallback) 사용 중 - 플러그인 미등록")
         stress = user_state.get("stress", 50)
-        # 스트레스 높으면 감소 효과 큰 것 우선
         sorted_h = sorted(self.HOBBIES, key=lambda h: h["stress_reduction"], reverse=True)
         picks = sorted_h[:3] if stress > 60 else random.sample(self.HOBBIES, 3)
         return {
             "recommendations": picks,
             "rag_results": [],
             "explanation": f"스트레스 {stress} 기준 추천 (기본 모드)",
+            "is_fallback": True,
         }
 
 

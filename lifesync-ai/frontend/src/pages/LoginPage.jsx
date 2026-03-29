@@ -77,7 +77,7 @@ export default function LoginPage() {
         {/* 로고 */}
         <div className="text-center space-y-2">
           <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-            <span className="text-3xl">💊</span>
+            <span className="text-3xl"></span>
           </div>
           <h1 className="text-2xl font-bold text-white">LifeSync AI</h1>
           <p className="text-sm text-white">일상 생활 통합 건강 관리</p>

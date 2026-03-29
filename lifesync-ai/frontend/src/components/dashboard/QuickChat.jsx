@@ -7,10 +7,10 @@ import axios from "axios";
 import { useAppState } from "../../context/AppStateContext";
 
 const DOMAIN_CONFIG = {
-  food:     { label: "요리", emoji: "🍳", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
-  exercise: { label: "운동", emoji: "🏋️", color: "text-blue-400",   border: "border-blue-500/30",   bg: "bg-blue-500/5" },
-  health:   { label: "건강", emoji: "🏥", color: "text-green-400",  border: "border-green-500/30",  bg: "bg-green-500/5" },
-  hobby:    { label: "취미", emoji: "🎸", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5" },
+  food:     { label: "요리", emoji: "", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
+  exercise: { label: "운동", emoji: "", color: "text-blue-400",   border: "border-blue-500/30",   bg: "bg-blue-500/5" },
+  health:   { label: "건강", emoji: "", color: "text-green-400",  border: "border-green-500/30",  bg: "bg-green-500/5" },
+  hobby:    { label: "취미", emoji: "", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5" },
 };
 
 // 키워드 기반 도메인 자동 감지
@@ -38,7 +38,7 @@ function formatResponse(domain, result, cascade) {
     if (recs.length) {
       parts.push(recs.map((r, i) => `${i + 1}. **${r.name}** — ${r.reason || ""} ${r.calories ? `(${r.calories}kcal)` : ""}`).join("\n"));
     }
-    if (result.nutrition_summary) parts.push(`\n📊 ${result.nutrition_summary}`);
+    if (result.nutrition_summary) parts.push(`\n ${result.nutrition_summary}`);
   } else if (domain === "exercise") {
     const recs = result.recommendations || [];
     if (recs.length) {
@@ -47,7 +47,7 @@ function formatResponse(domain, result, cascade) {
   } else if (domain === "health") {
     if (result.summary) parts.push(result.summary);
     if (result.plan?.length) {
-      parts.push("\n📋 건강 플랜:\n" + result.plan.map((p, i) => `${i + 1}. ${p}`).join("\n"));
+      parts.push("\n 건강 플랜:\n" + result.plan.map((p, i) => `${i + 1}. ${p}`).join("\n"));
     }
   } else if (domain === "hobby") {
     const recs = result.recommendations || [];
@@ -61,7 +61,7 @@ function formatResponse(domain, result, cascade) {
     const effects = Object.entries(cascade.effects)
       .map(([d, e]) => `${DOMAIN_CONFIG[d]?.emoji || "→"} ${e.description}`)
       .join("\n");
-    parts.push(`\n🔗 연쇄 효과:\n${effects}`);
+    parts.push(`\n 연쇄 효과:\n${effects}`);
   }
 
   return parts.join("\n") || "요청을 처리했습니다.";
@@ -170,7 +170,7 @@ export default function QuickChat() {
       setError(detail);
       setMessages((prev) => [
         ...prev,
-        { role: "ai", text: `⚠️ 응답 실패: ${detail}\n\n서버가 실행 중인지 확인해주세요.`, domain: null, isError: true },
+        { role: "ai", text: ` 응답 실패: ${detail}\n\n서버가 실행 중인지 확인해주세요.`, domain: null, isError: true },
       ]);
     } finally {
       setLoading(false);

@@ -291,7 +291,7 @@ export default function ErrorBarChart({
           className="px-3 py-1 text-xs font-semibold bg-cyan-600 hover:bg-cyan-500
                      text-white rounded-md shadow transition-colors"
         >
-          📍 현재
+           현재
         </button>
       </div>
 

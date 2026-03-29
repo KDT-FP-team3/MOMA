@@ -81,6 +81,16 @@ class PluginRegistry:
             raise ValueError(
                 f"알 수 없는 플러그인 슬롯: '{slot}'. 유효한 슬롯: {valid}"
             )
+        # 에이전트 슬롯은 recommend/analyze_checkup 메서드 필수
+        agent_slots = {"food_agent", "exercise_agent", "health_agent", "hobby_agent"}
+        if slot in agent_slots:
+            has_recommend = hasattr(plugin, "recommend")
+            has_checkup = hasattr(plugin, "analyze_checkup")
+            if not has_recommend and not has_checkup:
+                logger.warning(
+                    "플러그인 %s에 recommend()/analyze_checkup() 메서드가 없습니다: %s",
+                    slot, type(plugin).__name__,
+                )
         self._plugins[slot] = plugin
         logger.info("플러그인 등록: %s → %s", slot, type(plugin).__name__)
 

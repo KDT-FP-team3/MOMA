@@ -15,16 +15,16 @@ import { useAppState } from "../context/AppStateContext";
 
 // 행동별 이모지 + 색상
 const ACTION_STYLES = {
-  healthy_meal:      { emoji: "🥗", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강한 식사" },
-  unhealthy_meal:    { emoji: "🍔", color: "text-red-400",    bg: "bg-red-500/10",   border: "border-red-500/30",   label: "불건강한 식사" },
-  skip_meal:         { emoji: "🚫", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "식사 건너뛰기" },
-  cardio_exercise:   { emoji: "🏃", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "유산소 운동" },
-  strength_exercise: { emoji: "🏋️", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "근력 운동" },
-  skip_exercise:     { emoji: "😴", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "운동 건너뛰기" },
-  health_check:      { emoji: "🏥", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강 체크" },
-  sleep_optimize:    { emoji: "🌙", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "수면 최적화" },
-  hobby_activity:    { emoji: "🎸", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "취미 활동" },
-  rest:              { emoji: "☕", color: "text-yellow-400",  bg: "bg-yellow-500/10",border: "border-yellow-500/30",label: "휴식" },
+  healthy_meal:      { emoji: "", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강한 식사" },
+  unhealthy_meal:    { emoji: "", color: "text-red-400",    bg: "bg-red-500/10",   border: "border-red-500/30",   label: "불건강한 식사" },
+  skip_meal:         { emoji: "", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "식사 건너뛰기" },
+  cardio_exercise:   { emoji: "", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "유산소 운동" },
+  strength_exercise: { emoji: "", color: "text-blue-400",   bg: "bg-blue-500/10",  border: "border-blue-500/30",  label: "근력 운동" },
+  skip_exercise:     { emoji: "", color: "text-white",   bg: "bg-gray-500/10",  border: "border-gray-500/30",  label: "운동 건너뛰기" },
+  health_check:      { emoji: "", color: "text-green-400",  bg: "bg-green-500/10", border: "border-green-500/30", label: "건강 체크" },
+  sleep_optimize:    { emoji: "", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "수면 최적화" },
+  hobby_activity:    { emoji: "", color: "text-purple-400", bg: "bg-purple-500/10",border: "border-purple-500/30",label: "취미 활동" },
+  rest:              { emoji: "", color: "text-yellow-400",  bg: "bg-yellow-500/10",border: "border-yellow-500/30",label: "휴식" },
 };
 
 const GAUGE_CONFIG = [

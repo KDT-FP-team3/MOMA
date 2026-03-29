@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LifeSync AI v0.3.0 — System Architecture Report</title>
+<title>LifeSync AI v0.4.0 — System Architecture Report</title>
 <style>
 :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--accent:#06b6d4;--text:#e2e8f0;--muted:#cbd5e1;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--purple:#a78bfa;--blue:#3b82f6;--pink:#ec4899;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -60,19 +60,20 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
 <header style="text-align:center;padding:40px 0 20px;">
   <h1>LifeSync AI</h1>
-  <p class="subtitle">일상 생활 크로스 도메인 통합 관리 AI 에이전트 — 시스템 아키텍처 보고서 v0.3.0</p>
+  <p class="subtitle">일상 생활 크로스 도메인 통합 관리 AI 에이전트 — 시스템 아키텍처 보고서 v0.4.0</p>
   <div>
-    <span class="badge badge-green">11개 페이지</span>
-    <span class="badge badge-blue">30+ API</span>
+    <span class="badge badge-green">14개 페이지</span>
+    <span class="badge badge-blue">35+ API</span>
     <span class="badge badge-purple">5개 AI 모델</span>
     <span class="badge badge-orange">4개 도메인</span>
   </div>
-  <p style="margin-top:12px;font-size:.85em;">KDT-FT-team3-Chainers | 2026-03-28</p>
+  <p style="margin-top:12px;font-size:.85em;">KDT-FT-team3-Chainers | 2026-03-29</p>
 </header>
 
 <!-- ═══════════════════════════════ TOC ═══════════════════════════════ -->
 <h2 id="toc">목차</h2>
 <div class="toc card">
+  <a href="#changelog">0. v0.4.0 변경 이력</a>
   <a href="#overview">1. 프로젝트 개요</a>
   <a href="#flow">2. 전체 데이터 흐름 순서도</a>
   <a href="#architecture">3. 시스템 아키텍처</a>
@@ -92,12 +93,98 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <a href="#glossary">17. 용어 사전</a>
 </div>
 
+<!-- ═══════════════════════════════ 0. CHANGELOG ═══════════════════════════════ -->
+<h2 id="changelog">0. v0.4.0 변경 이력 (2026-03-29)</h2>
+
+<h3>신규 기능</h3>
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">전체 관리 대시보드</div>
+    <p>admin_router.py에 7개 엔드포인트 추가. 4탭 구조: 아키텍처 현황 (기술 스택 매핑 + CASCADE 그룹), 팀 활동 &amp; 충돌 감지, 백업/롤백, 보안 감사.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Samsung Health 스타일 대시보드</div>
+    <p>모니터링 허브 (중앙 링 차트 + AI 자동 진단) + 3-탭 액션 패널: 솔루션(4도메인 AI 추천), 인사이트(CASCADE 분석), 코칭(AI 채팅 + 미션).</p>
+  </div>
+  <div class="card">
+    <div class="card-title">라이트 모드 전역 전환</div>
+    <p>Samsung Blue (#1a73e8) 액센트. ThemeContext 기본값 light. index.css 200+줄 오버라이드. 다크/라이트 토글 유지.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">걸어다니는 아바타 캐릭터</div>
+    <p>AvatarBody.jsx 전면 교체. CSS 걷기 애니메이션 (팔/다리 교대 + 바운스). 체형(BMI)별 보폭/속도 변화.</p>
+  </div>
+</div>
+
+<h3>버그 수정 (19건)</h3>
+<table>
+<tr><th>ID</th><th>파일</th><th>문제</th><th>수정</th></tr>
+<tr><td>B1</td><td>GaugePanel.jsx</td><td>WebSocket 재연결 타이머 미정리</td><td>unmounted 플래그 + clearTimeout</td></tr>
+<tr><td>B2</td><td>GaugePanel.jsx</td><td>connectWs updateState 의존성 누락</td><td>useEffect deps 추가</td></tr>
+<tr><td>B3</td><td>TeamLeaderPage.jsx</td><td>fetchAll 무한 루프 위험</td><td>useEffect deps [] 안정화</td></tr>
+<tr><td>B4</td><td>QuickChat.jsx</td><td>SpeechRecognition cleanup 없음</td><td>abort() + ref null</td></tr>
+<tr><td>B5</td><td>fallbacks.py</td><td>BasicHealthAgent 메서드명 불일치</td><td>analyze_checkup() 추가</td></tr>
+<tr><td>B6</td><td>SchedulePage.jsx</td><td>자정 시간 계산 오류</td><td>>= 조건 + wrap 공식</td></tr>
+<tr><td>N1</td><td>main.py</td><td>/api/admin/ 전체 인증 바이패스</td><td>경로별 PUBLIC_PATHS로 변경</td></tr>
+<tr><td>N2</td><td>DashboardPage.jsx</td><td>솔루션 동시 클릭 로딩 충돌</td><td>Set 기반 로딩 상태</td></tr>
+<tr><td>N3</td><td>DashboardPage.jsx</td><td>fetch 실패 시 알림 없음</td><td>에러 배너 + 재시도</td></tr>
+<tr><td>N5</td><td>GaugePanel.jsx</td><td>WebSocket 데이터 무검증</td><td>VALID_KEYS 화이트리스트</td></tr>
+<tr><td>N6</td><td>ThemeContext.jsx</td><td>첫 로드 깜빡임</td><td>모듈 로드 시 동기 DOM 적용</td></tr>
+<tr><td>N7</td><td>index.css</td><td>다크 모드 cyan 불일치</td><td>dark-mode cyan→blue 매핑</td></tr>
+<tr><td>F1</td><td>GaugePanel.jsx</td><td>WS 재연결 폭주</td><td>Exponential backoff + 10회 제한</td></tr>
+<tr><td>F2</td><td>DashboardPage.jsx</td><td>cascade 결과 미표시</td><td>도메인별 상세 패널</td></tr>
+<tr><td>F3</td><td>DashboardPage.jsx</td><td>Tailwind 동적 클래스 purge</td><td>정적 클래스로 교체</td></tr>
+<tr><td>F4</td><td>SimulatorPage.jsx</td><td>액션명 범위 초과</td><td>bounds check 추가</td></tr>
+<tr><td>F5</td><td>RoadmapPage.jsx</td><td>health 도메인 바차트 누락</td><td>Bar 컴포넌트 추가</td></tr>
+<tr><td>F6</td><td>OnboardingPage.jsx</td><td>이모지 누락</td><td>age/activity 이모지 추가</td></tr>
+<tr><td>-</td><td>admin_router.py</td><td>Windows cp949 인코딩 에러</td><td>encoding="utf-8" + errors="replace"</td></tr>
+</table>
+
+<h3>기술 스택별 담당 업무</h3>
+<table>
+<tr><th>기술</th><th>용도</th><th>담당</th></tr>
+<tr><td><code>LangGraph</code></td><td>오케스트레이터 DAG 워크플로우</td><td>공통 — orchestrator.py</td></tr>
+<tr><td><code>LangChain</code></td><td>LLM 체인 + 프롬프트 관리</td><td>팀원 A·B·C·D — 각 플러그인</td></tr>
+<tr><td><code>PPO RL</code></td><td>강화학습 행동 최적화</td><td>공통 — rl_engine/ppo_agent.py</td></tr>
+<tr><td><code>OpenCLIP</code></td><td>이미지 512D 임베딩 + 유사도</td><td>팀원 E — vision_korean</td></tr>
+<tr><td><code>YOLO</code></td><td>한식 식재료 실시간 감지</td><td>팀원 E — vision_korean</td></tr>
+<tr><td><code>MediaPipe</code></td><td>33 랜드마크 자세 분석</td><td>팀원 E — vision_korean</td></tr>
+<tr><td><code>RAG</code></td><td>벡터 검색 + 리랭킹 추천</td><td>팀원 A — food_rag</td></tr>
+<tr><td><code>ChromaDB</code></td><td>벡터 DB (레시피·운동·건강)</td><td>팀원 A·B·C·D — 각 knowledge DB</td></tr>
+<tr><td><code>Supabase</code></td><td>PostgreSQL 사용자 상태 저장</td><td>공통 — user_state_manager.py</td></tr>
+<tr><td><code>GPT-4o</code></td><td>멀티모달 LLM 추론 엔진</td><td>팀원 A·B·C·D — 추천 생성</td></tr>
+</table>
+
+<h3>팀원별 60%→100% 로드맵</h3>
+<table>
+<tr><th>팀원</th><th>플러그인</th><th>완료 항목</th><th>남은 과제</th></tr>
+<tr><td>A</td><td>food_rag</td><td>RAG 검색 + LLM 설명</td><td>쿼리 확장, 알레르기, 리랭킹, 캐싱</td></tr>
+<tr><td>B</td><td>exercise_weather</td><td>날씨API + 실내전환</td><td>예보 계획, 부상 매핑, 시간대, 콤보</td></tr>
+<tr><td>C</td><td>health_checkup</td><td>10지표 3단계 분류</td><td>교차 상관, 시계열, 재검진, 약물</td></tr>
+<tr><td>D</td><td>hobby_stress</td><td>스트레스 3단계</td><td>성격유형, 시너지, 지속성, 시간대</td></tr>
+<tr><td>E</td><td>vision_korean</td><td>YOLO+CLIP 기본</td><td>한식 파인튜닝, 200+명칭, 다중반찬</td></tr>
+<tr><td>F</td><td>voice_stt</td><td>Whisper+gTTS</td><td>스트리밍, 명령 파싱, TTS 품질</td></tr>
+</table>
+
+<h3>수정 파일 (20개)</h3>
+<div class="grid2">
+<div class="card">
+<div class="card-title">신규 파일 (2개)</div>
+<p><code>backend/app/routers/admin_router.py</code> — 7개 관리 API<br>
+<code>frontend/src/pages/TeamLeaderPage.jsx</code> — 4탭 전체 관리</p>
+</div>
+<div class="card">
+<div class="card-title">수정 파일 (18개)</div>
+<p><code>main.py</code>, <code>DashboardPage.jsx</code>, <code>GaugePanel.jsx</code>, <code>QuickChat.jsx</code>, <code>Layout.jsx</code>, <code>Sidebar.jsx</code>, <code>AvatarBody.jsx</code>, <code>App.jsx</code>, <code>index.css</code>, <code>ThemeContext.jsx</code>, <code>fallbacks.py</code>, <code>SchedulePage.jsx</code>, <code>SimulatorPage.jsx</code>, <code>RoadmapPage.jsx</code>, <code>OnboardingPage.jsx</code>, <code>LandingPage.jsx</code>, <code>LoginPage.jsx</code>, <code>admin_router.py</code></p>
+</div>
+</div>
+
 <!-- ═══════════════════════════════ 1. OVERVIEW ═══════════════════════════════ -->
 <h2 id="overview">1. 프로젝트 개요</h2>
 <div class="grid3">
   <div class="card" style="text-align:center;"><div class="stat-number">4</div><div class="stat-label">도메인 (요리/운동/건강/취미)</div></div>
-  <div class="card" style="text-align:center;"><div class="stat-number">92+</div><div class="stat-label">사용자 기능</div></div>
-  <div class="card" style="text-align:center;"><div class="stat-number">253</div><div class="stat-label">프로젝트 파일</div></div>
+  <div class="card" style="text-align:center;"><div class="stat-number">100+</div><div class="stat-label">사용자 기능</div></div>
+  <div class="card" style="text-align:center;"><div class="stat-number">260+</div><div class="stat-label">프로젝트 파일</div></div>
 </div>
 <div class="card">
   <p>LifeSync AI는 4개 도메인(요리/운동/건강/취미)을 <strong>하나의 유기체</strong>로 통합 관리하는 AI 에이전트입니다.</p>
@@ -117,10 +204,10 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 
 <!-- ═══════════════════════════════ 2. FLOW DIAGRAM ═══════════════════════════════ -->
 <h2 id="flow">2. 전체 데이터 흐름 순서도</h2>
-<p>v0.3.0에서 5개 데이터 흐름을 연결하여 모든 모듈이 하나의 흐름으로 동작합니다.</p>
+<p>v0.4.0에서 7개 데이터 흐름을 연결하여 모든 모듈이 하나의 흐름으로 동작합니다. admin_router (전체 관리), Samsung Health 대시보드, 코어+플러그인 아키텍처를 포함합니다.</p>
 
 <div class="flow-container" style="padding:30px;overflow-x:auto;">
-<svg viewBox="0 0 1400 1130" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:1000px;height:auto;">
+<svg viewBox="0 0 1400 1230" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:1000px;height:auto;">
   <defs>
     <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#06b6d4"/></marker>
     <marker id="ag" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#10b981"/></marker>
@@ -143,43 +230,51 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <text x="15" y="630" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 3 — AI/ML ENGINE</text>
   <text x="15" y="905" fill="white" font-size="14" font-weight="700" opacity="0.9">LAYER 4 — DATA / INFRA</text>
 
-  <!-- ═══ FRONTEND NODES (넓은 간격) ═══ -->
-  <rect x="30" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="115" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">온보딩</text>
-  <text x="115" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">3단계 위저드</text>
+  <!-- ═══ FRONTEND NODES Row 1 (7개 주요 페이지) ═══ -->
+  <rect x="30" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="108" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">대시보드</text>
+  <text x="108" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">Samsung Health 스타일</text>
 
-  <rect x="230" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="315" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">대시보드</text>
-  <text x="315" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">6개 게이지 + 4도메인</text>
+  <rect x="200" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="278" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">AI 채팅</text>
+  <text x="278" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">QuickChat + 음성</text>
 
-  <rect x="430" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="515" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">AI 채팅</text>
-  <text x="515" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">QuickChat + 음성</text>
+  <rect x="370" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="448" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">사진 분석</text>
+  <text x="448" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">CLIP + YOLO</text>
 
-  <rect x="630" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="715" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">사진 분석</text>
-  <text x="715" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">카메라 + 업로드</text>
+  <rect x="540" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="618" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">시뮬레이터</text>
+  <text x="618" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">PPO RL 12주</text>
 
-  <rect x="830" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="915" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">시뮬레이터</text>
-  <text x="915" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">10개 행동 + PPO</text>
+  <rect x="710" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="788" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">생활패턴</text>
+  <text x="788" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">24h 원형 스케줄</text>
 
-  <rect x="1030" y="50" width="170" height="60" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
-  <text x="1115" y="77" fill="white" text-anchor="middle" font-size="15" font-weight="700">리포트</text>
-  <text x="1115" y="97" fill="#a5f3fc" text-anchor="middle" font-size="10">주간 + 로드맵</text>
+  <rect x="880" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="958" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">전체 관리</text>
+  <text x="958" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">4탭 팀 관리</text>
 
-  <!-- Sub-frontend (Row 2) -->
-  <rect x="30" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
-  <text x="115" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">오프라인 엔진</text>
-  <text x="115" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">IndexedDB + smartSim</text>
+  <rect x="1050" y="50" width="155" height="55" rx="10" fill="#0e7490" stroke="#22d3ee" stroke-width="2"/>
+  <text x="1128" y="75" fill="white" text-anchor="middle" font-size="13" font-weight="700">+7 페이지</text>
+  <text x="1128" y="93" fill="#a5f3fc" text-anchor="middle" font-size="9">홈/로그인/온보딩/...</text>
 
-  <rect x="230" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
-  <text x="315" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">WebSocket</text>
-  <text x="315" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">실시간 게이지 동기화</text>
+  <!-- Sub-frontend (Row 2: 지원 모듈) -->
+  <rect x="30" y="130" width="155" height="50" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="108" y="155" fill="white" text-anchor="middle" font-size="12" font-weight="600">WebSocket</text>
+  <text x="108" y="171" fill="#67e8f9" text-anchor="middle" font-size="9">실시간 게이지 동기화</text>
 
-  <rect x="430" y="145" width="170" height="55" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
-  <text x="515" y="172" fill="white" text-anchor="middle" font-size="14" font-weight="600">AppState</text>
-  <text x="515" y="189" fill="#67e8f9" text-anchor="middle" font-size="9">전역 상태 (gauges)</text>
+  <rect x="200" y="130" width="155" height="50" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="278" y="155" fill="white" text-anchor="middle" font-size="12" font-weight="600">AppState</text>
+  <text x="278" y="171" fill="#67e8f9" text-anchor="middle" font-size="9">전역 상태 + localStorage</text>
+
+  <rect x="370" y="130" width="155" height="50" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="448" y="155" fill="white" text-anchor="middle" font-size="12" font-weight="600">오프라인 엔진</text>
+  <text x="448" y="171" fill="#67e8f9" text-anchor="middle" font-size="9">IndexedDB + smartSim</text>
+
+  <rect x="540" y="130" width="155" height="50" rx="8" fill="#164e63" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="618" y="155" fill="white" text-anchor="middle" font-size="12" font-weight="600">ThemeContext</text>
+  <text x="618" y="171" fill="#67e8f9" text-anchor="middle" font-size="9">Light/Dark 전환</text>
 
   <!-- ═══ BACKEND NODES (Row 1: 라우터) ═══ -->
   <rect x="30" y="290" width="190" height="65" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2"/>
@@ -201,6 +296,11 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <rect x="1010" y="290" width="190" height="65" rx="10" fill="#5c1540" stroke="#f472b6" stroke-width="2"/>
   <text x="1105" y="320" fill="white" text-anchor="middle" font-size="15" font-weight="700">보안 미들웨어</text>
   <text x="1105" y="340" fill="#f9a8d4" text-anchor="middle" font-size="11">JWT + Rate + CORS + XSS</text>
+
+  <!-- v0.4.0: admin_router (Row 3, 보안 미들웨어 아래) -->
+  <rect x="1010" y="490" width="240" height="50" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="1130" y="515" fill="white" text-anchor="middle" font-size="13" font-weight="600">admin_router.py</text>
+  <text x="1130" y="532" fill="#93c5fd" text-anchor="middle" font-size="9">전체 관리: 진행/충돌/백업/보안 (7 API)</text>
 
   <!-- Agent Cards (Row 2: 에이전트 — 여백 넓힘) -->
   <rect x="50" y="400" width="150" height="55" rx="8" fill="#5c3d0a" stroke="#fbbf24" stroke-width="1.5"/>
@@ -364,8 +464,12 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
   <path d="M450 788 C300 800,180 750,150 720" stroke="#ec4899" stroke-width="1" fill="none" stroke-dasharray="5,3"/>
 
   <!-- updated_gauges → AppState (초록 점선 — 상단 경유) -->
-  <path d="M1155 400 C1300 350,1300 180,600 172 C560 172,515 172,515 172" stroke="#10b981" stroke-width="1" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
+  <path d="M1155 400 C1300 350,1300 180,600 155 C560 155,278 155,278 155" stroke="#10b981" stroke-width="1" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
   <text x="1050" y="230" fill="#10b981" font-size="10" font-weight="600">gauges 전역 상태 업데이트</text>
+
+  <!-- v0.4.0: 전체 관리 → admin_router (파란) -->
+  <path d="M958 105 C958 200,1130 360,1130 400" stroke="#3b82f6" stroke-width="1" fill="none" marker-end="url(#ab)"/>
+  <text x="1000" y="260" fill="#3b82f6" font-size="10" font-weight="600">GET/POST /api/admin/*</text>
 
   <!-- ═══ LEGEND (하단 고정) ═══ -->
   <rect x="30" y="1030" width="1340" height="75" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
@@ -394,8 +498,8 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <!-- ═══════════════════════════════ 3. ARCHITECTURE ═══════════════════════════════ -->
 <h2 id="architecture">3. 시스템 아키텍처 (Router 분리 패턴)</h2>
 <div class="card">
-  <p><strong>핵심 원칙:</strong> main.py(180줄)는 미들웨어와 라우터 등록만 담당. 실제 로직은 라우터에 분리.</p>
-  <p>이 구조로 3그룹이 동시에 개발해도 <strong>git 충돌이 발생하지 않습니다</strong>.</p>
+  <p><strong>핵심 원칙:</strong> main.py(290줄)는 미들웨어와 라우터 등록만 담당. 실제 로직은 라우터에 분리.</p>
+  <p>이 구조로 3그룹 + 관리자가 동시에 개발해도 <strong>git 충돌이 발생하지 않습니다</strong>.</p>
 </div>
 
 <table>
@@ -403,7 +507,8 @@ code{background:#0f172a;color:var(--accent);padding:3px 8px;border-radius:4px;fo
 <tr><td><code>main.py</code></td><td>공통</td><td>미들웨어: 보안헤더, CORS, JWT, RateLimit</td></tr>
 <tr><td><code>ai_router.py</code></td><td>그룹 A (AI/ML)</td><td>/api/photo/*, /api/simulation/*, /api/models/*, /api/rl/*</td></tr>
 <tr><td><code>api_router.py</code></td><td>그룹 B (백엔드)</td><td>/api/query, /api/dashboard, /api/auth, /api/onboarding, /ws</td></tr>
-<tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>11개 페이지, 컴포넌트, 오프라인 엔진</td></tr>
+<tr><td><code>admin_router.py</code></td><td>전체 관리</td><td>/api/admin/team-progress, git-history, conflicts, backup, security-audit, orchestrator-stats</td></tr>
+<tr><td><code>frontend/src/</code></td><td>그룹 C (프론트)</td><td>14개 페이지, 16개 컴포넌트, 오프라인 엔진</td></tr>
 </table>
 
 <!-- ═══════════════════════════════ 4-11 (Summarized) ═══════════════════════════════ -->

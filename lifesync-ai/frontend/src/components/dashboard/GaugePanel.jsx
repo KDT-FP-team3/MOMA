@@ -26,17 +26,16 @@ function getStatus(value, invert) {
   return { text: "위험", cls: "bg-red-500/15 text-red-400" };
 }
 
+const DEFAULT_GAUGES = {
+  reactive_oxygen: 62, blood_purity: 78, hair_loss_risk: 23,
+  sleep_score: 71, stress_level: 45, weekly_achievement: 67,
+};
+
 export default function GaugePanel() {
   const { state, updateState } = useAppState();
 
-  const [gauges, setGauges] = useState(state.gauges || {
-    reactive_oxygen: 62, blood_purity: 78, hair_loss_risk: 23,
-    sleep_score: 71, stress_level: 45, weekly_achievement: 67,
-  });
-
-  useEffect(() => {
-    if (state.gauges) setGauges((prev) => ({ ...prev, ...state.gauges }));
-  }, [state.gauges]);
+  // 전역 state만 사용 (이중 state 제거)
+  const gauges = state.gauges || DEFAULT_GAUGES;
 
   useEffect(() => {
     let socket = null;
@@ -65,7 +64,6 @@ export default function GaugePanel() {
               if (VALID_KEYS.has(k) && typeof v === "number") safe[k] = v;
             }
             if (Object.keys(safe).length > 0) {
-              setGauges((prev) => ({ ...prev, ...safe }));
               updateState("gauges", (prev) => ({ ...prev, ...safe }));
             }
           }
@@ -101,7 +99,11 @@ export default function GaugePanel() {
         {GAUGE_CONFIG.map(({ key, label, unit, color, gradient, borderHover, invert }) => {
           const value = Math.round(gauges[key] || 0);
           const status = getStatus(value, invert);
-          const data = [{ value, fill: color }];
+          // 더미 max(100)를 먼저 넣어 스케일 고정, 실제 값을 위에 표시
+          const data = [
+            { value: 100, fill: "transparent" },
+            { value, fill: color },
+          ];
 
           return (
             <div
@@ -111,11 +113,12 @@ export default function GaugePanel() {
               <div className="relative w-20 h-20 md:w-24 md:h-24 group-hover:scale-105 transition-transform duration-300">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadialBarChart
-                    innerRadius="68%"
+                    innerRadius="60%"
                     outerRadius="100%"
                     data={data}
                     startAngle={210}
                     endAngle={-30}
+                    barSize={10}
                   >
                     <RadialBar
                       dataKey="value"

@@ -190,7 +190,7 @@ export default function ReportPage() {
         {/* 헤더 */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-white">
-            {"📊"} 주간 건강 리포트
+            {""} 주간 건강 리포트
           </h1>
           <p className="text-white text-lg">{weekRange}</p>
         </div>
@@ -200,7 +200,7 @@ export default function ReportPage() {
           {/* 좋았던 선택 */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-emerald-400 mb-4">
-              {"✅"} 이번 주 가장 좋았던 선택 Top 3
+              {""} 이번 주 가장 좋았던 선택 Top 3
             </h2>
             <div className="space-y-3">
               {topGood.map((item) => (
@@ -223,7 +223,7 @@ export default function ReportPage() {
           {/* 나빴던 선택 */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-red-400 mb-4">
-              {"⚠️"} 이번 주 나빴던 선택 Top 3
+              {""} 이번 주 나빴던 선택 Top 3
             </h2>
             <div className="space-y-3">
               {topBad.map((item) => (
@@ -249,7 +249,7 @@ export default function ReportPage() {
           {/* 레이더 차트 — 6개 차원 */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">
-              {"🎯"} 종합 분석
+              {""} 종합 분석
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
@@ -278,7 +278,7 @@ export default function ReportPage() {
           {/* 바 차트 — 일별 종합 점수 */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">
-              {"📈"} 일별 종합 점수
+              {""} 일별 종합 점수
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={dailyScores}>
@@ -304,7 +304,7 @@ export default function ReportPage() {
         {/* 주간 트렌드 신뢰구간 차트 */}
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-2">
-            {"📉"} 건강 트렌드 (신뢰구간)
+            {""} 건강 트렌드 (신뢰구간)
           </h2>
           <p className="text-sm text-white mb-1">
             미래로 갈수록 불확실성이 커지는 예측 밴드를 보여줍니다.
@@ -333,7 +333,7 @@ export default function ReportPage() {
         {/* Before / After 아바타 비교 */}
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-6 text-center">
-            {"🧍"} Before / After 비교
+            {""} Before / After 비교
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
             {/* Before */}
@@ -373,7 +373,7 @@ export default function ReportPage() {
         {/* 크로스 도메인 연쇄 효과 */}
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">
-            {"⛓️"} 크로스 도메인 연쇄 효과
+            {""} 크로스 도메인 연쇄 효과
           </h2>
           <p className="text-white text-sm mb-4">
             하나의 선택이 다른 영역으로 어떻게 연쇄적으로 영향을 미치는지 보여줍니다.
@@ -397,7 +397,7 @@ export default function ReportPage() {
         {/* 종합 요약 및 조언 */}
         <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">
-            {"💡"} 이번 주 종합 요약
+            {""} 이번 주 종합 요약
           </h2>
           <div className="space-y-3 text-white text-sm leading-relaxed">
             <p>

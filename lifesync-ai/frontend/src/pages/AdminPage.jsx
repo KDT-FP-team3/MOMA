@@ -156,7 +156,7 @@ export default function AdminPage() {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Server Info */}
-          <Card title="서버 상태" icon="🚀">
+          <Card title="서버 상태" icon="">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-white">상태</span>
@@ -176,7 +176,7 @@ export default function AdminPage() {
           </Card>
 
           {/* API Keys */}
-          <Card title="API 키 상태" icon="🔑">
+          <Card title="API 키 상태" icon="">
             <div className="space-y-1.5 text-sm">
               {Object.entries(api_keys?.details || {}).map(([key, ok]) => (
                 <div key={key} className="flex items-center justify-between">
@@ -193,7 +193,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Plugins */}
-          <Card title={`플러그인 (${activePlugins} 활성 / ${fallbackPlugins} 폴백)`} icon="🔌">
+          <Card title={`플러그인 (${activePlugins} 활성 / ${fallbackPlugins} 폴백)`} icon="">
             <div className="space-y-1.5 text-sm">
               {pluginEntries.map(([slot, info]) => (
                 <div key={slot} className="flex items-center justify-between">
@@ -216,7 +216,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Device */}
-          <Card title="디바이스 정보" icon="🖥️">
+          <Card title="디바이스 정보" icon="">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-white">디바이스</span>
@@ -250,7 +250,7 @@ export default function AdminPage() {
           </Card>
 
           {/* Services */}
-          <Card title="공유 서비스" icon="⚙️">
+          <Card title="공유 서비스" icon="">
             <div className="space-y-1.5 text-sm">
               {Object.entries(services || {}).map(([name, ok]) => (
                 <div key={name} className="flex items-center justify-between">

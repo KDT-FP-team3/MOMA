@@ -13,40 +13,40 @@ import { useAppState } from "../context/AppStateContext";
 import axios from "axios";
 
 const AGE_OPTIONS = [
-  { label: "10대", emoji: "🧑", value: "10s" },
-  { label: "20대", emoji: "👨", value: "20s" },
-  { label: "30대", emoji: "👨‍💼", value: "30s" },
-  { label: "40대", emoji: "👨‍🦳", value: "40s" },
-  { label: "50대+", emoji: "👴", value: "50s+" },
+  { label: "10대", emoji: "", value: "10s" },
+  { label: "20대", emoji: "", value: "20s" },
+  { label: "30대", emoji: "", value: "30s" },
+  { label: "40대", emoji: "", value: "40s" },
+  { label: "50대+", emoji: "", value: "50s+" },
 ];
 
 const ACTIVITY_OPTIONS = [
-  { label: "비활동적", emoji: "🛋️", value: "sedentary" },
-  { label: "보통", emoji: "🚶", value: "moderate" },
-  { label: "활동적", emoji: "🏃", value: "active" },
-  { label: "매우 활동적", emoji: "⚡", value: "very_active" },
+  { label: "비활동적", emoji: "", value: "sedentary" },
+  { label: "보통", emoji: "", value: "moderate" },
+  { label: "활동적", emoji: "", value: "active" },
+  { label: "매우 활동적", emoji: "", value: "very_active" },
 ];
 
 const SLEEP_OPTIONS = [
-  { label: "올빼미", emoji: "🦉", value: "night_owl" },
-  { label: "보통", emoji: "😊", value: "normal" },
-  { label: "아침형", emoji: "🌅", value: "morning" },
+  { label: "올빼미", emoji: "", value: "night_owl" },
+  { label: "보통", emoji: "", value: "normal" },
+  { label: "아침형", emoji: "", value: "morning" },
 ];
 
 const STRESS_OPTIONS = [
-  { label: "낮음", emoji: "😌", value: "low" },
-  { label: "보통", emoji: "😐", value: "medium" },
-  { label: "높음", emoji: "😰", value: "high" },
-  { label: "매우높음", emoji: "🤯", value: "very_high" },
+  { label: "낮음", emoji: "", value: "low" },
+  { label: "보통", emoji: "", value: "medium" },
+  { label: "높음", emoji: "", value: "high" },
+  { label: "매우높음", emoji: "", value: "very_high" },
 ];
 
 const GOAL_OPTIONS = [
-  { label: "체중 감량", emoji: "⚖️", value: "weight_loss" },
-  { label: "근력 증가", emoji: "💪", value: "strength" },
-  { label: "스트레스 관리", emoji: "🧘", value: "stress_mgmt" },
-  { label: "수면 개선", emoji: "😴", value: "sleep" },
-  { label: "식습관 개선", emoji: "🥗", value: "diet" },
-  { label: "체력 향상", emoji: "🏃", value: "stamina" },
+  { label: "체중 감량", emoji: "", value: "weight_loss" },
+  { label: "근력 증가", emoji: "", value: "strength" },
+  { label: "스트레스 관리", emoji: "", value: "stress_mgmt" },
+  { label: "수면 개선", emoji: "", value: "sleep" },
+  { label: "식습관 개선", emoji: "", value: "diet" },
+  { label: "체력 향상", emoji: "", value: "stamina" },
 ];
 
 function OptionCard({ emoji, label, selected, onClick }) {

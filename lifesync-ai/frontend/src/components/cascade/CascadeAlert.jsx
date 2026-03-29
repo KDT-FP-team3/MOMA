@@ -50,7 +50,7 @@ const severityStyles = {
   positive: { border: "border-l-green-500", icon: CheckCircle, iconColor: "text-green-400", badge: "bg-green-600", label: "보너스" },
 };
 
-const domainIcons = { food: "🍽️", exercise: "🏃", health: "❤️", hobby: "🎨" };
+const domainIcons = { food: "", exercise: "", health: "", hobby: "" };
 
 export default function CascadeAlert({ alerts: propAlerts }) {
   const [alerts, setAlerts] = useState(EXAMPLE_CASCADES);
@@ -131,7 +131,7 @@ export default function CascadeAlert({ alerts: propAlerts }) {
                     ))}
                     {alert.alternative && (
                       <div className="ml-5 mt-1 text-xs text-cyan-400/80">
-                        💡 {alert.alternative}
+                         {alert.alternative}
                       </div>
                     )}
                   </div>

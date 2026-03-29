@@ -53,10 +53,10 @@ const severityConfig = {
 };
 
 const domainIcons = {
-  food: "🍽️",
-  exercise: "🏃",
-  health: "❤️",
-  hobby: "🎨",
+  food: "",
+  exercise: "",
+  health: "",
+  hobby: "",
 };
 
 export default function CascadeAlert({ alerts = [] }) {
@@ -135,7 +135,7 @@ export default function CascadeAlert({ alerts = [] }) {
                     {/* 대안 제시 */}
                     {alert.alternative && (
                       <div className="mt-2 ml-6 text-sm text-cyan-400">
-                        💡 대안: {alert.alternative}
+                         대안: {alert.alternative}
                       </div>
                     )}
                   </div>
@@ -144,7 +144,7 @@ export default function CascadeAlert({ alerts = [] }) {
                     onClick={() => dismiss(alert.id)}
                     className="text-white hover:text-white text-lg"
                   >
-                    ✕
+                    
                   </button>
                 </div>
               </div>

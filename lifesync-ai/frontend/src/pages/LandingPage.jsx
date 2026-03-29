@@ -215,11 +215,11 @@ export default function LandingPage() {
               <h3 className={`font-bold text-${color}-400 mb-4`}>{title}</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-2">
-                  <span className="text-red-500 text-xs mt-0.5">✕</span>
+                  <span className="text-red-500 text-xs mt-0.5"></span>
                   <p className="text-sm text-white">{existing}</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-emerald-500 text-xs mt-0.5">✓</span>
+                  <span className="text-emerald-500 text-xs mt-0.5"></span>
                   <p className="text-sm text-white">{ours}</p>
                 </div>
               </div>

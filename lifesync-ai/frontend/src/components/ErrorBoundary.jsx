@@ -23,7 +23,7 @@ export default class ErrorBoundary extends React.Component {
       return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900 p-6">
           <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center border border-red-500/30">
-            <div className="text-4xl mb-4">⚠️</div>
+            <div className="text-4xl mb-4"></div>
             <h2 className="text-xl font-bold text-white mb-2">
               오류가 발생했습니다
             </h2>

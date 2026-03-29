@@ -101,9 +101,8 @@ PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
     "/api/onboarding", "/api/plugins/status", "/api/admin/status", "/api/device/info",
-    "/api/admin/team-progress", "/api/admin/git-history", "/api/admin/conflicts",
-    "/api/admin/backups", "/api/admin/security-audit", "/api/admin/orchestrator-stats",
 }
+# 관리 API는 개발 환경에서만 인증 생략 (ENV=development 조건으로 자동 처리)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

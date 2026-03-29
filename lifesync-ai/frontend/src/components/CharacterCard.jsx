@@ -40,7 +40,7 @@ function Sparkle({ delay, x, y }) {
         opacity: 0,
       }}
     >
-      ✦
+      
     </span>
   );
 }

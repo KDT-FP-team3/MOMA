@@ -47,17 +47,25 @@ const TECH_STACK_MAP = [
   { tech: "GPT-4o",     usage: "멀티모달 LLM 추론 엔진",      owner: "팀원 A·B·C·D — 각 플러그인 추천 생성" },
 ];
 
-/* CASCADE 화살표 데이터 (오케스트레이터 4도메인 연결 구조) */
-const CASCADE_ARROWS = [
-  { from: "food_rag", to: "health_checkup", label: "칼로리/영양 영향" },
-  { from: "food_rag", to: "exercise_weather", label: "추가 운동 필요" },
-  { from: "exercise_weather", to: "health_checkup", label: "수면/스트레스 개선" },
-  { from: "exercise_weather", to: "food_rag", label: "단백질 식사 권장" },
-  { from: "health_checkup", to: "exercise_weather", label: "운동 강도 조절" },
-  { from: "health_checkup", to: "food_rag", label: "식단 제한" },
-  { from: "hobby_stress", to: "health_checkup", label: "스트레스 해소" },
-  { from: "hobby_stress", to: "food_rag", label: "폭식 충동 감소" },
-  { from: "hobby_stress", to: "exercise_weather", label: "운동 동기부여" },
+/* CASCADE 연결 — 소스 도메인별 그룹 (중복 없이 정리) */
+const CASCADE_GROUPS = [
+  { source: "요리 (food)", color: "text-orange-400", effects: [
+    { to: "건강", label: "칼로리/영양 → 건강 지표 영향" },
+    { to: "운동", label: "칼로리 초과 시 추가 운동 필요" },
+  ]},
+  { source: "운동 (exercise)", color: "text-blue-400", effects: [
+    { to: "건강", label: "수면 개선 + 스트레스 감소" },
+    { to: "요리", label: "운동 후 단백질 식사 권장" },
+  ]},
+  { source: "건강 (health)", color: "text-emerald-400", effects: [
+    { to: "운동", label: "건강 위험 시 운동 강도 조절" },
+    { to: "요리", label: "건강 위험 시 식단 제한" },
+  ]},
+  { source: "취미 (hobby)", color: "text-violet-400", effects: [
+    { to: "건강", label: "스트레스 해소 효과" },
+    { to: "요리", label: "폭식 충동 감소" },
+    { to: "운동", label: "운동 동기부여 상승" },
+  ]},
 ];
 
 export default function TeamLeaderPage() {
@@ -184,24 +192,7 @@ function ProgressTab({ data }) {
         </div>
       </div>
 
-      {/* CASCADE 연결 시각화 */}
-      <div className="bg-gray-900/70 rounded-2xl border border-gray-800 p-5">
-        <h2 className="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-          <Network size={16} /> 크로스 도메인 CASCADE 연결 (orchestrator.py CASCADE_RULES)
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {CASCADE_ARROWS.map((a, i) => (
-            <div key={i} className="flex items-center gap-2 bg-gray-800/40 rounded-lg px-3 py-2 text-xs group relative hover:z-10">
-              <span className="text-emerald-400 font-medium whitespace-nowrap">{a.from.replace("_", " ")}</span>
-              <ArrowRight size={12} className="text-white flex-shrink-0" />
-              <span className="text-violet-400 font-medium whitespace-nowrap">{a.to.replace("_", " ")}</span>
-              <span className="text-white ml-auto truncate group-hover:whitespace-normal group-hover:overflow-visible">{a.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 기술 스택 → 담당 업무 매핑 */}
+      {/* 기술 스택 → 담당 업무 매핑 (위로 이동) */}
       <div className="bg-gray-900/70 rounded-2xl border border-gray-800 p-5">
         <h2 className="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2">
           <Code size={16} /> 기술 스택별 담당 업무
@@ -213,6 +204,29 @@ function ProgressTab({ data }) {
               <div className="flex-1 min-w-0">
                 <span className="text-xs text-white block">{t.usage}</span>
                 <span className="text-[10px] text-cyan-400">{t.owner}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CASCADE 연결 — 소스 도메인별 그룹화 (아래로 이동) */}
+      <div className="bg-gray-900/70 rounded-2xl border border-gray-800 p-5">
+        <h2 className="text-sm font-semibold text-cyan-400 mb-4 flex items-center gap-2">
+          <Network size={16} /> 크로스 도메인 CASCADE 연결
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {CASCADE_GROUPS.map((g, i) => (
+            <div key={i} className="bg-gray-800/40 rounded-xl p-3">
+              <h3 className={`text-xs font-semibold ${g.color} mb-2`}>{g.source}</h3>
+              <div className="space-y-1.5">
+                {g.effects.map((e, j) => (
+                  <div key={j} className="flex items-center gap-2 text-xs">
+                    <ArrowRight size={10} className="text-white flex-shrink-0" />
+                    <span className="text-white font-medium">{e.to}</span>
+                    <span className="text-white">{e.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
