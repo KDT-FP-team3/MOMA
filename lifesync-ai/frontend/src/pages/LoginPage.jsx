@@ -36,6 +36,9 @@ export default function LoginPage() {
     }
     if (!code) return;
 
+    // code를 URL에서 즉시 제거 (중복 전송 방지)
+    window.history.replaceState({}, "", window.location.pathname + "#/login");
+
     setLoading(true);
     setError("");
     axios
@@ -44,7 +47,6 @@ export default function LoginPage() {
         updateState("authUser", res.data.user);
         updateState("authToken", res.data.token);
         updateState("userId", res.data.user.id);
-        // 토큰을 sessionStorage에 저장 (브라우저 탭 종료 시 자동 삭제)
         try { sessionStorage.setItem("lifesync-auth-token", res.data.token); } catch {}
         navigate("/dashboard");
       })
@@ -53,8 +55,6 @@ export default function LoginPage() {
           err.response?.data?.detail || "카카오 로그인 처리 실패";
         setError(msg);
         setLoading(false);
-        // URL에서 code 파라미터 제거
-        window.history.replaceState({}, "", "/login");
       });
   }, [navigate, updateState]);
 

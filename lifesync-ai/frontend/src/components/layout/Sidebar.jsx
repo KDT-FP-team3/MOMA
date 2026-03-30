@@ -17,7 +17,6 @@ const NAV_ITEMS = [
   { path: "/schedule", label: "생활패턴", icon: Clock },
   { path: "/avatar", label: "가상인물", icon: PersonStanding },
   { path: "/report", label: "주간리포트", icon: FileText },
-  { path: "/architecture", label: "아키텍처", icon: Network },
   { path: "/team-leader", label: "전체 관리", icon: Shield },
 ];
 
