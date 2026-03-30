@@ -74,10 +74,18 @@ def verify_token(token: str) -> Optional[dict]:
         return None
 
 
-def get_kakao_login_url() -> str:
-    """카카오 로그인 페이지 URL 생성."""
+def get_kakao_login_url(origin: str = "") -> str:
+    """카카오 로그인 페이지 URL 생성.
+
+    Args:
+        origin: 프론트엔드의 현재 origin (예: "https://lifesync-ai.vercel.app")
+                빈 문자열이면 .env의 KAKAO_REDIRECT_URI 사용.
+    """
     client_id = os.getenv("KAKAO_CLIENT_ID", "")
-    redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:5173/auth/kakao/callback")
+    if origin:
+        redirect_uri = f"{origin.rstrip('/')}/auth/kakao/callback"
+    else:
+        redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:5173/auth/kakao/callback")
     return (
         f"{KAKAO_AUTH_URL}/oauth/authorize"
         f"?client_id={client_id}"
@@ -86,10 +94,18 @@ def get_kakao_login_url() -> str:
     )
 
 
-async def exchange_code(code: str) -> dict:
-    """인가 코드 → 액세스 토큰 교환."""
+async def exchange_code(code: str, origin: str = "") -> dict:
+    """인가 코드 → 액세스 토큰 교환.
+
+    Args:
+        code: 카카오에서 받은 인가 코드.
+        origin: 프론트엔드 origin (redirect_uri와 일치해야 함).
+    """
     client_id = os.getenv("KAKAO_CLIENT_ID", "")
-    redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:5173/auth/kakao/callback")
+    if origin:
+        redirect_uri = f"{origin.rstrip('/')}/auth/kakao/callback"
+    else:
+        redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:5173/auth/kakao/callback")
 
     data = {
         "grant_type": "authorization_code",
@@ -131,9 +147,9 @@ async def get_kakao_user(access_token: str) -> dict:
     }
 
 
-async def kakao_login(code: str) -> dict:
+async def kakao_login(code: str, origin: str = "") -> dict:
     """전체 로그인 플로우: 코드 → 토큰 → 사용자 정보 → JWT."""
-    token_data = await exchange_code(code)
+    token_data = await exchange_code(code, origin)
     access_token = token_data.get("access_token")
     if not access_token:
         raise ValueError(f"카카오 토큰 교환 실패: {token_data}")

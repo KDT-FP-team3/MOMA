@@ -39,7 +39,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     axios
-      .post(`${API_BASE}/api/auth/kakao/callback`, { code })
+      .post(`${API_BASE}/api/auth/kakao/callback`, { code, origin: window.location.origin })
       .then((res) => {
         updateState("authUser", res.data.user);
         updateState("authToken", res.data.token);
@@ -63,7 +63,7 @@ export default function LoginPage() {
     setError("");
     // 백엔드에서 REST API 키로 생성한 로그인 URL로 리다이렉트
     axios
-      .get(`${API_BASE}/api/auth/kakao/login-url`)
+      .get(`${API_BASE}/api/auth/kakao/login-url?origin=${encodeURIComponent(window.location.origin)}`)
       .then((res) => {
         window.location.href = res.data.url;
       })

@@ -151,19 +151,24 @@ async def onboarding(req: OnboardingRequest):
 # ============================================================
 
 @router.get("/api/auth/kakao/login-url")
-async def kakao_login_url():
-    """카카오 로그인 URL 반환."""
-    return {"url": get_kakao_login_url()}
+async def kakao_login_url(origin: str = ""):
+    """카카오 로그인 URL 반환.
+
+    프론트엔드가 ?origin=https://... 을 전달하면
+    해당 origin에 맞는 redirect_uri를 사용합니다.
+    """
+    return {"url": get_kakao_login_url(origin)}
 
 
 @router.post("/api/auth/kakao/callback")
 async def kakao_callback(data: dict):
     """카카오 인가 코드로 로그인 완료."""
     code = data.get("code")
+    origin = data.get("origin", "")
     if not code:
         raise HTTPException(status_code=400, detail="인가 코드 없음")
     try:
-        return await kakao_login(code)
+        return await kakao_login(code, origin)
     except Exception as e:
         logger.error("카카오 로그인 실패: %s", e)
         raise HTTPException(status_code=401, detail="요청 처리 중 오류가 발생했습니다.")
