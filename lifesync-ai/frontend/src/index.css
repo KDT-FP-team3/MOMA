@@ -24,6 +24,12 @@
   .accent-bar { background: linear-gradient(90deg, #1a73e8, #4285f4, #1a73e8); background-size: 300% 100%; animation: gradient-x 6s ease infinite; }
   .shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 2s linear infinite; }
   .glow-border { box-shadow: 0 0 0 1px rgba(26,115,232,0.2), 0 0 15px rgba(26,115,232,0.1); }
+  /* 모바일 safe area */
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  /* 스크롤바 숨김 (모바일 탭 스크롤용) */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 /* ══════════════════════════════════════════════

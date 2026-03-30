@@ -186,19 +186,19 @@ export default function ReportPage() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-8 pb-20 lg:pb-8">
+      <div className="max-w-6xl mx-auto space-y-5 md:space-y-8 px-4 md:px-6 pb-20 lg:pb-8">
         {/* 헤더 */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-xl md:text-3xl font-bold text-white">
             {""} 주간 건강 리포트
           </h1>
-          <p className="text-white text-lg">{weekRange}</p>
+          <p className="text-white text-sm md:text-lg">{weekRange}</p>
         </div>
 
         {/* Top 3 좋았던 / 나빴던 선택 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 좋았던 선택 */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
             <h2 className="text-lg font-semibold text-emerald-400 mb-4">
               {""} 이번 주 가장 좋았던 선택 Top 3
             </h2>
@@ -221,7 +221,7 @@ export default function ReportPage() {
           </div>
 
           {/* 나빴던 선택 */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
             <h2 className="text-lg font-semibold text-red-400 mb-4">
               {""} 이번 주 나빴던 선택 Top 3
             </h2>
@@ -247,11 +247,12 @@ export default function ReportPage() {
         {/* 레이더 차트 + 바 차트 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 레이더 차트 — 6개 차원 */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
             <h2 className="text-lg font-semibold text-white mb-4">
               {""} 종합 분석
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
+            <div className="h-[220px] md:h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="65%">
                 <PolarGrid stroke="#374151" />
                 <PolarAngleAxis
@@ -273,14 +274,16 @@ export default function ReportPage() {
                 />
               </RadarChart>
             </ResponsiveContainer>
+            </div>
           </div>
 
           {/* 바 차트 — 일별 종합 점수 */}
-          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+          <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
             <h2 className="text-lg font-semibold text-white mb-4">
               {""} 일별 종합 점수
             </h2>
-            <ResponsiveContainer width="100%" height={300}>
+            <div className="h-[220px] md:h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyScores}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
                 <XAxis dataKey="day" tick={{ fill: "#9ca3af", fontSize: 12 }} />
@@ -289,7 +292,7 @@ export default function ReportPage() {
                 <Bar
                   dataKey="score"
                   radius={[6, 6, 0, 0]}
-                  barSize={32}
+                  barSize={20}
                 >
                   {dailyScores.map((entry, idx) => (
                     <Cell key={idx} fill={scoreColor(entry.score)} />
@@ -298,11 +301,12 @@ export default function ReportPage() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
         {/* 주간 트렌드 신뢰구간 차트 */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
           <h2 className="text-lg font-semibold text-white mb-2">
             {""} 건강 트렌드 (신뢰구간)
           </h2>
@@ -326,22 +330,22 @@ export default function ReportPage() {
           <ErrorBarChart
             data={weeklyTrendData}
             metrics={weeklyTrendMetrics}
-            height={380}
+            height={280}
           />
         </div>
 
         {/* Before / After 아바타 비교 */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
           <h2 className="text-lg font-semibold text-white mb-6 text-center">
             {""} Before / After 비교
           </h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-8">
             {/* Before */}
             <div className="flex flex-col items-center gap-3">
               <span className="text-sm font-medium text-white bg-gray-700/50 px-3 py-1 rounded-full">
                 주 시작
               </span>
-              <AvatarBody {...avatarStart} size={180} />
+              <AvatarBody {...avatarStart} size={140} />
               <div className="text-xs text-white space-y-0.5 text-center">
                 <p>기분 {avatarStart.mood} · 에너지 {avatarStart.energy}</p>
                 <p>스트레스 {avatarStart.stress} · 수면 {avatarStart.sleep}</p>
@@ -361,7 +365,7 @@ export default function ReportPage() {
               <span className="text-sm font-medium text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">
                 주 끝
               </span>
-              <AvatarBody {...avatarEnd} size={180} />
+              <AvatarBody {...avatarEnd} size={140} />
               <div className="text-xs text-white space-y-0.5 text-center">
                 <p>기분 {avatarEnd.mood} · 에너지 {avatarEnd.energy}</p>
                 <p>스트레스 {avatarEnd.stress} · 수면 {avatarEnd.sleep}</p>
@@ -371,7 +375,7 @@ export default function ReportPage() {
         </div>
 
         {/* 크로스 도메인 연쇄 효과 */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
           <h2 className="text-lg font-semibold text-white mb-4">
             {""} 크로스 도메인 연쇄 효과
           </h2>
@@ -395,7 +399,7 @@ export default function ReportPage() {
         </div>
 
         {/* 종합 요약 및 조언 */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-6">
+        <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 md:p-6">
           <h2 className="text-lg font-semibold text-white mb-4">
             {""} 이번 주 종합 요약
           </h2>

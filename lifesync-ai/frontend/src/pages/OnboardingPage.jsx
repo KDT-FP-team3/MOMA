@@ -326,16 +326,18 @@ export default function OnboardingPage() {
             ) : (
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   // ── 연결: 온보딩 데이터 → 백엔드 → LifeEnv 초기화 ──
                   const profile = { age, height, weight, activity, sleep: sleepPattern, stress: stressLevel, goals };
                   updateState("onboardingData", profile);
                   updateState("userProfile", profile);
-                  try {
-                    const res = await axios.post("/api/onboarding", profile);
-                    if (res.data.user_id) updateState("userId", res.data.user_id);
-                    if (res.data.initial_gauges) updateState("gauges", res.data.initial_gauges);
-                  } catch { /* 오프라인이면 로컬만 저장 */ }
+                  // API 호출은 백그라운드로 — 네비게이션 차단 방지
+                  axios.post("/api/onboarding", profile, { timeout: 5000 })
+                    .then((res) => {
+                      if (res.data.user_id) updateState("userId", res.data.user_id);
+                      if (res.data.initial_gauges) updateState("gauges", res.data.initial_gauges);
+                    })
+                    .catch(() => { /* 오프라인이면 로컬만 저장 */ });
                   navigate("/avatar");
                 }}
                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold transition-all ml-auto shadow-lg shadow-blue-500/25"

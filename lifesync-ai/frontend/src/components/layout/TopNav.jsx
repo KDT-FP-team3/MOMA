@@ -36,8 +36,8 @@ export default function TopNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-gray-900 border-b border-gray-700 backdrop-blur-md">
-        <div className="max-w-[1440px] mx-auto px-6 flex items-center h-14">
+      <header className="sticky top-0 z-50 bg-gray-900 border-b border-gray-700 backdrop-blur-md pt-safe">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 flex items-center h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mr-8 flex-shrink-0">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -105,7 +105,7 @@ export default function TopNav() {
                     key={item.path}
                     to={item.path}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-lg text-[11px] transition-all ${
+                    className={`flex flex-col items-center gap-1 p-2.5 rounded-lg text-[11px] transition-all ${
                       active ? "text-cyan-400 bg-cyan-500/10" : "text-white hover:bg-gray-800"
                     }`}
                   >

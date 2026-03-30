@@ -96,12 +96,12 @@ export default function GaugePanel() {
   }, [updateState]);
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-5 md:p-6 border border-gray-700">
+    <div className="bg-gray-800 rounded-2xl p-3 md:p-6 border border-gray-700">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold text-white">상세 건강 지표</h2>
         <span className="text-[10px] text-white">실시간 업데이트</span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
         {GAUGE_CONFIG.map(({ key, label, unit, color, gradient, borderHover, invert }) => {
           const value = Math.round(gauges[key] || 0);
           const status = getStatus(value, invert);
@@ -113,9 +113,9 @@ export default function GaugePanel() {
           return (
             <div
               key={key}
-              className={`flex flex-col items-center bg-gradient-to-b ${gradient} rounded-xl p-3 border border-gray-700/30 ${borderHover} transition-all duration-300 group cursor-default`}
+              className={`flex flex-col items-center bg-gradient-to-b ${gradient} rounded-xl p-2 md:p-3 border border-gray-700/30 ${borderHover} transition-all duration-300 group cursor-default`}
             >
-              <div className="relative w-20 h-20 md:w-24 md:h-24 group-hover:scale-105 transition-transform duration-300">
+              <div className="relative w-16 h-16 md:w-24 md:h-24 group-hover:scale-105 transition-transform duration-300">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
                   <circle cx="50" cy="50" r={R} fill="none" stroke="#e5e7eb" strokeWidth="8"
                     strokeDasharray={`${arcLen} ${C}`}
@@ -126,7 +126,7 @@ export default function GaugePanel() {
                     style={{ transition: "stroke-dasharray 0.5s ease" }} />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg md:text-xl font-bold transition-colors duration-500" style={{ color }}>
+                  <span className="text-base md:text-xl font-bold transition-colors duration-500" style={{ color }}>
                     {value}
                   </span>
                   <span className="text-[9px] text-white">{unit}</span>

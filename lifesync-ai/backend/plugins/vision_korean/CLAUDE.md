@@ -39,7 +39,7 @@ class KoreanFoodAnalyzer:
 3. 한국 음식 사진 업로드 시 한국어 이름 + 영양정보 반환
 
 ## 에이전트 피드백 (자동)
-- 점검 시각: 2026-03-29 13:54 UTC
+- 점검 시각: 2026-03-30 01:14 UTC
 - 인터페이스 점검: PASS
   - 모든 인터페이스 준수
 - 플러그인 상태: active (KoreanFoodAnalyzer)

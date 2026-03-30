@@ -8,7 +8,7 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <TopNav />
-      <main>{children}</main>
+      <main className="pb-16 lg:pb-0">{children}</main>
     </div>
   );
 }

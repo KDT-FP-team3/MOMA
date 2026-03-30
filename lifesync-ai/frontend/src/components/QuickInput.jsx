@@ -71,7 +71,10 @@ export default function QuickInput({ allChoices, onMatch }) {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSubmit();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   return (

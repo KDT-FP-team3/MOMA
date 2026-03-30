@@ -227,8 +227,9 @@ export default function ErrorBarChart({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /** 고정 pxPerDay 사용 — 항상 데이터 전체 너비를 확보, 스크롤로 탐색 */
-  const pxPerDay = view.pxPerDay;
+  /** 고정 pxPerDay 사용 — 모바일에서 축소 적용 */
+  const isMobile = containerW < 640;
+  const pxPerDay = isMobile ? Math.round(view.pxPerDay * 0.65) : view.pxPerDay;
   const chartWidth = Math.max(enriched.length * pxPerDay + 74, containerW);
 
   const scrollToStart = useCallback(() => {
@@ -276,7 +277,7 @@ export default function ErrorBarChart({
             <button
               key={opt.label}
               onClick={() => setViewIdx(i)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              className={`px-2 py-1 md:px-3 text-xs font-medium rounded-md transition-colors ${
                 viewIdx === i
                   ? "bg-cyan-600 text-white"
                   : "bg-gray-700 text-white hover:bg-gray-600 hover:text-gray-200"
@@ -304,7 +305,7 @@ export default function ErrorBarChart({
           data={enriched}
           width={chartWidth}
           height={height + 40}
-          margin={{ top: 8, right: 24, bottom: 36, left: 50 }}
+          margin={{ top: 8, right: 24, bottom: 36, left: 36 }}
         >
           {monthBands.map((band, i) => (
             <ReferenceArea

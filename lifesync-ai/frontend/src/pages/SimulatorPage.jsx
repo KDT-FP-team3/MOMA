@@ -68,27 +68,49 @@ export default function SimulatorPage() {
     });
   }, [started, state, gauges, step, week, day, history, lastReward, lastCascade, terminated, totalReward, actionLog, updateAppState]);
 
+  // 오프라인 폴백 초기 상태
+  const FALLBACK_HEALTH = {
+    weight_kg: 70, bmi: 24.2, calorie_intake: 0, calorie_burned: 0,
+    sleep_score: 65, stress_level: 45, mood_score: 60,
+  };
+  const FALLBACK_GAUGES = {
+    reactive_oxygen: 55, blood_purity: 72, hair_loss_risk: 30,
+    sleep_score: 65, stress_level: 45, weekly_achievement: 50,
+  };
+
+  const initSimulation = (healthState, gaugeData) => {
+    setState(healthState);
+    setGauges(gaugeData);
+    setStep(0);
+    setWeek(1);
+    setDay(1);
+    setHistory([{ step: 0, ...healthState }]);
+    setLastReward(null);
+    setLastCascade(null);
+    setTerminated(false);
+    setStarted(true);
+    setTotalReward(0);
+    setActionLog([]);
+    setShowAnimation(true);
+    setTimeout(() => setShowAnimation(false), 3000);
+  };
+
   const reset = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("/api/simulation/reset?session_id=sim1");
-      setState(res.data.health_state);
-      setGauges(res.data.gauges);
-      setStep(0);
-      setWeek(1);
-      setDay(1);
-      setHistory([{ step: 0, ...res.data.health_state }]);
-      setLastReward(null);
-      setLastCascade(null);
-      setTerminated(false);
-      setStarted(true);
-      setTotalReward(0);
-      setActionLog([]);
-      setShowAnimation(true);
-      setTimeout(() => setShowAnimation(false), 3000);
+      // AbortController로 확실한 타임아웃 (CapacitorHttp 대응)
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const res = await axios.post("/api/simulation/reset?session_id=sim1", null, {
+        timeout: 8000,
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      initSimulation(res.data.health_state, res.data.gauges);
     } catch (e) {
-      console.error("시뮬레이션 초기화 실패:", e);
-      alert("백엔드 서버 연결 실패! 서버가 실행 중인지 확인하세요.\n\n오류: " + (e.message || e));
+      console.error("시뮬레이션 초기화 실패 (오프라인 모드로 시작):", e);
+      // 오프라인 폴백: 기본 데이터로 시뮬레이션 시작
+      initSimulation(FALLBACK_HEALTH, FALLBACK_GAUGES);
     } finally {
       setLoading(false);
     }
@@ -98,10 +120,13 @@ export default function SimulatorPage() {
     if (terminated || loading) return;
     setLoading(true);
     try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
       const res = await axios.post("/api/simulation/step", {
         session_id: "sim1",
         action_id: actionId,
-      });
+      }, { timeout: 8000, signal: controller.signal });
+      clearTimeout(timer);
       setState(res.data.health_state);
       setGauges(res.data.gauges);
       setStep(res.data.step);
@@ -124,7 +149,33 @@ export default function SimulatorPage() {
         { name: actionName, step: res.data.step, reward: res.data.reward },
       ]);
     } catch (e) {
-      console.error("시뮬레이션 스텝 실패:", e);
+      console.error("시뮬레이션 스텝 실패 (오프라인 폴백):", e);
+      // 오프라인 폴백: 로컬에서 간단한 상태 변화 시뮬레이션
+      const actionKeys = Object.keys(ACTION_STYLES);
+      const actionName = actionId < actionKeys.length ? actionKeys[actionId] : `action_${actionId}`;
+      const positive = ["healthy_meal", "cardio_exercise", "strength_exercise", "health_check", "sleep_optimize", "hobby_activity"].includes(actionName);
+      const delta = positive ? 1 : -1;
+      const reward = positive ? +(Math.random() * 3 + 1).toFixed(1) : -(Math.random() * 2 + 0.5).toFixed(1);
+      const newStep = step + 1;
+      const newWeek = Math.floor((newStep - 1) / 7) + 1;
+      const newDay = ((newStep - 1) % 7) + 1;
+
+      setState((prev) => ({
+        ...prev,
+        sleep_score: Math.min(100, Math.max(0, (prev?.sleep_score || 65) + delta * 2)),
+        stress_level: Math.min(100, Math.max(0, (prev?.stress_level || 45) - delta * 2)),
+        mood_score: Math.min(100, Math.max(0, (prev?.mood_score || 60) + delta * 3)),
+        weight_kg: +((prev?.weight_kg || 70) - delta * 0.05).toFixed(1),
+        bmi: +((prev?.bmi || 24.2) - delta * 0.02).toFixed(1),
+      }));
+      setStep(newStep);
+      setWeek(newWeek);
+      setDay(newDay);
+      setLastReward(+reward);
+      setTotalReward((prev) => prev + +reward);
+      setTerminated(newStep >= 84);
+      setHistory((prev) => [...prev, { step: newStep, action: ACTION_STYLES[actionName]?.label || actionName }].slice(-30));
+      setActionLog((prev) => [...prev, { name: actionName, step: newStep, reward: +reward }]);
     } finally {
       setLoading(false);
     }
@@ -134,19 +185,17 @@ export default function SimulatorPage() {
   if (!started) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen p-6">
+        <div className="flex items-center justify-center min-h-screen p-4 md:p-6">
           <div className="max-w-lg text-center space-y-6">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <User size={48} className="text-white" />
+            <div className="w-16 h-16 md:w-24 md:h-24 mx-auto rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <User size={36} className="text-white" />
             </div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-xl md:text-3xl font-bold">
               건강 <span className="text-cyan-400">시뮬레이터</span>
             </h1>
             <p className="text-white leading-relaxed">
-              가상의 인물을 생성하고, 매일의 선택(식사, 운동, 취미 등)에 따라
-              <br />
-              건강 상태가 어떻게 변화하는지 <strong className="text-white">12주간 시뮬레이션</strong>합니다.
-              <br />
+              가상의 인물을 생성하고, 매일의 선택(식사, 운동, 취미 등)에 따라{" "}
+              건강 상태가 어떻게 변화하는지 <strong className="text-white">12주간 시뮬레이션</strong>합니다.{" "}
               <span className="text-cyan-400">PPO 강화학습 환경</span>이 보상과 패널티를 계산합니다.
             </p>
             <button
@@ -257,7 +306,7 @@ export default function SimulatorPage() {
                   key={name}
                   onClick={() => takeAction(idx)}
                   disabled={terminated || loading}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border ${style.border} ${style.bg} hover:brightness-125 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
+                  className={`flex flex-col items-center gap-1.5 p-2 md:p-3 rounded-xl border ${style.border} ${style.bg} hover:brightness-125 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
                 >
                   <span className="text-2xl">{style.emoji}</span>
                   <span className={`text-xs font-medium ${style.color}`}>{style.label}</span>

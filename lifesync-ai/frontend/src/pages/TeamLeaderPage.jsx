@@ -85,9 +85,15 @@ export default function TeamLeaderPage() {
       };
       const results = await Promise.allSettled(
         Object.entries(endpoints).map(async ([key, url]) => {
-          const res = await fetch(`${API}${url}`);
-          if (!res.ok) throw new Error(`${url}: ${res.status}`);
-          return [key, await res.json()];
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 10000);
+          try {
+            const res = await fetch(`${API}${url}`, { signal: controller.signal });
+            if (!res.ok) throw new Error(`${url}: ${res.status}`);
+            return [key, await res.json()];
+          } finally {
+            clearTimeout(timer);
+          }
         })
       );
       const newData = {};
@@ -407,11 +413,15 @@ function BackupTab({ data, onRefresh }) {
       if (tagName) body.tag_name = tagName;
       if (message) body.message = message;
 
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(`${API}/api/admin/backup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
+      clearTimeout(timer);
       if (!res.ok) {
         const err = await res.json();
         alert(`백업 실패: ${err.detail || res.status}`);

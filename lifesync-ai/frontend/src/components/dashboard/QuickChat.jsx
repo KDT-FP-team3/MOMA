@@ -145,7 +145,7 @@ export default function QuickChat() {
         domain,
         action: { query: text, meal_type: "", preference: text },
         user_id: "default",
-      });
+      }, { timeout: 15000 });
 
       const resDomain = res.data.domain || domain;
       const result = res.data.result || {};

@@ -119,6 +119,7 @@ export default function AnalysisPage() {
       form.append("file", file);
       const res = await axios.post("/api/photo/upload", form, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
       });
       setResults(res.data);
     } catch {
@@ -376,7 +377,7 @@ export default function AnalysisPage() {
                             photo_results: selectedItems,
                           },
                           user_id: "default",
-                        });
+                        }, { timeout: 15000 });
                         // 게이지 업데이트
                         if (res.data.updated_gauges) {
                           updateState("gauges", (prev) => ({ ...prev, ...res.data.updated_gauges }));

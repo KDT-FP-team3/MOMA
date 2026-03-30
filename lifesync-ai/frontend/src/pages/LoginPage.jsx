@@ -56,7 +56,8 @@ export default function LoginPage() {
       .then((res) => {
         window.location.href = res.data.url;
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("카카오 로그인 URL 요청 실패:", err);
         setError("로그인 URL 생성 실패. 서버 연결을 확인해주세요.");
         setLoading(false);
       });

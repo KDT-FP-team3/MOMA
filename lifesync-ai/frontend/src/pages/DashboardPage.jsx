@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
   // 마운트 시 대시보드 데이터 로드
   useEffect(() => {
-    axios.get(`/api/dashboard/${state.userId || "default"}`)
+    axios.get(`/api/dashboard/${state.userId || "default"}`, { timeout: 10000 })
       .then((res) => {
         if (res.data.gauges) updateState("gauges", res.data.gauges);
         if (res.data.domain_summary) updateState("domainSummary", res.data.domain_summary);
@@ -126,7 +126,7 @@ export default function DashboardPage() {
         domain: sol.domain,
         action: { query: sol.query, meal_type: "", preference: sol.query },
         user_id: state.userId || "default",
-      });
+      }, { timeout: 15000 });
       setSolutionResults((prev) => ({ ...prev, [sol.domain]: res.data }));
       if (res.data.updated_gauges) {
         updateState("gauges", (prev) => ({ ...prev, ...res.data.updated_gauges }));
@@ -163,7 +163,7 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
+      <div className="p-3 md:p-6 space-y-5 max-w-7xl mx-auto">
 
         {/* ════════════════════════════════════════════════
             헤더 — 인사말 + 날짜 + AI 상태
@@ -192,11 +192,11 @@ export default function DashboardPage() {
         {/* ════════════════════════════════════════════════
             모니터링 허브 — 중앙 링 + 핵심 지표 + AI 진단
            ════════════════════════════════════════════════ */}
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5 md:p-6">
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-3 md:p-6">
           <div className="flex flex-col lg:flex-row items-center gap-6">
 
             {/* 중앙 링 차트 */}
-            <div className="relative w-44 h-44 md:w-52 md:h-52 flex-shrink-0">
+            <div className="relative w-36 h-36 md:w-52 md:h-52 flex-shrink-0">
               <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
                 {(() => {
                   const R = 80, C = 2 * Math.PI * R; // 원둘레
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                 })()}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl md:text-4xl font-black" style={{ color: scoreColor }}>
+                <span className="text-2xl md:text-4xl font-black" style={{ color: scoreColor }}>
                   {overallScore}
                 </span>
                 <span className="text-[10px] text-white font-medium tracking-wider mt-0.5">종합 건강 점수</span>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
            ════════════════════════════════════════════════ */}
         <div>
           {/* 탭 헤더 */}
-          <div className="flex gap-1 mb-4 bg-gray-800/50 p-1 rounded-xl w-fit">
+          <div className="flex gap-1 mb-4 bg-gray-800/50 p-1 rounded-xl w-full overflow-x-auto scrollbar-hide">
             {[
               { key: "solution", label: "솔루션", icon: Lightbulb, desc: "AI 맞춤 추천" },
               { key: "insight",  label: "인사이트", icon: BarChart3, desc: "연쇄 분석" },
@@ -267,7 +267,7 @@ export default function DashboardPage() {
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-5 md:py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   activeTab === t.key
                     ? "bg-gradient-to-r from-cyan-500/15 to-violet-500/10 text-cyan-400 shadow-sm shadow-cyan-500/10"
                     : "text-white hover:text-white"
@@ -485,21 +485,21 @@ export default function DashboardPage() {
         {/* ════════════════════════════════════════════════
             주간 요약 — Samsung Health 스타일 카드
            ════════════════════════════════════════════════ */}
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5 md:p-6">
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-3 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={16} className="text-cyan-400" />
             <h3 className="text-sm font-semibold text-white">이번 주 요약</h3>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {[
               { value: "12,950", unit: "kcal",   label: "칼로리 섭취", color: DOMAINS.food.color, icon: Utensils },
               { value: "4.5",    unit: "시간",    label: "운동 시간",   color: DOMAINS.exercise.color, icon: Dumbbell },
               { value: "7.2",    unit: "시간",    label: "평균 수면",   color: DOMAINS.health.color, icon: Moon },
               { value: "2.5",    unit: "시간",    label: "취미 활동",   color: DOMAINS.hobby.color, icon: Palette },
             ].map((item, i) => (
-              <div key={i} className="bg-gray-800/40 rounded-xl p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all group text-center">
+              <div key={i} className="bg-gray-800/40 rounded-xl p-3 md:p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all group text-center">
                 <item.icon size={18} style={{ color: item.color }} className="mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-2xl font-bold" style={{ color: item.color }}>{item.value}</p>
+                <p className="text-xl md:text-2xl font-bold" style={{ color: item.color }}>{item.value}</p>
                 <p className="text-[10px] text-white mt-0.5">{item.unit}</p>
                 <p className="text-xs text-white mt-1">{item.label}</p>
               </div>
