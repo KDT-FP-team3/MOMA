@@ -2,7 +2,8 @@
  * App — React Router 설정 (lazy loading + Error Boundary)
  */
 import React, { Suspense, useEffect } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { App as CapApp } from "@capacitor/app";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy-loaded 페이지 (코드 스플리팅으로 초기 로딩 최적화)
@@ -31,6 +32,22 @@ function PageLoader() {
   );
 }
 
+/** Android 뒤로가기 버튼 처리 (HashRouter 내부에서 사용) */
+function BackButtonHandler() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const listener = CapApp.addListener("backButton", ({ canGoBack }) => {
+      if (canGoBack) {
+        window.history.back();
+      } else {
+        CapApp.exitApp();
+      }
+    });
+    return () => { listener.then(h => h.remove()); };
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
   // 앱 시작 시 모델 자동 동기화 (백그라운드, 5초 지연)
   useEffect(() => {
@@ -47,6 +64,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <HashRouter>
+        <BackButtonHandler />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<LandingPage />} />

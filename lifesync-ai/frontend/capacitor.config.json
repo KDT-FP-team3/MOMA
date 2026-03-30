@@ -3,7 +3,7 @@
   "appName": "LifeSync AI",
   "webDir": "dist",
   "server": {
-    "url": "http://192.168.162.56:5173",
+    "url": "https://lifesync-ai.vercel.app",
     "cleartext": true,
     "allowNavigation": ["*"]
   },

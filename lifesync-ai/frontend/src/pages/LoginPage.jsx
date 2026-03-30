@@ -20,9 +20,20 @@ export default function LoginPage() {
   }, [state.authUser, navigate]);
 
   // 콜백 처리: 카카오 리다이렉트 후 code 파라미터로 돌아왔을 때
+  // HashRouter 사용 시: /auth/kakao/callback?code=xxx → /#/login?code=xxx (307 리다이렉트)
+  // 또는 직접 접근 시: /#/login?code=xxx 또는 ?code=xxx#/login
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
+    // 1. window.location.search에서 확인 (일반 경우)
+    let params = new URLSearchParams(window.location.search);
+    let code = params.get("code");
+    // 2. hash 내부 쿼리에서 확인 (HashRouter 리다이렉트 경우)
+    if (!code && window.location.hash.includes("?")) {
+      const hashQuery = window.location.hash.split("?")[1];
+      if (hashQuery) {
+        params = new URLSearchParams(hashQuery);
+        code = params.get("code");
+      }
+    }
     if (!code) return;
 
     setLoading(true);

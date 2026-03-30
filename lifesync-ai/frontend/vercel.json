@@ -2,6 +2,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    { "source": "/auth/kakao/callback", "destination": "/#/login", "statusCode": 307 }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://moma-production.up.railway.app/api/$1" },
     { "source": "/health", "destination": "https://moma-production.up.railway.app/health" },

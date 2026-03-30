@@ -264,7 +264,7 @@ Claude Code / Cursor가 해당 폴더에서 작업 시 자동으로 읽습니다
 - ArchitecturePage: admin_router, TeamLeader, Dashboard v2 노드 추가
 
 ## 에이전트 점검 현황 (자동 업데이트)
-- 마지막 점검: 2026-03-30 01:14 UTC
+- 마지막 점검: 2026-03-30 01:28 UTC
 - 전체 건강도: 82/100
 - 코드 품질: 80/100 (pass:5 fail:1 warn:0)
 - 플러그인: active 6개 / fallback 5개
