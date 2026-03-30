@@ -74,6 +74,14 @@ def verify_token(token: str) -> Optional[dict]:
         return None
 
 
+def _validate_origin(origin: str) -> str:
+    """origin을 CORS_ORIGINS 화이트리스트와 대조 (Open Redirect 방지)."""
+    if not origin:
+        return ""
+    allowed = {o.strip().rstrip("/") for o in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8000").split(",")}
+    return origin.rstrip("/") if origin.rstrip("/") in allowed else ""
+
+
 def get_kakao_login_url(origin: str = "") -> str:
     """카카오 로그인 페이지 URL 생성.
 
@@ -82,8 +90,9 @@ def get_kakao_login_url(origin: str = "") -> str:
                 빈 문자열이면 .env의 KAKAO_REDIRECT_URI 사용.
     """
     client_id = os.getenv("KAKAO_CLIENT_ID", "")
-    if origin:
-        redirect_uri = f"{origin.rstrip('/')}/auth/kakao/callback"
+    safe_origin = _validate_origin(origin)
+    if safe_origin:
+        redirect_uri = f"{safe_origin}/auth/kakao/callback"
     else:
         redirect_uri = os.getenv("KAKAO_REDIRECT_URI", "http://localhost:5173/auth/kakao/callback")
     return (

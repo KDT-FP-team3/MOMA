@@ -60,8 +60,15 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024      # 10MB
 MODEL_UPLOAD_MAX_SIZE = 100 * 1024 * 1024  # 100MB
 
-# RL 시뮬레이션 세션 (메모리 내 관리)
+# RL 시뮬레이션 세션 (메모리 내 관리, 최대 100개 제한)
+MAX_SESSIONS = 100
 simulation_sessions: dict[str, Any] = {}
+
+def _limit_sessions() -> None:
+    """세션 수가 MAX_SESSIONS 초과 시 가장 오래된 세션 삭제 (DoS 방지)."""
+    while len(simulation_sessions) > MAX_SESSIONS:
+        oldest_key = next(iter(simulation_sessions))
+        del simulation_sessions[oldest_key]
 
 
 # ============================================================
@@ -143,6 +150,7 @@ async def get_simulation_actions() -> dict[str, Any]:
 async def simulation_reset(session_id: str = "default") -> dict[str, Any]:
     """시뮬레이션 환경 초기화 — 가상 인물 생성."""
     try:
+        _limit_sessions()
         env = LifeEnv()
         obs, info = env.reset()
         simulation_sessions[session_id] = env

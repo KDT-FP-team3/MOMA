@@ -135,7 +135,7 @@ export default function OnboardingPage() {
 
     const stressMap = {
       low: 15,
-      moderate: 40,
+      medium: 40,
       high: 70,
       very_high: 95,
     };

@@ -19,9 +19,9 @@ import QuickChat from "../components/dashboard/QuickChat";
 import CascadeAlert from "../components/cascade/CascadeAlert";
 import { useAppState } from "../context/AppStateContext";
 import {
-  Activity, TrendingUp, Utensils, Dumbbell, Heart, Palette,
+  TrendingUp, Utensils, Dumbbell, Heart, Palette,
   Lightbulb, BarChart3, MessageCircle, Sparkles, Moon, Brain,
-  Droplets, Target, ChevronRight, Zap, ArrowRight, CheckCircle,
+  Droplets, Target, Zap, ArrowRight, CheckCircle,
 } from "lucide-react";
 // Recharts는 GaugePanel에서 사용 (DashboardPage에서는 SVG 직접 사용)
 import axios from "axios";
@@ -126,7 +126,7 @@ export default function DashboardPage() {
         domain: sol.domain,
         action: { query: sol.query, meal_type: "", preference: sol.query },
         user_id: state.userId || "default",
-      }, { timeout: 15000 });
+      }, { timeout: 30000 });
       setSolutionResults((prev) => ({ ...prev, [sol.domain]: res.data }));
       if (res.data.updated_gauges) {
         updateState("gauges", (prev) => ({ ...prev, ...res.data.updated_gauges }));
@@ -134,8 +134,9 @@ export default function DashboardPage() {
       if (res.data.cascade_effects) {
         updateState("lastCascade", res.data.cascade_effects);
       }
-    } catch {
-      setSolutionResults((prev) => ({ ...prev, [sol.domain]: { error: true } }));
+    } catch (err) {
+      console.error(`[솔루션 ${sol.domain}]`, err?.message, err?.response?.status, err?.response?.data);
+      setSolutionResults((prev) => ({ ...prev, [sol.domain]: { error: true, message: err?.message || "알 수 없는 오류" } }));
     } finally {
       setSolutionLoading((prev) => { const next = new Set(prev); next.delete(sol.domain); return next; });
     }
@@ -288,7 +289,9 @@ export default function DashboardPage() {
                 const Icon = d.icon;
                 const result = solutionResults[sol.domain];
                 const isLoading = solutionLoading.has(sol.domain);
-                const recs = result?.result?.recommendations || [];
+                // 도메인별 반환 키가 다름: food=recommendations, exercise=exercises, health=evaluations, hobby=hobbies
+                const raw = result?.result;
+                const recs = raw?.recommendations || raw?.exercises || raw?.hobbies || raw?.evaluations || [];
 
                 return (
                   <div key={sol.domain} className={`bg-gray-800/60 rounded-2xl border ${d.border} p-5 hover:bg-gray-800/80 transition-all group`}>
@@ -322,15 +325,26 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    {/* 추천 결과 (로딩 중에는 숨김) */}
+                    {/* 추천 결과 */}
+                    {!isLoading && result && !result.error && recs.length === 0 && (
+                      <p className="text-xs text-yellow-400 mt-3">{result?.result?.explanation || result?.result?.summary || "분석이 완료되었습니다."}</p>
+                    )}
                     {!isLoading && result && !result.error && recs.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {recs.slice(0, 3).map((r, i) => (
                           <div key={i} className="flex items-center gap-2 bg-gray-900/50 rounded-lg px-3 py-2 text-xs">
                             <span className={`font-bold ${d.text}`}>{i + 1}</span>
-                            <span className="text-white font-medium">{r.name}</span>
-                            {r.calories && <span className="text-white ml-auto">{r.calories}kcal</span>}
-                            {r.duration_min && <span className="text-white ml-auto">{r.duration_min}분</span>}
+                            <span className="text-white font-medium">
+                              {/* 도메인별 표시 이름 */}
+                              {r.name || r.metric || r.activity || r.title || JSON.stringify(r).slice(0, 40)}
+                            </span>
+                            <span className="text-white ml-auto flex items-center gap-1.5">
+                              {r.calories && <span>{r.calories}kcal</span>}
+                              {r.duration_min && <span>{r.duration_min}분</span>}
+                              {r.stress_relief && <span>스트레스 -{r.stress_relief}%</span>}
+                              {r.status && <span>{r.status}</span>}
+                              {r.value && <span>{r.value}</span>}
+                            </span>
                           </div>
                         ))}
                         {result.cascade_effects?.effects && Object.keys(result.cascade_effects.effects).length > 0 && (
@@ -350,7 +364,7 @@ export default function DashboardPage() {
                       </div>
                     )}
                     {result?.error && (
-                      <p className="text-xs text-red-400 mt-3">서버 연결에 실패했습니다.</p>
+                      <p className="text-xs text-red-400 mt-3">서버 연결에 실패했습니다. ({result.message || "네트워크 오류"})</p>
                     )}
 
                     {/* 도메인 요약 (API 데이터) */}

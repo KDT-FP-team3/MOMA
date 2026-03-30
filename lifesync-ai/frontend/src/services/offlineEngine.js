@@ -258,7 +258,27 @@ function generateAnalysis(initial, final, history, days) {
     advice.push({ category: "운동", message: "주 3회 이상 유산소 운동 30분을 추가하세요." });
   }
 
-  return { problems, advice, source: "offline" };
+  // SchedulePage SimulationResults가 요구하는 필드 추가
+  const weightChange = +(final.weight_kg - initial.weight_kg).toFixed(2);
+  const rhythmScore = Math.max(0, Math.min(100, Math.round(50 + avgSleep * 5 - (final.stress_level / 5))));
+  const rhythmGrade = rhythmScore >= 80 ? "A" : rhythmScore >= 60 ? "B" : rhythmScore >= 40 ? "C" : "D";
+
+  const changes = [];
+  if (Math.abs(weightChange) > 0.1) changes.push({ label: "체중", before: initial.weight_kg.toFixed(1), after: final.weight_kg.toFixed(1), unit: "kg" });
+  changes.push({ label: "스트레스", before: initial.stress_level.toFixed(0), after: final.stress_level.toFixed(0), unit: "" });
+  changes.push({ label: "수면", before: initial.sleep_hours?.toFixed(1) || "7.0", after: avgSleep.toFixed(1), unit: "시간" });
+
+  return {
+    problems,
+    advice,
+    source: "offline",
+    weight_change: weightChange,
+    rhythm_score: rhythmScore,
+    rhythm_grade: rhythmGrade,
+    avg_sleep_hours: +avgSleep.toFixed(1),
+    avg_exercise_hours_week: +avgExercise.toFixed(1),
+    changes,
+  };
 }
 
 // ============================================================

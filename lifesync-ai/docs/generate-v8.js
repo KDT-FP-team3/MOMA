@@ -303,6 +303,25 @@ const doc = new Document({
       li("모델 동기화: 서버 버전 체크 -> 차이 시 다운로드 -> IndexedDB 저장"),
       li("오프라인 모드: 네트워크 없을 때 내장 모델로 추론 (LLM 추천은 캐시 반환)"),
 
+      h2("13.2 웹/앱 실시간 데이터 동기화"),
+      p("SyncIndicator 컴포넌트(components/SyncIndicator.jsx)가 웹과 앱 간 사용자 데이터를 자동 동기화합니다."),
+      tbl(["상태","표시","의미"],[
+        ["syncing","파란 깜빡임","서버와 데이터 비교/전송 중"],
+        ["synced","녹색 점등","동기화 완료 (웹/앱 데이터 일치)"],
+        ["offline","노란 점등","오프라인 (로컬 데이터 사용 중)"],
+        ["error","빨간 점등","동기화 실패 (탭하여 재시도)"],
+      ],[2000,2400,4960]),
+      h3("동기화 흐름"),
+      li("로그인 직후: 즉시 1회 동기화 (Supabase에서 최신 데이터 다운로드)"),
+      li("자동 동기화: 30초 간격으로 서버 상태와 로컬 상태 비교 (로그인 상태일 때만)"),
+      li("온라인 복귀: 오프라인 -> 온라인 전환 감지 시 즉시 동기화"),
+      li("데이터 범위: 게이지 점수(6개), 도메인 요약(4개), 시뮬레이터 상태"),
+      h3("기술 구현"),
+      li("Supabase: user_id별 40D State 벡터 서버 저장 (웹/앱 공통)"),
+      li("IndexedDB: 로컬 캐시 (오프라인 시 사용)"),
+      li("navigator.onLine: 브라우저 내장 온/오프라인 감지 API"),
+      li("상단 네비게이션 바: 데스크톱/모바일 모두 동기화 인디케이터 표시"),
+
       h1("14. 팀원 분업 + 60%->100% 로드맵"),
       p("각 팀원은 자신의 plugins/ 폴더만 수정합니다."),
       tbl(["팀원","플러그인","슬롯","완료(60%)","남은 과제"],[
@@ -854,6 +873,6 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buf => {
-  fs.writeFileSync("docs/architecture-report-v8.docx", buf);
+  fs.writeFileSync("architecture-report-v8.docx", buf);
   console.log("v8 docx:", buf.length, "bytes");
 });

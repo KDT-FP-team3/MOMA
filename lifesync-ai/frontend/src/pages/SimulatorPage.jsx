@@ -155,7 +155,7 @@ export default function SimulatorPage() {
       const actionName = actionId < actionKeys.length ? actionKeys[actionId] : `action_${actionId}`;
       const positive = ["healthy_meal", "cardio_exercise", "strength_exercise", "health_check", "sleep_optimize", "hobby_activity"].includes(actionName);
       const delta = positive ? 1 : -1;
-      const reward = positive ? +(Math.random() * 3 + 1).toFixed(1) : -(Math.random() * 2 + 0.5).toFixed(1);
+      const reward = positive ? +((Math.random() * 3 + 1).toFixed(1)) : -Number((Math.random() * 2 + 0.5).toFixed(1));
       const newStep = step + 1;
       const newWeek = Math.floor((newStep - 1) / 7) + 1;
       const newDay = ((newStep - 1) % 7) + 1;

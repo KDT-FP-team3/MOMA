@@ -1,451 +1,1732 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LifeSync AI — Unified Architecture Diagram v0.4.0</title>
-<style>
-:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;
---api:#3b82f6;--agent:#8b5cf6;--llm:#f59e0b;--rag:#10b981;--data:#06b6d4;--vision:#f43f5e;--voice:#a78bfa;--rl:#ec4899;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);}
-.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 20px 6px;text-align:center;}
-.top h1{font-size:1.4em;background:linear-gradient(135deg,var(--data),var(--agent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.top p{color:var(--muted);font-size:.75em;}
-.bar{display:flex;justify-content:center;align-items:center;gap:5px;padding:4px 10px 6px;flex-wrap:wrap;position:sticky;top:46px;z-index:10;background:var(--bg);}
-.lb{padding:3px 9px;border-radius:12px;border:1.5px solid;font-size:.68em;font-weight:600;cursor:pointer;background:transparent;transition:.12s;}
-.lb:hover,.lb.on{color:#fff!important;}
-.lb[data-t="api"]{color:var(--api);border-color:var(--api)}.lb[data-t="api"]:hover,.lb[data-t="api"].on{background:var(--api)}
-.lb[data-t="agent"]{color:var(--agent);border-color:var(--agent)}.lb[data-t="agent"]:hover,.lb[data-t="agent"].on{background:var(--agent)}
-.lb[data-t="llm"]{color:var(--llm);border-color:var(--llm)}.lb[data-t="llm"]:hover,.lb[data-t="llm"].on{background:var(--llm)}
-.lb[data-t="rag"]{color:var(--rag);border-color:var(--rag)}.lb[data-t="rag"]:hover,.lb[data-t="rag"].on{background:var(--rag)}
-.lb[data-t="data"]{color:var(--data);border-color:var(--data)}.lb[data-t="data"]:hover,.lb[data-t="data"].on{background:var(--data)}
-.lb[data-t="vision"]{color:var(--vision);border-color:var(--vision)}.lb[data-t="vision"]:hover,.lb[data-t="vision"].on{background:var(--vision)}
-.lb[data-t="voice"]{color:var(--voice);border-color:var(--voice)}.lb[data-t="voice"]:hover,.lb[data-t="voice"].on{background:var(--voice)}
-.lb[data-t="rl"]{color:var(--rl);border-color:var(--rl)}.lb[data-t="rl"]:hover,.lb[data-t="rl"].on{background:var(--rl)}
-.lb[data-t="all"]{color:var(--text);border-color:var(--border)}.lb[data-t="all"]:hover,.lb[data-t="all"].on{background:var(--border)}
-.sp{width:1px;height:16px;background:var(--border);margin:0 3px;}
-.tb{padding:3px 9px;border-radius:12px;border:1.5px solid var(--border);font-size:.68em;font-weight:600;cursor:pointer;background:transparent;color:var(--text);}
-.tb:hover{background:var(--border);}
-#cv{width:100%;overflow-x:auto;overflow-y:visible;}
-#cv svg{display:block;}
-.ft{position:fixed;bottom:10px;right:10px;display:flex;gap:4px;z-index:50;}
-.ft button{background:var(--card);color:var(--text);border:1px solid var(--border);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.72em;font-weight:600;}
-.ft button:hover{background:var(--border);}
-@media print{.ft,.bar,.top{display:none!important;}body{background:#fff;color:#333;}}
-</style>
-</head>
-<body>
-<div class="top"><h1>LifeSync AI — Unified Architecture Diagram</h1>
-<p>v0.4.0 | 6L | 45 Nodes | 54 Connections | Click=detail(multi) | Ctrl+Scroll=zoom</p></div>
-<div class="bar">
-<button class="lb on" data-t="all">All</button>
-<button class="lb" data-t="api">API</button>
-<button class="lb" data-t="agent">에이전트</button>
-<button class="lb" data-t="llm">LLM</button>
-<button class="lb" data-t="rag">RAG</button>
-<button class="lb" data-t="data">데이터</button>
-<button class="lb" data-t="vision">비전</button>
-<button class="lb" data-t="voice">음성</button>
-<button class="lb" data-t="rl">강화학습</button>
-<div class="sp"></div>
-<button class="tb" id="bE">전체 펼치기</button>
-<button class="tb" id="bC">전체 닫기</button>
-</div>
-<div id="cv"></div>
-<div class="ft">
-<button onclick="zm(1)">Reset</button>
-<button onclick="zm(sc*1.2)">+</button>
-<button onclick="zm(sc/1.2)">-</button>
-<button onclick="window.print()">Print</button>
-</div>
-<script>
-const C={api:"#3b82f6",agent:"#8b5cf6",llm:"#f59e0b",rag:"#10b981",data:"#06b6d4",vision:"#f43f5e",voice:"#a78bfa",rl:"#ec4899"};
-const LC=["#0e7490","#3b82f6","#8b5cf6","#ec4899","#f43f5e","#10b981"];
-const LN=["L1 — USER INTERFACE (React 18 + Voice + Offline)","L2 — SERVER & SECURITY (FastAPI + Router + Middleware)","L3 — CORE ENGINE (Orchestrator + Plugins + Processing)","L4 — DOMAIN AGENTS & RL","L5 — AI MODELS (LLM + Vision + Reward)","L6 — DATA & INFRASTRUCTURE"];
-// Layout constants
-const NW=180,NH=56,HGAP=30,VGAP=100,M=30,LTH=30;
-// Detail panel (same width as node for perfect alignment)
-const DW=NW,DPAD=8,DFONT=9.5,DLINE=13;
-
-const nodes=[
-["dashboard_v2","대시보드","Samsung Health",0,0,"#0e7490","#22d3ee"],
-["chat","AI 채팅","QuickChat + 음성",0,1,"#0e7490","#22d3ee"],
-["photo","사진 분석","CLIP + YOLO",0,2,"#0e7490","#22d3ee"],
-["sim","시뮬레이터","PPO RL 12주",0,3,"#0e7490","#22d3ee"],
-["schedule","생활패턴","24h 원형 스케줄",0,4,"#0e7490","#22d3ee"],
-["team_leader","전체 관리","4탭 팀 관리",0,5,"#0e7490","#22d3ee"],
-["pages7","+7 페이지","홈/로그인/온보딩",0,6,"#0e7490","#22d3ee"],
-["kakao_login","카카오 로그인","OAuth + 로그아웃",0,7,"#0e7490","#22d3ee"],
-["websocket","WebSocket","실시간 동기화",0.5,0,"#164e63","#0891b2"],
-["appstate","AppState","전역 상태",0.5,1,"#164e63","#0891b2"],
-["offline","오프라인 엔진","IndexedDB",0.5,2,"#164e63","#0891b2"],
-["theme","ThemeContext","Light/Dark",0.5,3,"#164e63","#0891b2"],
-["whisper","Whisper STT","음성->텍스트",0.5,4,"#312e81","#818cf8"],
-["gtts","gTTS","텍스트->음성",0.5,5,"#312e81","#818cf8"],
-["capacitor_ui","Capacitor","Android APK",0.5,6,"#164e63","#0891b2"],
-["fastapi","FastAPI","미들웨어+라우터",1,0,"#1e3a5f","#60a5fa"],
-["api_router","api_router.py","그룹B: 쿼리/인증/WS",1,1,"#1e3a5f","#60a5fa"],
-["ai_router","ai_router.py","그룹A: 사진/시뮬/RL",1,2,"#1e3a5f","#60a5fa"],
-["admin_router","admin_router","전체 관리 9 API",1,3,"#1e3a5f","#60a5fa"],
-["jwt","JWT+Rate Limit","인증+CORS+XSS",1,4,"#5c1540","#f472b6"],
-["docker","Docker","docker-compose",1,5,"#1e3a5f","#60a5fa"],
-["orchestrator","Orchestrator","LangGraph 8-DAG",2,0,"#3b1f6e","#a78bfa"],
-["core","Core Framework","Interfaces+Fallbacks",2,1,"#3b1f6e","#a78bfa"],
-["plugins","Plugins (6)","팀원별 독립",2,2,"#3b1f6e","#a78bfa"],
-["cascade","CASCADE RULES","9개 도메인 연쇄",2,3,"#451a03","#f59e0b"],
-["risk","Risk Engine","위험도+야식",2,4,"#3b1f6e","#a78bfa"],
-["simulator","Simulator","24h N일 시뮬",2,5,"#3b1f6e","#a78bfa"],
-["gpu_train","GPU Training","로컬학습->S3",2,6,"#3b1f6e","#a78bfa"],
-["monitoring","Monitoring Agent","6h 자동 점검",2,7,"#3b1f6e","#a78bfa"],
-["weather","Weather Monitor","기상청+에어코리아",2.5,0,"#3b1f6e","#a78bfa"],
-["gamification","Gamification","레벨/EXP/퀘스트",2.5,1,"#3b1f6e","#a78bfa"],
-["food","FoodAgent","RAG 레시피",3,0,"#5c3d0a","#fbbf24"],
-["exercise","ExerciseAgent","날씨+부상",3,1,"#0c3644","#22d3ee"],
-["health","HealthAgent","검진(temp=0.3)",3,2,"#0d3b2e","#34d399"],
-["hobby","HobbyAgent","스트레스 해소",3,3,"#3b2d6e","#c084fc"],
-["gauges","updated_gauges","6개 게이지",3,4,"#065f46","#10b981"],
-["ppo","PPO RL","40D/10행동",3,5,"#5c1525","#fb7185"],
-["retrain","Retrain","6h 자동재학습",3,6,"#5c1540","#f472b6"],
-["optuna","Optuna","100trial Bayes",3,7,"#5c1540","#f472b6"],
-["gpt4o","GPT-4o-mini","LLM 추론",4,0,"#5c3d0a","#fbbf24"],
-["openclip","OpenCLIP","ViT-B-32 512D",4,1,"#5c1525","#fb7185"],
-["yolo","YOLO v8","식재료 ~100ms",4,2,"#5c1525","#fb7185"],
-["mediapipe","MediaPipe","자세 33pt",4,3,"#5c1525","#fb7185"],
-["reward","보상 함수","다축 보상",4,4,"#5c1525","#fb7185"],
-["chromadb","ChromaDB","4컬렉션 RAG",5,0,"#0c3644","#22d3ee"],
-["supabase","Supabase","PostgreSQL",5,1,"#0c3644","#22d3ee"],
-["s3","AWS S3","모델 가중치",5,2,"#0c3644","#22d3ee"],
-["railway","Railway","백엔드 $5/월",5,3,"#1e3a5f","#60a5fa"],
-["vercel","Vercel","프론트 CDN",5,4,"#1e3a5f","#60a5fa"],
-["capacitor","Capacitor Build","APK 빌드",5,5,"#1e3a5f","#60a5fa"],
-];
-
-const edges=[
-["dashboard_v2","api_router","api","GET /api/dashboard/{uid}",0],
-["chat","api_router","api","POST /api/query",0],
-["photo","ai_router","api","POST /api/photo/upload",0],
-["sim","ai_router","api","POST /api/simulation/step",0],
-["schedule","ai_router","api","POST /api/simulation",0],
-["team_leader","admin_router","api","GET/POST /api/admin/*",0],
-["pages7","fastapi","api","POST /api/onboarding",0],
-["websocket","api_router","api","WebSocket /ws 양방향",1],
-["fastapi","jwt","api","인증+Rate Limit 미들웨어",0],
-["dashboard_v2","fastapi","api","솔루션 적용",1],
-["docker","fastapi","api","컨테이너로 실행",1],
-["docker","railway","api","Railway 클라우드 배포",1],
-["pages7","vercel","api","배포 대상 (CDN)",1],
-["offline","capacitor","api","APK에 포함",1],
-["api_router","orchestrator","agent","사용자 요청 라우팅",0],
-["fastapi","orchestrator","agent","PluginRegistry 조회",1],
-["orchestrator","food","agent","음식 도메인",0],
-["orchestrator","exercise","agent","운동 도메인",0],
-["orchestrator","health","agent","건강 도메인",0],
-["orchestrator","hobby","agent","취미 도메인",0],
-["orchestrator","core","agent","폴백 조회",0],
-["core","plugins","agent","플러그인 등록",0],
-["cascade","gauges","agent","연쇄->게이지",0],
-["gauges","appstate","data","gauges 전역 업데이트",1],
-["food","gpt4o","llm","Food LLM (0.7)",0],
-["exercise","gpt4o","llm","Exercise LLM",0],
-["health","gpt4o","llm","Health LLM (0.3)",0],
-["hobby","gpt4o","llm","Hobby LLM",0],
-["openclip","gpt4o","llm","LLM 개인화 조언",1],
-["food","chromadb","rag","레시피 RAG (10만건)",0],
-["exercise","chromadb","rag","운동 RAG",0],
-["health","chromadb","rag","건강 RAG",0],
-["hobby","chromadb","rag","취미 RAG",0],
-["api_router","supabase","data","UserStateManager 상태 CRUD",0],
-["ppo","s3","data","PPO 모델 업로드",0],
-["gpu_train","s3","data","학습모델 S3 업로드",0],
-["s3","offline","data","모델 다운로드 (동기화)",1],
-["api_router","risk","data","위험도 평가 요청",0],
-["ai_router","openclip","vision","이미지 임베딩 (via PhotoAnalyzer)",0],
-["ai_router","yolo","vision","식재료 인식 (via FoodRecognizer)",0],
-["ai_router","mediapipe","vision","자세 분석 (via PhotoAnalyzer)",0],
-["weather","api_router","data","날씨/PM10 → user_state 반영",0],
-["gamification","api_router","data","EXP/레벨 조회 (향후 연결)",1],
-["chat","whisper","voice","음성 전송",0],
-["whisper","api_router","voice","텍스트 전달",0],
-["api_router","gtts","voice","TTS 요청",0],
-["gtts","chat","voice","음성 재생",1],
-["ai_router","ppo","rl","PPO 추천",0],
-["simulator","ppo","rl","정책 추론",0],
-["retrain","optuna","rl","하이퍼파라미터",1],
-["retrain","ppo","rl","PPO 재학습",0],
-["reward","ppo","rl","보상 신호",0],
-["gpu_train","ppo","rl","GPU 학습",0],
-["fastapi","retrain","rl","피드백->재학습",1],
-["kakao_login","api_router","api","카카오 OAuth 로그인/콜백",0],
-["kakao_login","jwt","api","JWT 토큰 발급/검증",0],
-["admin_router","monitoring","agent","점검 실행/상태",0],
-["monitoring","core","agent","코드품질 점검",1],
-["monitoring","plugins","agent","플러그인 헬스 점검",1],
-];
-
-// Detail data: n=name, r=role, p=path, d=desc lines, f=features, g=pro, b=con, w=reason
-const D={
-dashboard_v2:{n:"Dashboard (Samsung Health)",r:"건강 모니터링 허브",p:"frontend/src/pages/DashboardPage.jsx",d:["Samsung Health 스타일 모니터링 허브.","종합 링 차트, AI 자동 진단.","솔루션/인사이트/코칭 3탭."],f:["SVG 게이지","WebSocket","AI 진단","4도메인"],g:"한눈에 건강 파악 + 즉시 AI 추천",b:"오프라인 시 적용 불가",w:"매일 접속하는 핵심 페이지"},
-chat:{n:"AI 채팅 (QuickChat)",r:"자연어 AI 소통",p:"components/dashboard/QuickChat.jsx",d:["키워드 도메인 감지.","-> /api/query -> 게이지 자동 업데이트."],f:["도메인 감지","음성 입력"],g:"자연어로 건강 관리",b:"LLM 응답 2-5초",w:"AI와 소통하는 핵심 채널"},
-photo:{n:"사진 분석",r:"이미지 AI 분석",p:"frontend/src/pages/AnalysisPage.jsx",d:["사진 업로드/카메라","-> CLIP/YOLO -> Top-5 추천."],f:["CLIP","YOLO","Top-5"],g:"사진 한 장으로 자동 분석",b:"CPU ~300ms",w:"자동 영양/자세 분석"},
-sim:{n:"시뮬레이터",r:"행동 시뮬레이션",p:"frontend/src/pages/SimulatorPage.jsx",d:["10개 행동 -> 보상/연쇄효과","+ 12주 로드맵 탭. PPO 추천."],f:["PPO RL","보상 시각화"],g:"행동별 결과 미리 확인",b:"결정론적",w:"'이걸 하면?' 미리 확인"},
-schedule:{n:"생활패턴",r:"시간대별 관리",p:"frontend/src/pages/SchedulePage.jsx",d:["24시간 원형 시계","+ N일 시뮬 + 신뢰구간."],f:["원형 시계","N일 시뮬"],g:"생활 패턴 시각화",b:"-",w:"하루 리듬 한눈에"},
-team_leader:{n:"전체 관리 (TeamLeader)",r:"팀 관리 UI",p:"frontend/src/pages/TeamLeaderPage.jsx",d:["4탭: 아키텍처, 팀 활동/충돌,","백업/롤백, 보안 감사."],f:["아키텍처","충돌","백업","보안"],g:"CASCADE 그룹 시각화",b:"개발용 인증 우회",w:"팀장 실시간 모니터링"},
-pages7:{n:"+7 페이지",r:"전체 UX (12 라우트)",p:"frontend/src/pages/",d:["홈(Landing), 온보딩(3단계 위저드),","아바타(걷기 애니메이션),","리포트(주간 건강), 관리자(서버 상태),","아키텍처(인터랙티브 맵 34노드),","카카오 콜백(/auth/kakao/callback)."],f:["홈","온보딩","아바타","리포트","관리자","아키텍처","콜백"],g:"모든 사용자 여정 커버",b:"페이지 수 많음",w:"전체 UX 흐름"},
-kakao_login:{n:"카카오 로그인/로그아웃",r:"소셜 인증",p:"frontend/src/pages/LoginPage.jsx",d:["카카오 OAuth 로그인 + 로그아웃.","LoginPage.jsx: 카카오 로그인 버튼,","게스트(읽기전용) 모드.","콜백: /auth/kakao/callback.","로그아웃: sessionStorage 토큰 삭제."],f:["카카오 OAuth","게스트 모드","로그아웃","sessionStorage"],g:"카카오 간편 로그인 + 게스트 지원",b:"카카오 서비스 의존",w:"사용자 인증의 진입점"},
-websocket:{n:"WebSocket",r:"실시간 통신",p:"routers/api_router.py",d:["실시간 양방향 통신.","게이지 업데이트, JWT 인증."],f:["gauge_update","JWT","backoff"],g:"HTTP 대비 지연 90% 감소",b:"재시작 시 끊김",w:"실시간 게이지 필수"},
-appstate:{n:"AppState",r:"전역 상태",p:"context/AppStateContext.jsx",d:["gauges, domainSummary.","localStorage 자동 저장."],f:["gauges","localStorage"],g:"일관된 상태",b:"대형 객체",w:"게이지 변경 즉시 반영"},
-offline:{n:"오프라인 엔진",r:"오프라인 폴백",p:"services/offlineEngine.js",d:["IndexedDB 캐싱 + smartSimulate."],f:["IndexedDB","smartSimulate"],g:"네트워크 없이 동작",b:"LLM 불가",w:"지하철 등 오프라인"},
-theme:{n:"ThemeContext",r:"테마 관리",p:"context/ThemeContext.jsx",d:["다크/라이트 전환.","Samsung Blue #1a73e8."],f:["Light/Dark"],g:"깜빡임 해결",b:"-",w:"사용자 환경 맞춤"},
-whisper:{n:"Whisper STT",r:"음성 인식",p:"backend/voice/stt_processor.py",d:["음성->텍스트. Whisper base/small."],f:["한국어 STT","30MB"],g:"높은 한국어 정확도",b:"스텁 상태",w:"요리 중 음성 입력"},
-gtts:{n:"gTTS",r:"음성 출력",p:"backend/voice/tts_responder.py",d:["텍스트->한국어 MP3."],f:["TTS","무료"],g:"무료, 한국어",b:"기계적 음질",w:"운동 중 사용"},
-capacitor_ui:{n:"Capacitor (APK)",r:"모바일 앱",p:"capacitor.config.json",d:["Android APK. 카메라, 오프라인."],f:["카메라","오프라인"],g:"웹+앱 코드 하나",b:"iOS 별도",w:"모바일 설치"},
-fastapi:{n:"FastAPI Backend (307줄)",r:"중앙 API 서버",p:"backend/app/main.py",d:["REST API + WebSocket. 307줄.","Router 분리 + 플러그인 자동 등록.","4개 미들웨어(보안/CORS/JWT/Rate).","MonitoringScheduler 6h 자동 실행."],f:["보안","CORS","JWT","Rate","플러그인","Monitoring"],g:"Router 분리 git 충돌 제로",b:"서비스 중복 초기화",w:"코어+플러그인 동작 보장"},
-api_router:{n:"api_router.py (그룹 B)",r:"백엔드 핵심",p:"routers/api_router.py",d:["쿼리->intent_classifier->Orchestrator,","온보딩, 대시보드, 피드백, 인증, WS.","intent_classifier: 키워드+LLM","도메인 분류(35+ 키워드)."],f:["/api/query","/api/dashboard","/ws","intent_classifier"],g:"핵심 API 집중",b:"-",w:"사용자 요청 진입점"},
-ai_router:{n:"ai_router.py (그룹 A)",r:"AI/ML 엔드포인트",p:"routers/ai_router.py",d:["사진, 시뮬레이션, 모델, RL."],f:["/photo","/simulation","/models"],g:"AI/ML 집중",b:"-",w:"AI 기능 진입점"},
-admin_router:{n:"admin_router.py",r:"팀 관리 API",p:"routers/admin_router.py",d:["9개 관리 API: team-progress,","git-history, conflicts, backup,","backups, security-audit,","orchestrator-stats, monitoring/status,","monitoring/run."],f:["progress","conflicts","backup","security","monitoring"],g:"git subprocess 실시간 추적",b:"git 명령 의존",w:"팀장 관리 도구"},
-jwt:{n:"JWT + Rate Limit + Kakao OAuth",r:"보안 게이트",p:"backend/app/main.py + kakao_auth.py",d:["Bearer 인증, IP 60회/분,","XSS/HSTS/Clickjacking 방어.","카카오 OAuth 로그인 연동","(kakao_auth.py: login URL/콜백/JWT 발급).","+ input_validator.py: 입력 검증."],f:["JWT","Rate","XSS","HSTS","Kakao OAuth","입력검증"],g:"데이터 격리 + DDoS + OAuth",b:"refresh token 없음",w:"건강 데이터 보호"},
-docker:{n:"Docker",r:"환경 일관성",p:"docker-compose.yml",d:["백엔드+ChromaDB+프론트 컨테이너."],f:["docker-compose"],g:"환경 일관성",b:"Desktop 필요",w:"6명 동일 환경"},
-orchestrator:{n:"Orchestrator (LangGraph)",r:"요청 라우팅+연쇄",p:"agents/orchestrator.py",d:["8노드 DAG: classify_intent","-> conditional_edges 분기","-> [food|exercise|health|hobby]","-> merge -> cascade -> evaluate.","(route는 노드가 아닌 분기 함수)"],f:["8노드","conditional_edges","메모리50턴"],g:"워크플로우 선언적 관리",b:"직렬 실행",w:"라면->건강위험+운동권장"},
-core:{n:"Core (Interfaces+Fallbacks)",r:"플러그인 프레임워크",p:"backend/core/",d:["6개 Protocol: DomainAgent,","KnowledgeBase, RLAgent,","ImageAnalyzer, VoiceProcessor,","RewardFunction.","8개 폴백 클래스 + 11슬롯 레지스트리."],f:["6 Protocol","8 Fallback","11 슬롯","싱글톤"],g:"미등록 시 자동 폴백",b:"폴백은 규칙 기반(LLM 없음)",w:"미구현 시에도 서비스 정상"},
-plugins:{n:"Plugins (6 Modules)",r:"확장 모듈",p:"backend/plugins/",d:["food_rag, exercise_weather,","health_checkup, hobby_stress,","vision_korean, voice_stt."],f:["food_rag","exercise_weather","health_checkup"],g:"git 충돌 제로",b:"인터페이스 준수",w:"활성/폴백 확인"},
-cascade:{n:"CASCADE RULES (9개)",r:"크로스 도메인 연쇄",p:"orchestrator.py:48-115",d:["food->health, exercise->health,","hobby->food 등 9개 연쇄 규칙."],f:["food->health","exercise->health"],g:"현실 연쇄 모델링",b:"규칙 기반",w:"도메인 간 자동 전파"},
-risk:{n:"Risk Engine",r:"위험 경고",p:"backend/risk_engine/",d:["베이지안 위험도, 야식 -5,","6개 건강 모델."],f:["food_risk","night_penalty"],g:"시간대 동적 위험도",b:"규칙 기반",w:"구체적 건강 경고"},
-simulator:{n:"Schedule Simulator",r:"장기 예측",p:"rl_engine/schedule_simulator.py",d:["24h N일 시뮬. 15활동 유형."],f:["15 활동","시간대"],g:"오프라인 JS 동작",b:"결정론적",w:"한 달 미리 확인"},
-gpu_train:{n:"GPU Training",r:"모델 학습",p:"scripts/train_and_upload.py",d:["로컬 GPU PPO -> Optuna -> S3."],f:["PPO","Optuna","S3"],g:"GPU 비용 절감",b:"로컬 GPU 필요",w:"RL은 연산 집약적"},
-food:{n:"FoodAgent",r:"식단 추천",p:"agents/food_agent.py",d:["GPT-4o-mini(0.7) + ChromaDB","10만건 RAG. 쿼리 확장+리랭킹."],f:["RAG","쿼리 확장","리랭킹"],g:"10만건 개인화 추천",b:"API 비용, 2-5초",w:"BMI별 개인화 식단"},
-exercise:{n:"ExerciseAgent",r:"운동 추천",p:"agents/exercise_agent.py",d:["plan_adjuster 통해 날씨 데이터 수신.","PM10>=76 실내 전환.","부상위험 >0.6 경고."],f:["날씨(간접)","부상 위험도","실내전환"],g:"날씨+부상 고려 안전 추천",b:"날씨 API 간접 의존",w:"안전한 운동"},
-health:{n:"HealthAgent",r:"건강 해석",p:"agents/health_agent.py",d:["GPT-4o-mini(0.3, 보수적).","3줄 요약 + 위험도 분류."],f:["temp=0.3","3단계"],g:"자연어 검진 해석",b:"의료 AI 한계",w:"검진 결과 가이드"},
-hobby:{n:"HobbyAgent",r:"정신건강",p:"agents/hobby_agent.py",d:["스트레스/기분 기반 취미 추천.","크로스 도메인 시너지."],f:["스트레스","시너지"],g:"기타30분->스트레스-15%",b:"카탈로그 제한",w:"식단+운동+정신건강"},
-gauges:{n:"updated_gauges",r:"게이지 허브",p:"dashboard/gauge_calculator.py",d:["6개 게이지: 활성산소, 혈액,","탈모, 수면, 스트레스, 주간달성."],f:["활성산소","수면","스트레스"],g:"CASCADE 즉시 반영",b:"-",w:"모든 AI 결과 수렴"},
-ppo:{n:"PPO RL",r:"최적 행동 학습",p:"rl_engine/ppo_agent.py",d:["SB3 PPO. 40D상태, 10행동, 84스텝.","lr=3e-4, batch=64, gamma=0.99,","n_steps=128, epochs=10.","GPU 자동 감지(CUDA/CPU)."],f:["40D","10행동","SB3","GPU자동"],g:"피드백으로 지속 개선",b:"CPU 학습 느림",w:"개인별 최적 전략"},
-retrain:{n:"Retrain Scheduler",r:"자동 개선",p:"rl_engine/retrain_scheduler.py",d:["6h 주기 OR 보상 하락 시 재학습.","feedback_collector.py가 사용자","만족도를 RL 보상 신호로 변환."],f:["6시간","보상 하락","feedback_collector"],g:"자동 개선",b:"리소스 소모",w:"피드백->더 나은 추천"},
-optuna:{n:"Optuna",r:"RL 최적화",p:"rl_engine/auto_tuner.py",d:["100 trial Bayesian(TPE) 탐색."],f:["100 trial","TPE"],g:"체계적 탐색",b:"GPU 권장",w:"RL 성능 민감"},
-gpt4o:{n:"GPT-4o-mini",r:"LLM 엔진",p:".env (OPENAI_API_KEY)",d:["OpenAI LLM. 한국어 우수.","GPT-4의 1/10 비용."],f:["자연어 생성","개인화"],g:"빠르고 저렴",b:"할루시네이션",w:"자연어 설명 생성"},
-openclip:{n:"OpenCLIP",r:"이미지 AI",p:"multimodal/photo_analyzer.py",d:["ViT-B-32 512D 임베딩.","이미지+텍스트 크로스 모달."],f:["512D","크로스 모달"],g:"이미지+텍스트 검색",b:"정확도 한계",w:"사진으로 건강 추정"},
-yolo:{n:"YOLO v8",r:"식재료 인식",p:"multimodal/food_recognizer.py",d:["CPU ~100ms. 80+ 카테고리."],f:["~100ms","80+"],g:"실시간 정확",b:"한식 특화 안됨",w:"자동 칼로리 추정"},
-mediapipe:{n:"MediaPipe",r:"자세 교정",p:"multimodal/pose_analyzer.py",d:["33 랜드마크 자세 분석."],f:["33pt","자세 점수"],g:"무료, CPU",b:"정적 이미지만",w:"운동 자세 교정"},
-reward:{n:"보상 함수",r:"RL 보상 기준",p:"rl_engine/reward_cross_domain.py",d:["R=w1*taste+w2*health+w3*fitness","  +w4*mood+w5*habit-penalties+bonus","야식(22시이후):-5, 튀김:-4","에어프라이어:+2, 취미30분:+2"],f:["다축 보상","야식-5","에어프라이어+2"],g:"health 가중치 1.5로 최대",b:"수동 가중치 설정",w:"좋은/나쁜 행동 기준"},
-chromadb:{n:"ChromaDB",r:"지식 검색",p:"backend/knowledge/",d:["4컬렉션 벡터 DB. 10만건."],f:["4컬렉션","벡터 검색"],g:"무료, persistent",b:"대규모 성능 저하",w:"RAG 지식 주입"},
-supabase:{n:"Supabase",r:"상태 저장",p:"services/user_state_manager.py",d:["40D State UPSERT.","인메모리 폴백."],f:["40D","UPSERT"],g:"무료 500MB",b:"연결 제한",w:"상태 영속"},
-s3:{n:"AWS S3",r:"모델 저장",p:"services/model_registry.py",d:["모델 가중치 + SHA256."],f:["SHA256","버전 관리"],g:"99.999999999%",b:"AWS 필요",w:"모델 공유"},
-railway:{n:"Railway",r:"백엔드 배포",p:"railway.toml",d:["$5/월 클라우드. GitHub 자동 배포."],f:["$5/월","자동 배포"],g:"24시간 운영",b:"GPU 미지원",w:"공유 URL"},
-vercel:{n:"Vercel",r:"프론트 배포",p:"frontend/vercel.json",d:["CDN 무료. SPA Rewrite."],f:["무료 CDN","SPA"],g:"전 세계 빠름",b:"서버 불가",w:"CDN이 저렴"},
-capacitor:{n:"Capacitor Build",r:"APK 빌드",p:"frontend/android/",d:["Android APK. Gradle."],f:["APK","네이티브"],g:"웹+앱 코드 하나",b:"iOS 별도",w:"모바일 배포"},
-weather:{n:"Weather Monitor",r:"외부 날씨 API 연동",p:"backend/environment/weather_monitor.py",d:["기상청 단기예보 API +","에어코리아 PM10/PM2.5 API.","200줄+. plan_adjuster.py와 연동:","PM10>=76 실내 운동 전환."],f:["기상청 API","에어코리아","PM10","plan_adjuster"],g:"한국 공공 API 실시간 연동",b:"API 호출 횟수 제한 (일 500회)",w:"미세먼지/날씨 기반 운동 안전 확보"},
-gamification:{n:"Gamification + Quest",r:"레벨/EXP/일일 미션",p:"backend/services/gamification.py",d:["gamification.py: 50레벨 EXP 테이블,","칭호/배지 시스템.","quest_system.py: 일일 퀘스트 3개,","스트릭 보너스, EXP 보상.","(현재 api_router 미연결 — 향후 연동)"],f:["50레벨","EXP","칭호","퀘스트3개","미연결"],g:"지속적 동기부여",b:"api_router 연동 미구현",w:"건강 관리 습관화를 위한 게이미피케이션"},
-monitoring:{n:"Monitoring Agent System",r:"자동 시스템 점검",p:"backend/agents/monitoring/",d:["코어 에이전트 + 5개 서포트:","code_quality, plugin_health,","api_health, security,","claude_md_updater.","6시간 주기 자동 실행.","결과를 CLAUDE.md에 자동 반영."],f:["core_agent","code_quality","plugin_health","api_health","security","claude_md"],g:"수동 개입 없이 자동 점검",b:"점검 결과는 참고용",w:"팀원이 Claude Code 실행 시 최신 가이드"},
-};
-
-// ===== State =====
-const NM={};
-nodes.forEach(n=>NM[n[0]]={id:n[0],label:n[1],sub:n[2],layer:n[3],col:n[4],fill:n[5],stroke:n[6],x:0,y:0,open:false});
-const srC={};nodes.forEach(n=>{const k=n[3];srC[k]=Math.max(srC[k]||0,n[4]+1);});
-const SR=[...new Set(nodes.map(n=>n[3]))].sort((a,b)=>a-b);
-
-// Detail height — mirrors exact rendering logic (size+3 per line, DPAD top+bottom)
-function countLines(text,fontSize,bold){
-  const charW=fontSize*(bold?0.62:0.55);
-  const maxChars=Math.floor((DW-DPAD*2)/charW);
-  if(text.length<=maxChars)return 1;
-  let n=0,rem=text;
-  while(rem.length>maxChars){let cut=rem.lastIndexOf(' ',maxChars);if(cut<=0)cut=maxChars;n++;rem=rem.slice(cut).trimStart();}
-  if(rem)n++;return n;
-}
-function lineH(fontSize){return fontSize+3;}
-function dH(id){
-  const d=D[id];if(!d)return 0;
-  let h=DPAD; // top pad
-  h+=countLines(d.n,DFONT+1,true)*lineH(DFONT+1);
-  if(d.r)h+=countLines(d.r,DFONT-1,false)*lineH(DFONT-1);
-  h+=countLines(d.p,DFONT-1.5,false)*lineH(DFONT-1.5);
-  d.d.forEach(l=>{h+=countLines(l,DFONT,false)*lineH(DFONT);});
-  if(d.g)h+=countLines("+ "+d.g,DFONT-0.5,false)*lineH(DFONT-0.5);
-  if(d.b&&d.b!=="-")h+=countLines("- "+d.b,DFONT-0.5,false)*lineH(DFONT-0.5);
-  if(d.w)h+=countLines("! "+d.w,DFONT-0.5,false)*lineH(DFONT-0.5);
-  h+=DPAD; // bottom pad
-  return h;
-}
-
-// Column width: always NW-based (detail panels overflow independently below)
-function layout(){
-  const CW=NW+HGAP;
-  const maxCol=Math.max(...Object.values(srC));
-  const TW=Math.max(maxCol*CW+M*2,1200);
-  let cy=M;const sY={},lY={},lH={};let ll=-1;
-  SR.forEach(sr=>{
-    const lr=Math.floor(sr);
-    if(lr!==ll){cy+=LTH;ll=lr;lY[lr]=cy-LTH+4;}
-    sY[sr]=cy;cy+=NH+4;
-    // max detail height in this subrow
-    let maxDH=0;
-    nodes.filter(n=>n[3]===sr).forEach(n=>{if(NM[n[0]].open)maxDH=Math.max(maxDH,dH(n[0]));});
-    if(maxDH>0)cy+=maxDH+8;
-    cy+=VGAP-NH;
-  });
-  for(let l=0;l<6;l++){
-    const srs=SR.filter(s=>Math.floor(s)===l);if(!srs.length)continue;
-    const top=lY[l];let bot=0;
-    srs.forEach(sr=>{let b=sY[sr]+NH+24;
-      let mx=0;nodes.filter(n=>n[3]===sr).forEach(n=>{if(NM[n[0]].open)mx=Math.max(mx,dH(n[0]));});
-      b+=mx;bot=Math.max(bot,b);
-    });
-    lH[l]=bot-top;
-  }
-  nodes.forEach(n=>{
-    const nd=NM[n[0]],cols=srC[n[3]];
-    const startX=M+(TW-M*2-cols*CW)/2;
-    nd.x=startX+n[4]*CW;
-    nd.y=sY[n[3]];
-  });
-  return{H:cy+M,lY,lH,TW,CW};
-}
-
-const S="http://www.w3.org/2000/svg";
-function el(t,a){const e=document.createElementNS(S,t);for(const[k,v]of Object.entries(a||{}))e.setAttribute(k,String(v));return e;}
-const cv=document.getElementById("cv");
-let sc=1,filt="all";
-
-function draw(){
-  const L=layout();cv.innerHTML="";
-  const svg=el("svg",{viewBox:`0 0 ${L.TW} ${L.H}`,xmlns:S});
-  svg.style.width=L.TW*sc+"px";svg.style.minWidth="1000px";
-
-  const defs=el("defs");
-  Object.entries(C).forEach(([k,c])=>{const m=el("marker",{id:"m_"+k,markerWidth:8,markerHeight:6,refX:8,refY:3,orient:"auto"});m.appendChild(el("polygon",{points:"0 0,8 3,0 6",fill:c}));defs.appendChild(m);});
-  svg.appendChild(defs);
-
-  // Layer BG + title
-  for(let l=0;l<6;l++){
-    if(!L.lH[l])continue;
-    svg.appendChild(el("rect",{x:0,y:L.lY[l],width:L.TW,height:L.lH[l],fill:LC[l],opacity:.05,rx:8}));
-    const t=el("text",{x:M,y:L.lY[l]+18,fill:LC[l],"font-size":12,"font-weight":700,opacity:.7});
-    t.textContent=LN[l];svg.appendChild(t);
-  }
-
-  // Occupied rects for label avoidance (with clamped detail panel position)
-  const occ=[];
-  nodes.forEach(n=>{const nd=NM[n[0]];
-    occ.push({x:nd.x-4,y:nd.y-4,w:NW+8,h:NH+8});
-    if(nd.open){
-      const h=dH(n[0]);
-      occ.push({x:nd.x-4,y:nd.y+NH,w:DW+8,h:h+8});
-    }
-  });
-  function ov(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
-
-  // Edges
-  const eG=el("g"),lG=el("g");const used=[];
-  edges.forEach(e=>{
-    const a=NM[e[0]],b=NM[e[1]];if(!a||!b)return;
-    const aBot=a.open?a.y+NH+dH(e[0]):a.y+NH;
-    const bBot=b.open?b.y+NH+dH(e[1]):b.y+NH;
-    let sx=a.x+NW/2,sy,ex=b.x+NW/2,ey;
-    const dy=(b.y+NH/2)-(a.y+NH/2),dx=ex-sx;
-    if(Math.abs(dy)>=Math.abs(dx)){sy=dy>0?aBot:a.y;ey=dy>0?b.y:bBot;}
-    else{sy=a.y+NH/2;ey=b.y+NH/2;if(dx>0){sx=a.x+NW;ex=b.x;}else{sx=a.x;ex=b.x+NW;}}
-    let c1x,c1y,c2x,c2y;
-    const ddx=ex-sx,ddy=ey-sy;
-    if(Math.abs(ddy)>=Math.abs(ddx)){c1x=sx;c1y=sy+ddy*.4;c2x=ex;c2y=ey-ddy*.4;}
-    else{c1x=sx+ddx*.4;c1y=sy;c2x=ex-ddx*.4;c2y=ey;}
-    const p=el("path",{d:`M${sx} ${sy} C${c1x} ${c1y},${c2x} ${c2y},${ex} ${ey}`,stroke:C[e[2]],"stroke-width":e[4]?1:1.3,fill:"none","marker-end":`url(#m_${e[2]})`,opacity:e[4]?.3:.45,class:"cn","data-t":e[2],"data-f":e[0],"data-to":e[1]});
-    if(e[4])p.setAttribute("stroke-dasharray","7,4");
-    eG.appendChild(p);
-    if(!e[3])return;
-    const mx=(sx+c1x+c2x+ex)/4,my=(sy+c1y+c2y+ey)/4;
-    const tw=e[3].length*5.2+10,th=14;
-    let lx=mx-tw/2,ly=my-th/2;
-    for(let i=0;i<50;i++){if(![...used,...occ].some(o=>ov({x:lx,y:ly,w:tw,h:th},o)))break;ly+=15;if(ly>my+180){lx+=45;ly=my-th/2;}}
-    used.push({x:lx,y:ly,w:tw,h:th});
-    lG.appendChild(el("rect",{x:lx-2,y:ly-1,width:tw+4,height:th+2,fill:"#0f172a",opacity:.9,rx:3,class:"cl","data-t":e[2],"data-f":e[0],"data-to":e[1]}));
-    const txt=el("text",{x:lx+tw/2,y:ly+10.5,fill:C[e[2]],"font-size":8.5,"font-weight":600,"text-anchor":"middle",opacity:.9,class:"cl","data-t":e[2],"data-f":e[0],"data-to":e[1]});
-    txt.textContent=e[3];lG.appendChild(txt);
-  });
-  svg.appendChild(eG);svg.appendChild(lG);
-
-  // Nodes + detail panels
-  const nG=el("g");
-  nodes.forEach(n=>{
-    const nd=NM[n[0]],d=D[n[0]];
-    const g=el("g",{"data-id":n[0],style:"cursor:pointer",class:"nb"});
-    // Node box
-    g.appendChild(el("rect",{x:nd.x,y:nd.y,width:NW,height:NH,rx:10,fill:nd.fill,stroke:nd.stroke,"stroke-width":nd.open?2.8:1.8}));
-    const t1=el("text",{x:nd.x+NW/2,y:nd.y+24,fill:"#fff","text-anchor":"middle","font-size":12,"font-weight":700});
-    t1.textContent=nd.label;g.appendChild(t1);
-    const t2=el("text",{x:nd.x+NW/2,y:nd.y+43,fill:nd.stroke,"text-anchor":"middle","font-size":10,opacity:.85});
-    t2.textContent=nd.sub;g.appendChild(t2);
-    const ind=el("text",{x:nd.x+NW-8,y:nd.y+13,fill:nd.stroke,"font-size":9,opacity:.5,"text-anchor":"middle"});
-    ind.textContent=nd.open?"\u25B2":"\u25BC";g.appendChild(ind);
-
-    // Detail panel — same width as node, perfectly aligned below
-    if(nd.open&&d){
-      let px=nd.x;
-      const py=nd.y+NH+2;
-      let ty=py+DPAD;
-      const textEls=[];
-      const maxTextW=DW-DPAD*2;
-      let maxLineW=0; // track widest line for tight-fit width
-      const add=(text,size,color,bold)=>{
-        const charW=size*(bold?0.62:0.55);
-        const maxChars=Math.floor(maxTextW/charW);
-        const lines=[];let rem=text;
-        while(rem.length>maxChars){let cut=rem.lastIndexOf(' ',maxChars);if(cut<=0)cut=maxChars;lines.push(rem.slice(0,cut));rem=rem.slice(cut).trimStart();}
-        if(rem)lines.push(rem);
-        lines.forEach(line=>{
-          const w=line.length*charW;if(w>maxLineW)maxLineW=w;
-          textEls.push({x:px+DPAD,y:ty+size*0.85,fill:color,size,bold,text:line});
-          ty+=size+3;
-        });
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LifeSync AI — Unified Architecture Diagram v0.4.0</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --border: #334155;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --api: #3b82f6;
+        --agent: #8b5cf6;
+        --llm: #f59e0b;
+        --rag: #10b981;
+        --data: #06b6d4;
+        --vision: #f43f5e;
+        --voice: #a78bfa;
+        --rl: #ec4899;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 20px 6px;
+        text-align: center;
+      }
+      .top h1 {
+        font-size: 1.4em;
+        background: linear-gradient(135deg, var(--data), var(--agent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .top p {
+        color: var(--muted);
+        font-size: 0.75em;
+      }
+      .bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px 6px;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 46px;
+        z-index: 10;
+        background: var(--bg);
+      }
+      .lb {
+        padding: 3px 9px;
+        border-radius: 12px;
+        border: 1.5px solid;
+        font-size: 0.68em;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        transition: 0.12s;
+      }
+      .lb:hover,
+      .lb.on {
+        color: #fff !important;
+      }
+      .lb[data-t="api"] {
+        color: var(--api);
+        border-color: var(--api);
+      }
+      .lb[data-t="api"]:hover,
+      .lb[data-t="api"].on {
+        background: var(--api);
+      }
+      .lb[data-t="agent"] {
+        color: var(--agent);
+        border-color: var(--agent);
+      }
+      .lb[data-t="agent"]:hover,
+      .lb[data-t="agent"].on {
+        background: var(--agent);
+      }
+      .lb[data-t="llm"] {
+        color: var(--llm);
+        border-color: var(--llm);
+      }
+      .lb[data-t="llm"]:hover,
+      .lb[data-t="llm"].on {
+        background: var(--llm);
+      }
+      .lb[data-t="rag"] {
+        color: var(--rag);
+        border-color: var(--rag);
+      }
+      .lb[data-t="rag"]:hover,
+      .lb[data-t="rag"].on {
+        background: var(--rag);
+      }
+      .lb[data-t="data"] {
+        color: var(--data);
+        border-color: var(--data);
+      }
+      .lb[data-t="data"]:hover,
+      .lb[data-t="data"].on {
+        background: var(--data);
+      }
+      .lb[data-t="vision"] {
+        color: var(--vision);
+        border-color: var(--vision);
+      }
+      .lb[data-t="vision"]:hover,
+      .lb[data-t="vision"].on {
+        background: var(--vision);
+      }
+      .lb[data-t="voice"] {
+        color: var(--voice);
+        border-color: var(--voice);
+      }
+      .lb[data-t="voice"]:hover,
+      .lb[data-t="voice"].on {
+        background: var(--voice);
+      }
+      .lb[data-t="rl"] {
+        color: var(--rl);
+        border-color: var(--rl);
+      }
+      .lb[data-t="rl"]:hover,
+      .lb[data-t="rl"].on {
+        background: var(--rl);
+      }
+      .lb[data-t="all"] {
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .lb[data-t="all"]:hover,
+      .lb[data-t="all"].on {
+        background: var(--border);
+      }
+      .sp {
+        width: 1px;
+        height: 16px;
+        background: var(--border);
+        margin: 0 3px;
+      }
+      .tb {
+        padding: 3px 9px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        font-size: 0.68em;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text);
+      }
+      .tb:hover {
+        background: var(--border);
+      }
+      #cv {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+      #cv svg {
+        display: block;
+      }
+      .ft {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        gap: 4px;
+        z-index: 50;
+      }
+      .ft button {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.72em;
+        font-weight: 600;
+      }
+      .ft button:hover {
+        background: var(--border);
+      }
+      @media print {
+        .ft,
+        .bar,
+        .top {
+          display: none !important;
+        }
+        body {
+          background: #fff;
+          color: #333;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <h1>LifeSync AI — Unified Architecture Diagram</h1>
+      <p>
+        v0.4.0 | 6L | 45 Nodes | 54 Connections | Click=detail(multi) |
+        Ctrl+Scroll=zoom
+      </p>
+    </div>
+    <div class="bar">
+      <button class="lb on" data-t="all">All</button>
+      <button class="lb" data-t="api">API</button>
+      <button class="lb" data-t="agent">에이전트</button>
+      <button class="lb" data-t="llm">LLM</button>
+      <button class="lb" data-t="rag">RAG</button>
+      <button class="lb" data-t="data">데이터</button>
+      <button class="lb" data-t="vision">비전</button>
+      <button class="lb" data-t="voice">음성</button>
+      <button class="lb" data-t="rl">강화학습</button>
+      <div class="sp"></div>
+      <button class="tb" id="bE">전체 펼치기</button>
+      <button class="tb" id="bC">전체 닫기</button>
+    </div>
+    <div id="cv"></div>
+    <div class="ft">
+      <button onclick="zm(1)">Reset</button>
+      <button onclick="zm(sc * 1.2)">+</button>
+      <button onclick="zm(sc / 1.2)">-</button>
+      <button onclick="window.print()">Print</button>
+    </div>
+    <script>
+      const C = {
+        api: "#3b82f6",
+        agent: "#8b5cf6",
+        llm: "#f59e0b",
+        rag: "#10b981",
+        data: "#06b6d4",
+        vision: "#f43f5e",
+        voice: "#a78bfa",
+        rl: "#ec4899",
       };
-      add(d.n,DFONT+1,"#fff",true);
-      if(d.r)add(d.r,DFONT-1,"#94a3b8",false);
-      add(d.p,DFONT-1.5,"#06b6d4",false);
-      d.d.forEach(l=>add(l,DFONT,"#e2e8f0",false));
-      if(d.g)add("+ "+d.g,DFONT-0.5,"#6ee7b7",false);
-      if(d.b&&d.b!=="-")add("- "+d.b,DFONT-0.5,"#fca5a5",false);
-      if(d.w)add("! "+d.w,DFONT-0.5,"#fcd34d",false);
-      // Exact dimensions: fit to content
-      const realH=ty-py+DPAD;
-      const realW=Math.min(DW,Math.max(NW,maxLineW+DPAD*2));
-      g.appendChild(el("rect",{x:px,y:py,width:realW,height:realH,rx:8,fill:"#0f172af5",stroke:nd.stroke,"stroke-width":1}));
-      textEls.forEach(t=>{
-        const ln=el("text",{x:t.x,y:t.y,fill:t.fill,"font-size":t.size,"font-weight":t.bold?700:400});
-        ln.textContent=t.text;g.appendChild(ln);
-      });
-    }
-    nG.appendChild(g);
-  });
-  svg.appendChild(nG);
-  cv.appendChild(svg);
+      const LC = [
+        "#0e7490",
+        "#3b82f6",
+        "#8b5cf6",
+        "#ec4899",
+        "#f43f5e",
+        "#10b981",
+      ];
+      const LN = [
+        "L1 — USER INTERFACE (React 18 + Voice + Offline)",
+        "L2 — SERVER & SECURITY (FastAPI + Router + Middleware)",
+        "L3 — CORE ENGINE (Orchestrator + Plugins + Processing)",
+        "L4 — DOMAIN AGENTS & RL",
+        "L5 — AI MODELS (LLM + Vision + Reward)",
+        "L6 — DATA & INFRASTRUCTURE",
+      ];
+      // Layout constants
+      const NW = 180,
+        NH = 56,
+        HGAP = 30,
+        VGAP = 100,
+        M = 30,
+        LTH = 30;
+      // Detail panel (same width as node for perfect alignment)
+      const DW = NW,
+        DPAD = 8,
+        DFONT = 9.5,
+        DLINE = 13;
 
-  // Interactions
-  svg.querySelectorAll(".nb").forEach(g=>{
-    g.addEventListener("click",ev=>{ev.stopPropagation();const id=g.dataset.id;NM[id].open=!NM[id].open;draw();});
-    g.addEventListener("mouseenter",()=>{
-      const id=g.dataset.id;
-      svg.querySelectorAll(".cn").forEach(c=>{const on=c.dataset.f===id||c.dataset.to===id;c.style.opacity=on?"1":"0.04";if(on)c.style.strokeWidth="2.5";});
-      svg.querySelectorAll(".cl").forEach(c=>{
-        const on=c.dataset.f===id||c.dataset.to===id;
-        c.style.opacity=on?"1":"0.04";
-      });
-      svg.querySelectorAll(".nb").forEach(n=>{if(n===g)return;const nid=n.dataset.id;n.style.opacity=edges.some(e=>(e[0]===id&&e[1]===nid)||(e[1]===id&&e[0]===nid))?"1":"0.12";});
-    });
-    g.addEventListener("mouseleave",()=>af());
-  });
-}
+      const nodes = [
+        [
+          "dashboard_v2",
+          "대시보드",
+          "건강 모니터링 허브",
+          0,
+          0,
+          "#0e7490",
+          "#22d3ee",
+        ],
+        ["chat", "AI 채팅", "QuickChat + 음성", 0, 1, "#0e7490", "#22d3ee"],
+        ["photo", "사진 분석", "CLIP + YOLO", 0, 2, "#0e7490", "#22d3ee"],
+        ["sim", "시뮬레이터", "PPO RL 12주", 0, 3, "#0e7490", "#22d3ee"],
+        ["schedule", "생활패턴", "24h 원형 스케줄", 0, 4, "#0e7490", "#22d3ee"],
+        ["team_leader", "전체 관리", "4탭 팀 관리", 0, 5, "#0e7490", "#22d3ee"],
+        ["pages7", "+7 페이지", "홈/로그인/온보딩", 0, 6, "#0e7490", "#22d3ee"],
+        [
+          "kakao_login",
+          "로그인",
+          "OAuth + 로그아웃",
+          0,
+          7,
+          "#0e7490",
+          "#22d3ee",
+        ],
+        [
+          "websocket",
+          "WebSocket",
+          "실시간 동기화",
+          0.5,
+          0,
+          "#164e63",
+          "#0891b2",
+        ],
+        ["appstate", "AppState", "전역 상태", 0.5, 1, "#164e63", "#0891b2"],
+        ["offline", "오프라인 엔진", "IndexedDB", 0.5, 2, "#164e63", "#0891b2"],
+        ["theme", "ThemeContext", "Light/Dark", 0.5, 3, "#164e63", "#0891b2"],
+        [
+          "whisper",
+          "Whisper STT",
+          "음성->텍스트",
+          0.5,
+          4,
+          "#312e81",
+          "#818cf8",
+        ],
+        ["gtts", "gTTS", "텍스트->음성", 0.5, 5, "#312e81", "#818cf8"],
+        [
+          "capacitor_ui",
+          "Capacitor",
+          "Android APK",
+          0.5,
+          6,
+          "#164e63",
+          "#0891b2",
+        ],
+        ["fastapi", "FastAPI", "미들웨어+라우터", 1, 0, "#1e3a5f", "#60a5fa"],
+        [
+          "api_router",
+          "api_router.py",
+          "그룹B: 쿼리/인증/WS",
+          1,
+          1,
+          "#1e3a5f",
+          "#60a5fa",
+        ],
+        [
+          "ai_router",
+          "ai_router.py",
+          "그룹A: 사진/시뮬/RL",
+          1,
+          2,
+          "#1e3a5f",
+          "#60a5fa",
+        ],
+        [
+          "admin_router",
+          "admin_router",
+          "전체 관리 9 API",
+          1,
+          3,
+          "#1e3a5f",
+          "#60a5fa",
+        ],
+        ["jwt", "JWT+Rate Limit", "인증+CORS+XSS", 1, 4, "#5c1540", "#f472b6"],
+        ["docker", "Docker", "docker-compose", 1, 5, "#1e3a5f", "#60a5fa"],
+        [
+          "orchestrator",
+          "Orchestrator",
+          "LangGraph 8-DAG",
+          2,
+          0,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        [
+          "core",
+          "Core Framework",
+          "Interfaces+Fallbacks",
+          2,
+          1,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        ["plugins", "Plugins (6)", "팀원별 독립", 2, 2, "#3b1f6e", "#a78bfa"],
+        [
+          "cascade",
+          "CASCADE RULES",
+          "9개 도메인 연쇄",
+          2,
+          3,
+          "#451a03",
+          "#f59e0b",
+        ],
+        ["risk", "Risk Engine", "위험도+야식", 2, 4, "#3b1f6e", "#a78bfa"],
+        ["simulator", "Simulator", "24h N일 시뮬", 2, 5, "#3b1f6e", "#a78bfa"],
+        [
+          "gpu_train",
+          "GPU Training",
+          "로컬학습->S3",
+          2,
+          6,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        [
+          "monitoring",
+          "Monitoring Agent",
+          "6h 자동 점검",
+          2,
+          7,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        [
+          "weather",
+          "Weather Monitor",
+          "기상청+에어코리아",
+          2.5,
+          0,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        [
+          "gamification",
+          "Gamification",
+          "레벨/EXP/퀘스트",
+          2.5,
+          1,
+          "#3b1f6e",
+          "#a78bfa",
+        ],
+        ["testing", "Tests (5)", "E2E/Agent/RL/Voice/API", 2.5, 2, "#3b1f6e", "#a78bfa"],
+        ["cicd", "CI/CD", "GitHub Actions", 2.5, 3, "#3b1f6e", "#a78bfa"],
+        ["food", "FoodAgent", "RAG 레시피", 3, 0, "#5c3d0a", "#fbbf24"],
+        ["exercise", "ExerciseAgent", "날씨+부상", 3, 1, "#0c3644", "#22d3ee"],
+        ["health", "HealthAgent", "검진(temp=0.3)", 3, 2, "#0d3b2e", "#34d399"],
+        ["hobby", "HobbyAgent", "스트레스 해소", 3, 3, "#3b2d6e", "#c084fc"],
+        ["gauges", "updated_gauges", "6개 게이지", 3, 4, "#065f46", "#10b981"],
+        ["ppo", "PPO RL", "40D/10행동", 3, 5, "#5c1525", "#fb7185"],
+        ["retrain", "Retrain", "6h 자동재학습", 3, 6, "#5c1540", "#f472b6"],
+        ["optuna", "Optuna", "100trial Bayes", 3, 7, "#5c1540", "#f472b6"],
+        ["gpt4o", "GPT-4o-mini", "LLM 추론", 4, 0, "#5c3d0a", "#fbbf24"],
+        ["openclip", "OpenCLIP", "ViT-B-32 512D", 4, 1, "#5c1525", "#fb7185"],
+        ["yolo", "YOLO v8", "식재료 ~100ms", 4, 2, "#5c1525", "#fb7185"],
+        ["mediapipe", "MediaPipe", "자세 33pt", 4, 3, "#5c1525", "#fb7185"],
+        ["reward", "보상 함수", "다축 보상", 4, 4, "#5c1525", "#fb7185"],
+        ["chromadb", "ChromaDB", "4컬렉션 RAG", 5, 0, "#0c3644", "#22d3ee"],
+        ["supabase", "Supabase", "PostgreSQL", 5, 1, "#0c3644", "#22d3ee"],
+        ["s3", "AWS S3", "모델 가중치", 5, 2, "#0c3644", "#22d3ee"],
+        ["railway", "Railway", "백엔드 $5/월", 5, 3, "#1e3a5f", "#60a5fa"],
+        ["vercel", "Vercel", "프론트 CDN", 5, 4, "#1e3a5f", "#60a5fa"],
+        [
+          "capacitor",
+          "Capacitor Build",
+          "APK 빌드",
+          5,
+          5,
+          "#1e3a5f",
+          "#60a5fa",
+        ],
+      ];
 
-function af(){
-  const svg=cv.querySelector("svg");if(!svg)return;
-  svg.querySelectorAll(".cn").forEach(c=>{const on=filt==="all"||c.dataset.t===filt;c.style.opacity=on?(c.getAttribute("stroke-dasharray")?.3:.45):"0.03";c.style.strokeWidth=on?"1.3":"1";});
-  svg.querySelectorAll(".cl").forEach(c=>{c.style.opacity=filt==="all"||c.dataset.t===filt?".9":"0.03";});
-  svg.querySelectorAll(".nb").forEach(n=>n.style.opacity="1");
-}
-document.querySelectorAll(".lb").forEach(b=>{b.addEventListener("click",()=>{document.querySelectorAll(".lb").forEach(x=>x.classList.remove("on"));b.classList.add("on");filt=b.dataset.t;af();});});
-document.getElementById("bE").onclick=()=>{nodes.forEach(n=>NM[n[0]].open=true);draw();};
-document.getElementById("bC").onclick=()=>{nodes.forEach(n=>NM[n[0]].open=false);draw();};
-function zm(s){sc=Math.max(0.25,Math.min(3,s));const svg=cv.querySelector("svg");if(svg){const L=layout();svg.style.width=L.TW*sc+"px";}}
-cv.addEventListener("wheel",e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zm(sc*(e.deltaY<0?1.08:1/1.08));}},{passive:false});
-draw();
-</script>
-</body>
+      const edges = [
+        ["dashboard_v2", "api_router", "api", "GET /api/dashboard/{uid}", 0],
+        ["chat", "api_router", "api", "POST /api/query", 0],
+        ["photo", "ai_router", "api", "POST /api/photo/upload", 0],
+        ["sim", "ai_router", "api", "POST /api/simulation/step", 0],
+        ["schedule", "ai_router", "api", "POST /api/simulation", 0],
+        ["team_leader", "admin_router", "api", "GET/POST /api/admin/*", 0],
+        ["pages7", "fastapi", "api", "POST /api/onboarding", 0],
+        ["websocket", "api_router", "api", "WebSocket /ws 양방향", 1],
+        ["fastapi", "jwt", "api", "인증+Rate Limit 미들웨어", 0],
+        ["dashboard_v2", "fastapi", "api", "솔루션 적용", 1],
+        ["docker", "fastapi", "api", "컨테이너로 실행", 1],
+        ["docker", "railway", "api", "Railway 클라우드 배포", 1],
+        ["pages7", "vercel", "api", "배포 대상 (CDN)", 1],
+        ["offline", "capacitor", "api", "APK에 포함", 1],
+        ["api_router", "orchestrator", "agent", "사용자 요청 라우팅", 0],
+        ["fastapi", "orchestrator", "agent", "PluginRegistry 조회", 1],
+        ["orchestrator", "food", "agent", "음식 도메인", 0],
+        ["orchestrator", "exercise", "agent", "운동 도메인", 0],
+        ["orchestrator", "health", "agent", "건강 도메인", 0],
+        ["orchestrator", "hobby", "agent", "취미 도메인", 0],
+        ["orchestrator", "core", "agent", "폴백 조회", 0],
+        ["core", "plugins", "agent", "플러그인 등록", 0],
+        ["cascade", "gauges", "agent", "연쇄->게이지", 0],
+        ["gauges", "appstate", "data", "gauges 전역 업데이트", 1],
+        ["food", "gpt4o", "llm", "Food LLM (0.7)", 0],
+        ["exercise", "gpt4o", "llm", "Exercise LLM", 0],
+        ["health", "gpt4o", "llm", "Health LLM (0.3)", 0],
+        ["hobby", "gpt4o", "llm", "Hobby LLM", 0],
+        ["openclip", "gpt4o", "llm", "LLM 개인화 조언", 1],
+        ["food", "chromadb", "rag", "레시피 RAG (10만건)", 0],
+        ["exercise", "chromadb", "rag", "운동 RAG", 0],
+        ["health", "chromadb", "rag", "건강 RAG", 0],
+        ["hobby", "chromadb", "rag", "취미 RAG", 0],
+        ["api_router", "supabase", "data", "UserStateManager 상태 CRUD", 0],
+        ["ppo", "s3", "data", "PPO 모델 업로드", 0],
+        ["gpu_train", "s3", "data", "학습모델 S3 업로드", 0],
+        ["s3", "offline", "data", "모델 다운로드 (동기화)", 1],
+        ["api_router", "risk", "data", "위험도 평가 요청", 0],
+        [
+          "ai_router",
+          "openclip",
+          "vision",
+          "이미지 임베딩 (via PhotoAnalyzer)",
+          0,
+        ],
+        ["ai_router", "yolo", "vision", "식재료 인식 (via FoodRecognizer)", 0],
+        [
+          "ai_router",
+          "mediapipe",
+          "vision",
+          "자세 분석 (via PhotoAnalyzer)",
+          0,
+        ],
+        ["weather", "api_router", "data", "날씨/PM10 → user_state 반영", 0],
+        ["gamification", "api_router", "data", "EXP/레벨 조회 (향후 연결)", 1],
+        ["chat", "whisper", "voice", "음성 전송", 0],
+        ["whisper", "api_router", "voice", "텍스트 전달", 0],
+        ["api_router", "gtts", "voice", "TTS 요청", 0],
+        ["gtts", "chat", "voice", "음성 재생", 1],
+        ["ai_router", "ppo", "rl", "PPO 추천", 0],
+        ["simulator", "ppo", "rl", "정책 추론", 0],
+        ["retrain", "optuna", "rl", "하이퍼파라미터", 1],
+        ["retrain", "ppo", "rl", "PPO 재학습", 0],
+        ["reward", "ppo", "rl", "보상 신호", 0],
+        ["gpu_train", "ppo", "rl", "GPU 학습", 0],
+        ["fastapi", "retrain", "rl", "피드백->재학습", 1],
+        ["kakao_login", "api_router", "api", "카카오 OAuth 로그인/콜백", 0],
+        ["kakao_login", "jwt", "api", "JWT 토큰 발급/검증", 0],
+        ["admin_router", "monitoring", "agent", "점검 실행/상태", 0],
+        ["monitoring", "core", "agent", "코드품질 점검", 1],
+        ["monitoring", "plugins", "agent", "플러그인 헬스 점검", 1],
+        ["cicd", "testing", "api", "pytest 자동 실행", 0],
+        ["testing", "fastapi", "api", "API 테스트", 1],
+        ["theme", "dashboard_v2", "api", "라이트/다크 테마 적용", 1],
+        ["capacitor_ui", "offline", "api", "오프라인 모드 내장", 1],
+      ];
+
+      // Detail data: n=name, r=role, p=path, d=desc lines, f=features, g=pro, b=con, w=reason
+      const D = {
+        dashboard_v2: {
+          n: "대시보드 (건강 모니터링 허브)",
+          r: "건강 모니터링 허브",
+          p: "frontend/src/pages/DashboardPage.jsx",
+          d: [
+            "건강 데이터 통합 모니터링 허브.",
+            "종합 링 차트, AI 자동 진단.",
+            "솔루션/인사이트/코칭 3탭.",
+          ],
+          f: ["SVG 게이지", "WebSocket", "AI 진단", "4도메인"],
+          g: "한눈에 건강 파악 + 즉시 AI 추천",
+          b: "오프라인 시 적용 불가",
+          w: "매일 접속하는 핵심 페이지",
+        },
+        chat: {
+          n: "AI 채팅 (QuickChat)",
+          r: "자연어 AI 소통",
+          p: "components/dashboard/QuickChat.jsx",
+          d: ["키워드 도메인 감지.", "-> /api/query -> 게이지 자동 업데이트."],
+          f: ["도메인 감지", "음성 입력"],
+          g: "자연어로 건강 관리",
+          b: "LLM 응답 2-5초",
+          w: "AI와 소통하는 핵심 채널",
+        },
+        photo: {
+          n: "사진 분석",
+          r: "이미지 AI 분석",
+          p: "frontend/src/pages/AnalysisPage.jsx",
+          d: ["사진 업로드/카메라", "-> CLIP/YOLO -> Top-5 추천."],
+          f: ["CLIP", "YOLO", "Top-5"],
+          g: "사진 한 장으로 자동 분석",
+          b: "CPU ~300ms",
+          w: "자동 영양/자세 분석",
+        },
+        sim: {
+          n: "시뮬레이터 + 로드맵",
+          r: "행동 시뮬레이션",
+          p: "SimulatorPage.jsx + RoadmapPage.jsx",
+          d: [
+            "10개 행동 -> 보상/연쇄효과.",
+            "12주 로드맵 탭 (RoadmapPage 통합).",
+            "PPO 추천 표시.",
+          ],
+          f: ["PPO RL", "보상 시각화", "로드맵"],
+          g: "행동별 결과 미리 확인",
+          b: "결정론적",
+          w: "'이걸 하면?' 미리 확인",
+        },
+        schedule: {
+          n: "생활패턴",
+          r: "시간대별 관리",
+          p: "frontend/src/pages/SchedulePage.jsx",
+          d: ["24시간 원형 시계", "+ N일 시뮬 + 신뢰구간."],
+          f: ["원형 시계", "N일 시뮬"],
+          g: "생활 패턴 시각화",
+          b: "-",
+          w: "하루 리듬 한눈에",
+        },
+        team_leader: {
+          n: "전체 관리 (TeamLeader)",
+          r: "팀 관리 UI",
+          p: "frontend/src/pages/TeamLeaderPage.jsx",
+          d: ["4탭: 아키텍처, 팀 활동/충돌,", "백업/롤백, 보안 감사."],
+          f: ["아키텍처", "충돌", "백업", "보안"],
+          g: "CASCADE 그룹 시각화",
+          b: "개발용 인증 우회",
+          w: "팀장 실시간 모니터링",
+        },
+        pages7: {
+          n: "+7 페이지",
+          r: "전체 UX (12 라우트)",
+          p: "frontend/src/pages/",
+          d: [
+            "홈(Landing), 온보딩(3단계 위저드),",
+            "아바타(걷기 애니메이션),",
+            "리포트(주간 건강), 관리자(서버 상태),",
+            "아키텍처(인터랙티브 맵 34노드),",
+            "카카오 콜백(/auth/kakao/callback).",
+          ],
+          f: ["홈", "온보딩", "아바타", "리포트", "관리자", "아키텍처", "콜백"],
+          g: "모든 사용자 여정 커버",
+          b: "페이지 수 많음",
+          w: "전체 UX 흐름",
+        },
+        kakao_login: {
+          n: "카카오 로그인/로그아웃",
+          r: "소셜 인증",
+          p: "frontend/src/pages/LoginPage.jsx",
+          d: [
+            "카카오 OAuth 로그인 + 로그아웃.",
+            "LoginPage.jsx: 카카오 로그인 버튼,",
+            "게스트(읽기전용) 모드.",
+            "콜백: /auth/kakao/callback.",
+            "로그아웃: sessionStorage 토큰 삭제.",
+          ],
+          f: ["카카오 OAuth", "게스트 모드", "로그아웃", "sessionStorage"],
+          g: "카카오 간편 로그인 + 게스트 지원",
+          b: "카카오 서비스 의존",
+          w: "사용자 인증의 진입점",
+        },
+        websocket: {
+          n: "WebSocket",
+          r: "실시간 통신",
+          p: "routers/api_router.py",
+          d: ["실시간 양방향 통신.", "게이지 업데이트, JWT 인증."],
+          f: ["gauge_update", "JWT", "backoff"],
+          g: "HTTP 대비 지연 90% 감소",
+          b: "재시작 시 끊김",
+          w: "실시간 게이지 필수",
+        },
+        appstate: {
+          n: "AppState",
+          r: "전역 상태",
+          p: "context/AppStateContext.jsx",
+          d: ["gauges, domainSummary.", "localStorage 자동 저장."],
+          f: ["gauges", "localStorage"],
+          g: "일관된 상태",
+          b: "대형 객체",
+          w: "게이지 변경 즉시 반영",
+        },
+        offline: {
+          n: "오프라인 엔진",
+          r: "오프라인 폴백",
+          p: "services/offlineEngine.js",
+          d: ["IndexedDB 캐싱 + smartSimulate."],
+          f: ["IndexedDB", "smartSimulate"],
+          g: "네트워크 없이 동작",
+          b: "LLM 불가",
+          w: "지하철 등 오프라인",
+        },
+        theme: {
+          n: "ThemeContext",
+          r: "테마 관리",
+          p: "context/ThemeContext.jsx",
+          d: ["다크/라이트 전환.", "Primary Blue #1a73e8."],
+          f: ["Light/Dark"],
+          g: "깜빡임 해결",
+          b: "-",
+          w: "사용자 환경 맞춤",
+        },
+        whisper: {
+          n: "Whisper STT",
+          r: "음성 인식",
+          p: "backend/voice/stt_processor.py",
+          d: ["음성->텍스트. Whisper base/small."],
+          f: ["한국어 STT", "30MB"],
+          g: "높은 한국어 정확도",
+          b: "스텁 상태",
+          w: "요리 중 음성 입력",
+        },
+        gtts: {
+          n: "gTTS",
+          r: "음성 출력",
+          p: "backend/voice/tts_responder.py",
+          d: ["텍스트->한국어 MP3."],
+          f: ["TTS", "무료"],
+          g: "무료, 한국어",
+          b: "기계적 음질",
+          w: "운동 중 사용",
+        },
+        capacitor_ui: {
+          n: "Capacitor (APK)",
+          r: "모바일 앱",
+          p: "capacitor.config.json",
+          d: ["Android APK. 카메라, 오프라인."],
+          f: ["카메라", "오프라인"],
+          g: "웹+앱 코드 하나",
+          b: "iOS 별도",
+          w: "모바일 설치",
+        },
+        fastapi: {
+          n: "FastAPI Backend (307줄)",
+          r: "중앙 API 서버",
+          p: "backend/app/main.py",
+          d: [
+            "REST API + WebSocket. 307줄.",
+            "Router 분리 + 플러그인 자동 등록.",
+            "4개 미들웨어(보안/CORS/JWT/Rate).",
+            "MonitoringScheduler 6h 자동 실행.",
+          ],
+          f: ["보안", "CORS", "JWT", "Rate", "플러그인", "Monitoring"],
+          g: "Router 분리 git 충돌 제로",
+          b: "서비스 중복 초기화",
+          w: "코어+플러그인 동작 보장",
+        },
+        api_router: {
+          n: "api_router.py (그룹 B)",
+          r: "백엔드 핵심",
+          p: "routers/api_router.py",
+          d: [
+            "쿼리->intent_classifier->Orchestrator,",
+            "온보딩, 대시보드, 피드백, 인증, WS.",
+            "intent_classifier: 키워드+LLM",
+            "도메인 분류(35+ 키워드).",
+          ],
+          f: ["/api/query", "/api/dashboard", "/ws", "intent_classifier"],
+          g: "핵심 API 집중",
+          b: "-",
+          w: "사용자 요청 진입점",
+        },
+        ai_router: {
+          n: "ai_router.py (그룹 A)",
+          r: "AI/ML 엔드포인트",
+          p: "routers/ai_router.py",
+          d: ["사진, 시뮬레이션, 모델, RL."],
+          f: ["/photo", "/simulation", "/models"],
+          g: "AI/ML 집중",
+          b: "-",
+          w: "AI 기능 진입점",
+        },
+        admin_router: {
+          n: "admin_router.py",
+          r: "팀 관리 API",
+          p: "routers/admin_router.py",
+          d: [
+            "9개 관리 API: team-progress,",
+            "git-history, conflicts, backup,",
+            "backups, security-audit,",
+            "orchestrator-stats, monitoring/status,",
+            "monitoring/run.",
+          ],
+          f: ["progress", "conflicts", "backup", "security", "monitoring"],
+          g: "git subprocess 실시간 추적",
+          b: "git 명령 의존",
+          w: "팀장 관리 도구",
+        },
+        jwt: {
+          n: "JWT + Rate Limit + Kakao OAuth",
+          r: "보안 게이트",
+          p: "backend/app/main.py + kakao_auth.py",
+          d: [
+            "Bearer 인증, IP 60회/분,",
+            "XSS/HSTS/Clickjacking 방어.",
+            "카카오 OAuth 로그인 연동",
+            "(kakao_auth.py: login URL/콜백/JWT 발급).",
+            "+ input_validator.py: 입력 검증.",
+          ],
+          f: ["JWT", "Rate", "XSS", "HSTS", "Kakao OAuth", "입력검증"],
+          g: "데이터 격리 + DDoS + OAuth",
+          b: "refresh token 없음",
+          w: "건강 데이터 보호",
+        },
+        docker: {
+          n: "Docker",
+          r: "환경 일관성",
+          p: "docker-compose.yml",
+          d: ["백엔드+ChromaDB+프론트 컨테이너."],
+          f: ["docker-compose"],
+          g: "환경 일관성",
+          b: "Desktop 필요",
+          w: "6명 동일 환경",
+        },
+        orchestrator: {
+          n: "Orchestrator (LangGraph)",
+          r: "요청 라우팅+연쇄",
+          p: "agents/orchestrator.py",
+          d: [
+            "8노드 DAG: classify_intent",
+            "-> conditional_edges 분기",
+            "-> [food|exercise|health|hobby]",
+            "-> merge -> cascade -> evaluate.",
+            "(route는 노드가 아닌 분기 함수)",
+          ],
+          f: ["8노드", "conditional_edges", "메모리50턴"],
+          g: "워크플로우 선언적 관리",
+          b: "직렬 실행",
+          w: "라면->건강위험+운동권장",
+        },
+        core: {
+          n: "Core (Interfaces+Fallbacks)",
+          r: "플러그인 프레임워크",
+          p: "backend/core/",
+          d: [
+            "6개 Protocol: DomainAgent,",
+            "KnowledgeBase, RLAgent,",
+            "ImageAnalyzer, VoiceProcessor,",
+            "RewardFunction.",
+            "8개 폴백 클래스 + 11슬롯 레지스트리.",
+          ],
+          f: ["6 Protocol", "8 Fallback", "11 슬롯", "싱글톤"],
+          g: "미등록 시 자동 폴백",
+          b: "폴백은 규칙 기반(LLM 없음)",
+          w: "미구현 시에도 서비스 정상",
+        },
+        plugins: {
+          n: "Plugins (6 Modules)",
+          r: "확장 모듈",
+          p: "backend/plugins/",
+          d: [
+            "food_rag, exercise_weather,",
+            "health_checkup, hobby_stress,",
+            "vision_korean, voice_stt.",
+          ],
+          f: ["food_rag", "exercise_weather", "health_checkup"],
+          g: "git 충돌 제로",
+          b: "인터페이스 준수",
+          w: "활성/폴백 확인",
+        },
+        cascade: {
+          n: "CASCADE RULES (9개)",
+          r: "크로스 도메인 연쇄",
+          p: "orchestrator.py:48-115",
+          d: [
+            "food->health, exercise->health,",
+            "hobby->food 등 9개 연쇄 규칙.",
+          ],
+          f: ["food->health", "exercise->health"],
+          g: "현실 연쇄 모델링",
+          b: "규칙 기반",
+          w: "도메인 간 자동 전파",
+        },
+        risk: {
+          n: "Risk Engine (4모듈)",
+          r: "위험 경고",
+          p: "backend/risk_engine/",
+          d: [
+            "food_risk_scorer: 베이지안 위험도,",
+            "night_meal_penalty: 야식(22시) -5,",
+            "timeline_generator: 이벤트 타임라인,",
+            "health_models: 6개 건강 모델.",
+          ],
+          f: ["food_risk", "night_penalty", "timeline", "health_models"],
+          g: "시간대 동적 위험도",
+          b: "규칙 기반",
+          w: "구체적 건강 경고",
+        },
+        simulator: {
+          n: "Schedule Simulator",
+          r: "장기 예측",
+          p: "rl_engine/schedule_simulator.py",
+          d: ["24h N일 시뮬. 15활동 유형."],
+          f: ["15 활동", "시간대"],
+          g: "오프라인 JS 동작",
+          b: "결정론적",
+          w: "한 달 미리 확인",
+        },
+        gpu_train: {
+          n: "GPU Training",
+          r: "모델 학습",
+          p: "scripts/train_and_upload.py",
+          d: ["로컬 GPU PPO -> Optuna -> S3."],
+          f: ["PPO", "Optuna", "S3"],
+          g: "GPU 비용 절감",
+          b: "로컬 GPU 필요",
+          w: "RL은 연산 집약적",
+        },
+        food: {
+          n: "FoodAgent",
+          r: "식단 추천",
+          p: "agents/food_agent.py",
+          d: ["GPT-4o-mini(0.7) + ChromaDB", "10만건 RAG. 쿼리 확장+리랭킹."],
+          f: ["RAG", "쿼리 확장", "리랭킹"],
+          g: "10만건 개인화 추천",
+          b: "API 비용, 2-5초",
+          w: "BMI별 개인화 식단",
+        },
+        exercise: {
+          n: "ExerciseAgent",
+          r: "운동 추천",
+          p: "agents/exercise_agent.py",
+          d: [
+            "plan_adjuster 통해 날씨 데이터 수신.",
+            "PM10>=76 실내 전환.",
+            "부상위험 >0.6 경고.",
+          ],
+          f: ["날씨(간접)", "부상 위험도", "실내전환"],
+          g: "날씨+부상 고려 안전 추천",
+          b: "날씨 API 간접 의존",
+          w: "안전한 운동",
+        },
+        health: {
+          n: "HealthAgent",
+          r: "건강 해석",
+          p: "agents/health_agent.py",
+          d: ["GPT-4o-mini(0.3, 보수적).", "3줄 요약 + 위험도 분류."],
+          f: ["temp=0.3", "3단계"],
+          g: "자연어 검진 해석",
+          b: "의료 AI 한계",
+          w: "검진 결과 가이드",
+        },
+        hobby: {
+          n: "HobbyAgent",
+          r: "정신건강",
+          p: "agents/hobby_agent.py",
+          d: ["스트레스/기분 기반 취미 추천.", "크로스 도메인 시너지."],
+          f: ["스트레스", "시너지"],
+          g: "기타30분->스트레스-15%",
+          b: "카탈로그 제한",
+          w: "식단+운동+정신건강",
+        },
+        gauges: {
+          n: "updated_gauges",
+          r: "게이지 허브",
+          p: "dashboard/gauge_calculator.py",
+          d: ["6개 게이지: 활성산소, 혈액,", "탈모, 수면, 스트레스, 주간달성."],
+          f: ["활성산소", "수면", "스트레스"],
+          g: "CASCADE 즉시 반영",
+          b: "-",
+          w: "모든 AI 결과 수렴",
+        },
+        ppo: {
+          n: "PPO RL",
+          r: "최적 행동 학습",
+          p: "rl_engine/ppo_agent.py",
+          d: [
+            "SB3 PPO. 40D상태, 10행동, 84스텝.",
+            "lr=3e-4, batch=64, gamma=0.99,",
+            "n_steps=128, epochs=10.",
+            "core/device.py: GPU 자동 감지.",
+            "uncertainty_estimator.py: 예측",
+            "신뢰구간 추정 (미래 불확실성).",
+          ],
+          f: ["40D", "10행동", "SB3", "GPU자동", "신뢰구간"],
+          g: "피드백으로 지속 개선",
+          b: "CPU 학습 느림",
+          w: "개인별 최적 전략",
+        },
+        retrain: {
+          n: "Retrain Scheduler",
+          r: "자동 개선",
+          p: "rl_engine/retrain_scheduler.py",
+          d: [
+            "6h 주기 OR 보상 하락 시 재학습.",
+            "feedback_collector.py가 사용자",
+            "만족도를 RL 보상 신호로 변환.",
+          ],
+          f: ["6시간", "보상 하락", "feedback_collector"],
+          g: "자동 개선",
+          b: "리소스 소모",
+          w: "피드백->더 나은 추천",
+        },
+        optuna: {
+          n: "Optuna",
+          r: "RL 최적화",
+          p: "rl_engine/auto_tuner.py",
+          d: ["100 trial Bayesian(TPE) 탐색."],
+          f: ["100 trial", "TPE"],
+          g: "체계적 탐색",
+          b: "GPU 권장",
+          w: "RL 성능 민감",
+        },
+        gpt4o: {
+          n: "GPT-4o-mini",
+          r: "LLM 엔진",
+          p: ".env (OPENAI_API_KEY)",
+          d: ["OpenAI LLM. 한국어 우수.", "GPT-4의 1/10 비용."],
+          f: ["자연어 생성", "개인화"],
+          g: "빠르고 저렴",
+          b: "할루시네이션",
+          w: "자연어 설명 생성",
+        },
+        openclip: {
+          n: "OpenCLIP",
+          r: "이미지 AI",
+          p: "multimodal/photo_analyzer.py",
+          d: ["ViT-B-32 512D 임베딩.", "이미지+텍스트 크로스 모달."],
+          f: ["512D", "크로스 모달"],
+          g: "이미지+텍스트 검색",
+          b: "정확도 한계",
+          w: "사진으로 건강 추정",
+        },
+        yolo: {
+          n: "YOLO v8",
+          r: "식재료 인식",
+          p: "multimodal/food_recognizer.py",
+          d: ["CPU ~100ms. 80+ 카테고리."],
+          f: ["~100ms", "80+"],
+          g: "실시간 정확",
+          b: "한식 특화 안됨",
+          w: "자동 칼로리 추정",
+        },
+        mediapipe: {
+          n: "MediaPipe",
+          r: "자세 교정",
+          p: "multimodal/pose_analyzer.py",
+          d: ["33 랜드마크 자세 분석."],
+          f: ["33pt", "자세 점수"],
+          g: "무료, CPU",
+          b: "정적 이미지만",
+          w: "운동 자세 교정",
+        },
+        reward: {
+          n: "보상 함수",
+          r: "RL 보상 기준",
+          p: "rl_engine/reward_cross_domain.py",
+          d: [
+            "R=w1*taste+w2*health+w3*fitness",
+            "  +w4*mood+w5*habit-penalties+bonus",
+            "야식(22시이후):-5, 튀김:-4",
+            "에어프라이어:+2, 취미30분:+2",
+          ],
+          f: ["다축 보상", "야식-5", "에어프라이어+2"],
+          g: "health 가중치 1.5로 최대",
+          b: "수동 가중치 설정",
+          w: "좋은/나쁜 행동 기준",
+        },
+        chromadb: {
+          n: "ChromaDB (4컬렉션)",
+          r: "지식 검색",
+          p: "backend/knowledge/ + data/",
+          d: [
+            "recipe_db(10만건, data/recipes.csv),",
+            "exercise_db(data/exercises.json),",
+            "health_guidelines(data/health_.json),",
+            "hobby_catalog. 벡터 검색+리랭킹.",
+          ],
+          f: ["recipe_db", "exercise_db", "health_db", "hobby_db"],
+          g: "무료, persistent, multilingual",
+          b: "대규모(100만+) 성능 저하",
+          w: "RAG 지식 주입",
+        },
+        supabase: {
+          n: "Supabase",
+          r: "상태 저장",
+          p: "services/user_state_manager.py",
+          d: ["40D State UPSERT.", "인메모리 폴백."],
+          f: ["40D", "UPSERT"],
+          g: "무료 500MB",
+          b: "연결 제한",
+          w: "상태 영속",
+        },
+        s3: {
+          n: "AWS S3",
+          r: "모델 저장",
+          p: "services/model_registry.py",
+          d: ["모델 가중치 + SHA256."],
+          f: ["SHA256", "버전 관리"],
+          g: "99.999999999%",
+          b: "AWS 필요",
+          w: "모델 공유",
+        },
+        railway: {
+          n: "Railway",
+          r: "백엔드 배포",
+          p: "railway.toml",
+          d: ["$5/월 클라우드. GitHub 자동 배포."],
+          f: ["$5/월", "자동 배포"],
+          g: "24시간 운영",
+          b: "GPU 미지원",
+          w: "공유 URL",
+        },
+        vercel: {
+          n: "Vercel",
+          r: "프론트 배포",
+          p: "frontend/vercel.json",
+          d: ["CDN 무료. SPA Rewrite."],
+          f: ["무료 CDN", "SPA"],
+          g: "전 세계 빠름",
+          b: "서버 불가",
+          w: "CDN이 저렴",
+        },
+        capacitor: {
+          n: "Capacitor Build",
+          r: "APK 빌드",
+          p: "frontend/android/",
+          d: ["Android APK. Gradle."],
+          f: ["APK", "네이티브"],
+          g: "웹+앱 코드 하나",
+          b: "iOS 별도",
+          w: "모바일 배포",
+        },
+        weather: {
+          n: "Weather Monitor",
+          r: "외부 날씨 API 연동",
+          p: "backend/environment/weather_monitor.py",
+          d: [
+            "기상청 단기예보 API +",
+            "에어코리아 PM10/PM2.5 API.",
+            "200줄+. plan_adjuster.py와 연동:",
+            "PM10>=76 실내 운동 전환.",
+          ],
+          f: ["기상청 API", "에어코리아", "PM10", "plan_adjuster"],
+          g: "한국 공공 API 실시간 연동",
+          b: "API 호출 횟수 제한 (일 500회)",
+          w: "미세먼지/날씨 기반 운동 안전 확보",
+        },
+        gamification: {
+          n: "Gamification + Quest",
+          r: "레벨/EXP/일일 미션",
+          p: "backend/services/gamification.py",
+          d: [
+            "gamification.py: 50레벨 EXP 테이블,",
+            "칭호/배지 시스템.",
+            "quest_system.py: 일일 퀘스트 3개,",
+            "스트릭 보너스, EXP 보상.",
+            "(현재 api_router 미연결 — 향후 연동)",
+          ],
+          f: ["50레벨", "EXP", "칭호", "퀘스트3개", "미연결"],
+          g: "지속적 동기부여",
+          b: "api_router 연동 미구현",
+          w: "건강 관리 습관화를 위한 게이미피케이션",
+        },
+        monitoring: {
+          n: "Monitoring Agent System",
+          r: "자동 시스템 점검",
+          p: "backend/agents/monitoring/",
+          d: [
+            "코어 에이전트 + 5개 서포트:",
+            "code_quality, plugin_health,",
+            "api_health, security,",
+            "claude_md_updater.",
+            "6시간 주기 자동 실행.",
+            "결과를 CLAUDE.md에 자동 반영.",
+          ],
+          f: [
+            "core_agent",
+            "code_quality",
+            "plugin_health",
+            "api_health",
+            "security",
+            "claude_md",
+          ],
+          g: "수동 개입 없이 자동 점검",
+          b: "점검 결과는 참고용",
+          w: "팀원이 Claude Code 실행 시 최신 가이드",
+        },
+        testing: {
+          n: "Tests (5개 테스트 파일)",
+          r: "품질 검증",
+          p: "tests/",
+          d: [
+            "test_e2e_scenarios.py: E2E 시나리오,",
+            "test_agents.py: 에이전트 단위 테스트,",
+            "test_rl_engine.py: RL 엔진 테스트,",
+            "test_voice_pipeline.py: 음성 파이프라인,",
+            "test_api_errors.py: API 에러 테스트.",
+          ],
+          f: ["E2E", "에이전트", "RL", "음성", "API에러"],
+          g: "자동화된 품질 검증",
+          b: "커버리지 측정 미구현",
+          w: "코드 변경 시 안전망",
+        },
+        cicd: {
+          n: "CI/CD (GitHub Actions)",
+          r: "자동 빌드/테스트",
+          p: ".github/workflows/ci.yml",
+          d: [
+            "GitHub Actions CI 파이프라인.",
+            "PR/push 시 pytest 자동 실행.",
+            "CODEOWNERS: 파일별 리뷰어 배정.",
+          ],
+          f: ["GitHub Actions", "pytest", "CODEOWNERS"],
+          g: "자동 테스트로 품질 보장",
+          b: "CD(배포 자동화) 미구현",
+          w: "6명 협업 시 코드 품질 유지",
+        },
+      };
+
+      // ===== State =====
+      const NM = {};
+      nodes.forEach(
+        (n) =>
+          (NM[n[0]] = {
+            id: n[0],
+            label: n[1],
+            sub: n[2],
+            layer: n[3],
+            col: n[4],
+            fill: n[5],
+            stroke: n[6],
+            x: 0,
+            y: 0,
+            open: false,
+          }),
+      );
+      const srC = {};
+      nodes.forEach((n) => {
+        const k = n[3];
+        srC[k] = Math.max(srC[k] || 0, n[4] + 1);
+      });
+      const SR = [...new Set(nodes.map((n) => n[3]))].sort((a, b) => a - b);
+
+      // Detail height — mirrors exact rendering logic (size+3 per line, DPAD top+bottom)
+      function countLines(text, fontSize, bold) {
+        const charW = fontSize * (bold ? 0.62 : 0.55);
+        const maxChars = Math.floor((DW - DPAD * 2) / charW);
+        if (text.length <= maxChars) return 1;
+        let n = 0,
+          rem = text;
+        while (rem.length > maxChars) {
+          let cut = rem.lastIndexOf(" ", maxChars);
+          if (cut <= 0) cut = maxChars;
+          n++;
+          rem = rem.slice(cut).trimStart();
+        }
+        if (rem) n++;
+        return n;
+      }
+      function lineH(fontSize) {
+        return fontSize + 3;
+      }
+      function dH(id) {
+        const d = D[id];
+        if (!d) return 0;
+        let h = DPAD; // top pad
+        h += countLines(d.n, DFONT + 1, true) * lineH(DFONT + 1);
+        if (d.r) h += countLines(d.r, DFONT - 1, false) * lineH(DFONT - 1);
+        h += countLines(d.p, DFONT - 1.5, false) * lineH(DFONT - 1.5);
+        d.d.forEach((l) => {
+          h += countLines(l, DFONT, false) * lineH(DFONT);
+        });
+        if (d.g)
+          h += countLines("+ " + d.g, DFONT - 0.5, false) * lineH(DFONT - 0.5);
+        if (d.b && d.b !== "-")
+          h += countLines("- " + d.b, DFONT - 0.5, false) * lineH(DFONT - 0.5);
+        if (d.w)
+          h += countLines("! " + d.w, DFONT - 0.5, false) * lineH(DFONT - 0.5);
+        h += DPAD; // bottom pad
+        return h;
+      }
+
+      // Column width: always NW-based (detail panels overflow independently below)
+      function layout() {
+        const CW = NW + HGAP;
+        const maxCol = Math.max(...Object.values(srC));
+        const TW = Math.max(maxCol * CW + M * 2, 1200);
+        let cy = M;
+        const sY = {},
+          lY = {},
+          lH = {};
+        let ll = -1;
+        SR.forEach((sr) => {
+          const lr = Math.floor(sr);
+          if (lr !== ll) {
+            cy += LTH;
+            ll = lr;
+            lY[lr] = cy - LTH + 4;
+          }
+          sY[sr] = cy;
+          cy += NH + 4;
+          // max detail height in this subrow
+          let maxDH = 0;
+          nodes
+            .filter((n) => n[3] === sr)
+            .forEach((n) => {
+              if (NM[n[0]].open) maxDH = Math.max(maxDH, dH(n[0]));
+            });
+          if (maxDH > 0) cy += maxDH + 8;
+          cy += VGAP - NH;
+        });
+        for (let l = 0; l < 6; l++) {
+          const srs = SR.filter((s) => Math.floor(s) === l);
+          if (!srs.length) continue;
+          const top = lY[l];
+          let bot = 0;
+          srs.forEach((sr) => {
+            let b = sY[sr] + NH + 24;
+            let mx = 0;
+            nodes
+              .filter((n) => n[3] === sr)
+              .forEach((n) => {
+                if (NM[n[0]].open) mx = Math.max(mx, dH(n[0]));
+              });
+            b += mx;
+            bot = Math.max(bot, b);
+          });
+          lH[l] = bot - top;
+        }
+        nodes.forEach((n) => {
+          const nd = NM[n[0]],
+            cols = srC[n[3]];
+          const startX = M + (TW - M * 2 - cols * CW) / 2;
+          nd.x = startX + n[4] * CW;
+          nd.y = sY[n[3]];
+        });
+        return { H: cy + M, lY, lH, TW, CW };
+      }
+
+      const S = "http://www.w3.org/2000/svg";
+      function el(t, a) {
+        const e = document.createElementNS(S, t);
+        for (const [k, v] of Object.entries(a || {}))
+          e.setAttribute(k, String(v));
+        return e;
+      }
+      const cv = document.getElementById("cv");
+      let sc = 1,
+        filt = "all";
+
+      function draw() {
+        const L = layout();
+        cv.innerHTML = "";
+        const svg = el("svg", { viewBox: `0 0 ${L.TW} ${L.H}`, xmlns: S });
+        svg.style.width = L.TW * sc + "px";
+        svg.style.minWidth = "1000px";
+
+        const defs = el("defs");
+        Object.entries(C).forEach(([k, c]) => {
+          const m = el("marker", {
+            id: "m_" + k,
+            markerWidth: 8,
+            markerHeight: 6,
+            refX: 8,
+            refY: 3,
+            orient: "auto",
+          });
+          m.appendChild(el("polygon", { points: "0 0,8 3,0 6", fill: c }));
+          defs.appendChild(m);
+        });
+        svg.appendChild(defs);
+
+        // Layer BG + title
+        for (let l = 0; l < 6; l++) {
+          if (!L.lH[l]) continue;
+          svg.appendChild(
+            el("rect", {
+              x: 0,
+              y: L.lY[l],
+              width: L.TW,
+              height: L.lH[l],
+              fill: LC[l],
+              opacity: 0.05,
+              rx: 8,
+            }),
+          );
+          const t = el("text", {
+            x: M,
+            y: L.lY[l] + 18,
+            fill: LC[l],
+            "font-size": 12,
+            "font-weight": 700,
+            opacity: 0.7,
+          });
+          t.textContent = LN[l];
+          svg.appendChild(t);
+        }
+
+        // Occupied rects for label avoidance (nodes + detail panels + layer titles)
+        const occ = [];
+        // Layer title bars
+        for (let l = 0; l < 6; l++) {
+          if (L.lY[l] !== undefined) {
+            occ.push({ x: 0, y: L.lY[l], w: L.TW, h: LTH });
+          }
+        }
+        // Node boxes + open detail panels
+        nodes.forEach((n) => {
+          const nd = NM[n[0]];
+          occ.push({ x: nd.x - 4, y: nd.y - 4, w: NW + 8, h: NH + 8 });
+          if (nd.open) {
+            const h = dH(n[0]);
+            occ.push({ x: nd.x - 4, y: nd.y + NH, w: DW + 8, h: h + 8 });
+          }
+        });
+        function ov(a, b) {
+          return (
+            a.x < b.x + b.w &&
+            a.x + a.w > b.x &&
+            a.y < b.y + b.h &&
+            a.y + a.h > b.y
+          );
+        }
+
+        // Edges
+        const eG = el("g"),
+          lG = el("g");
+        const used = [];
+        edges.forEach((e) => {
+          const a = NM[e[0]],
+            b = NM[e[1]];
+          if (!a || !b) return;
+          const aBot = a.open ? a.y + NH + dH(e[0]) : a.y + NH;
+          const bBot = b.open ? b.y + NH + dH(e[1]) : b.y + NH;
+          let sx = a.x + NW / 2,
+            sy,
+            ex = b.x + NW / 2,
+            ey;
+          const dy = b.y + NH / 2 - (a.y + NH / 2),
+            dx = ex - sx;
+          if (Math.abs(dy) >= Math.abs(dx)) {
+            sy = dy > 0 ? aBot : a.y;
+            ey = dy > 0 ? b.y : bBot;
+          } else {
+            sy = a.y + NH / 2;
+            ey = b.y + NH / 2;
+            if (dx > 0) {
+              sx = a.x + NW;
+              ex = b.x;
+            } else {
+              sx = a.x;
+              ex = b.x + NW;
+            }
+          }
+          let c1x, c1y, c2x, c2y;
+          const ddx = ex - sx,
+            ddy = ey - sy;
+          if (Math.abs(ddy) >= Math.abs(ddx)) {
+            c1x = sx;
+            c1y = sy + ddy * 0.4;
+            c2x = ex;
+            c2y = ey - ddy * 0.4;
+          } else {
+            c1x = sx + ddx * 0.4;
+            c1y = sy;
+            c2x = ex - ddx * 0.4;
+            c2y = ey;
+          }
+          const p = el("path", {
+            d: `M${sx} ${sy} C${c1x} ${c1y},${c2x} ${c2y},${ex} ${ey}`,
+            stroke: C[e[2]],
+            "stroke-width": e[4] ? 1 : 1.3,
+            fill: "none",
+            "marker-end": `url(#m_${e[2]})`,
+            opacity: e[4] ? 0.3 : 0.45,
+            class: "cn",
+            "data-t": e[2],
+            "data-f": e[0],
+            "data-to": e[1],
+          });
+          if (e[4]) p.setAttribute("stroke-dasharray", "7,4");
+          eG.appendChild(p);
+          if (!e[3]) return;
+          const mx = (sx + c1x + c2x + ex) / 4,
+            my = (sy + c1y + c2y + ey) / 4;
+          const tw = e[3].length * 5.2 + 10,
+            th = 14;
+          let lx = mx - tw / 2,
+            ly = my - th / 2;
+          // Collision avoidance: try down, then up, then right/left shifts
+          let placed = false;
+          for (let dir = 0; dir < 6 && !placed; dir++) {
+            for (let step = 0; step < 15 && !placed; step++) {
+              let tx = lx, ty = ly;
+              if (dir === 0) ty = my - th / 2 + step * (th + 2);       // down
+              else if (dir === 1) ty = my - th / 2 - step * (th + 2);  // up
+              else if (dir === 2) { tx = mx - tw / 2 + 30; ty = my - th / 2 + step * (th + 2); }  // right+down
+              else if (dir === 3) { tx = mx - tw / 2 - 30; ty = my - th / 2 + step * (th + 2); }  // left+down
+              else if (dir === 4) { tx = mx - tw / 2 + 60; ty = my - th / 2 + step * (th + 2); }
+              else { tx = mx - tw / 2 - 60; ty = my - th / 2 + step * (th + 2); }
+              if (![...used, ...occ].some((o) => ov({ x: tx, y: ty, w: tw, h: th }, o))) {
+                lx = tx; ly = ty; placed = true;
+              }
+            }
+          }
+          used.push({ x: lx, y: ly, w: tw, h: th });
+          lG.appendChild(
+            el("rect", {
+              x: lx - 2,
+              y: ly - 1,
+              width: tw + 4,
+              height: th + 2,
+              fill: "#0f172a",
+              opacity: 0.9,
+              rx: 3,
+              class: "cl",
+              "data-t": e[2],
+              "data-f": e[0],
+              "data-to": e[1],
+            }),
+          );
+          const txt = el("text", {
+            x: lx + tw / 2,
+            y: ly + 10.5,
+            fill: C[e[2]],
+            "font-size": 8.5,
+            "font-weight": 600,
+            "text-anchor": "middle",
+            opacity: 0.9,
+            class: "cl",
+            "data-t": e[2],
+            "data-f": e[0],
+            "data-to": e[1],
+          });
+          txt.textContent = e[3];
+          lG.appendChild(txt);
+        });
+        svg.appendChild(eG);
+        svg.appendChild(lG);
+
+        // Nodes + detail panels
+        const nG = el("g");
+        nodes.forEach((n) => {
+          const nd = NM[n[0]],
+            d = D[n[0]];
+          const g = el("g", {
+            "data-id": n[0],
+            style: "cursor:pointer",
+            class: "nb",
+          });
+          // Node box
+          g.appendChild(
+            el("rect", {
+              x: nd.x,
+              y: nd.y,
+              width: NW,
+              height: NH,
+              rx: 10,
+              fill: nd.fill,
+              stroke: nd.stroke,
+              "stroke-width": nd.open ? 2.8 : 1.8,
+            }),
+          );
+          const t1 = el("text", {
+            x: nd.x + NW / 2,
+            y: nd.y + 24,
+            fill: "#fff",
+            "text-anchor": "middle",
+            "font-size": 12,
+            "font-weight": 700,
+          });
+          t1.textContent = nd.label;
+          g.appendChild(t1);
+          const t2 = el("text", {
+            x: nd.x + NW / 2,
+            y: nd.y + 43,
+            fill: nd.stroke,
+            "text-anchor": "middle",
+            "font-size": 10,
+            opacity: 0.85,
+          });
+          t2.textContent = nd.sub;
+          g.appendChild(t2);
+          const ind = el("text", {
+            x: nd.x + NW - 8,
+            y: nd.y + 13,
+            fill: nd.stroke,
+            "font-size": 9,
+            opacity: 0.5,
+            "text-anchor": "middle",
+          });
+          ind.textContent = nd.open ? "\u25B2" : "\u25BC";
+          g.appendChild(ind);
+
+          // Detail panel — same width as node, perfectly aligned below
+          if (nd.open && d) {
+            let px = nd.x;
+            const py = nd.y + NH + 2;
+            let ty = py + DPAD;
+            const textEls = [];
+            const maxTextW = DW - DPAD * 2;
+            let maxLineW = 0; // track widest line for tight-fit width
+            const add = (text, size, color, bold) => {
+              const charW = size * (bold ? 0.62 : 0.55);
+              const maxChars = Math.floor(maxTextW / charW);
+              const lines = [];
+              let rem = text;
+              while (rem.length > maxChars) {
+                let cut = rem.lastIndexOf(" ", maxChars);
+                if (cut <= 0) cut = maxChars;
+                lines.push(rem.slice(0, cut));
+                rem = rem.slice(cut).trimStart();
+              }
+              if (rem) lines.push(rem);
+              lines.forEach((line) => {
+                const w = line.length * charW;
+                if (w > maxLineW) maxLineW = w;
+                textEls.push({
+                  x: px + DPAD,
+                  y: ty + size * 0.85,
+                  fill: color,
+                  size,
+                  bold,
+                  text: line,
+                });
+                ty += size + 3;
+              });
+            };
+            add(d.n, DFONT + 1, "#fff", true);
+            if (d.r) add(d.r, DFONT - 1, "#94a3b8", false);
+            add(d.p, DFONT - 1.5, "#06b6d4", false);
+            d.d.forEach((l) => add(l, DFONT, "#e2e8f0", false));
+            if (d.g) add("+ " + d.g, DFONT - 0.5, "#6ee7b7", false);
+            if (d.b && d.b !== "-")
+              add("- " + d.b, DFONT - 0.5, "#fca5a5", false);
+            if (d.w) add("! " + d.w, DFONT - 0.5, "#fcd34d", false);
+            // Exact dimensions: fit to content
+            const realH = ty - py + DPAD;
+            const realW = Math.min(DW, Math.max(NW, maxLineW + DPAD * 2));
+            g.appendChild(
+              el("rect", {
+                x: px,
+                y: py,
+                width: realW,
+                height: realH,
+                rx: 8,
+                fill: "#0f172af5",
+                stroke: nd.stroke,
+                "stroke-width": 1,
+              }),
+            );
+            textEls.forEach((t) => {
+              const ln = el("text", {
+                x: t.x,
+                y: t.y,
+                fill: t.fill,
+                "font-size": t.size,
+                "font-weight": t.bold ? 700 : 400,
+              });
+              ln.textContent = t.text;
+              g.appendChild(ln);
+            });
+          }
+          nG.appendChild(g);
+        });
+        svg.appendChild(nG);
+        cv.appendChild(svg);
+
+        // Interactions
+        svg.querySelectorAll(".nb").forEach((g) => {
+          g.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const id = g.dataset.id;
+            NM[id].open = !NM[id].open;
+            draw();
+          });
+          g.addEventListener("mouseenter", () => {
+            const id = g.dataset.id;
+            svg.querySelectorAll(".cn").forEach((c) => {
+              const on = c.dataset.f === id || c.dataset.to === id;
+              c.style.opacity = on ? "1" : "0.04";
+              if (on) c.style.strokeWidth = "2.5";
+            });
+            svg.querySelectorAll(".cl").forEach((c) => {
+              const on = c.dataset.f === id || c.dataset.to === id;
+              c.style.opacity = on ? "1" : "0.04";
+            });
+            svg.querySelectorAll(".nb").forEach((n) => {
+              if (n === g) return;
+              const nid = n.dataset.id;
+              n.style.opacity = edges.some(
+                (e) =>
+                  (e[0] === id && e[1] === nid) ||
+                  (e[1] === id && e[0] === nid),
+              )
+                ? "1"
+                : "0.12";
+            });
+          });
+          g.addEventListener("mouseleave", () => af());
+        });
+      }
+
+      function af() {
+        const svg = cv.querySelector("svg");
+        if (!svg) return;
+        svg.querySelectorAll(".cn").forEach((c) => {
+          const on = filt === "all" || c.dataset.t === filt;
+          c.style.opacity = on
+            ? c.getAttribute("stroke-dasharray")
+              ? 0.3
+              : 0.45
+            : "0.03";
+          c.style.strokeWidth = on ? "1.3" : "1";
+        });
+        svg.querySelectorAll(".cl").forEach((c) => {
+          c.style.opacity =
+            filt === "all" || c.dataset.t === filt ? ".9" : "0.03";
+        });
+        svg.querySelectorAll(".nb").forEach((n) => (n.style.opacity = "1"));
+      }
+      document.querySelectorAll(".lb").forEach((b) => {
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll(".lb")
+            .forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          filt = b.dataset.t;
+          af();
+        });
+      });
+      document.getElementById("bE").onclick = () => {
+        nodes.forEach((n) => (NM[n[0]].open = true));
+        draw();
+      };
+      document.getElementById("bC").onclick = () => {
+        nodes.forEach((n) => (NM[n[0]].open = false));
+        draw();
+      };
+      function zm(s) {
+        sc = Math.max(0.25, Math.min(3, s));
+        const svg = cv.querySelector("svg");
+        if (svg) {
+          const L = layout();
+          svg.style.width = L.TW * sc + "px";
+        }
+      }
+      cv.addEventListener(
+        "wheel",
+        (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            zm(sc * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+          }
+        },
+        { passive: false },
+      );
+      draw();
+    </script>
+  </body>
 </html>

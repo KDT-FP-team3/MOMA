@@ -17,12 +17,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+def require_admin(request: Request) -> None:
+    """관리자 권한 확인 — JWT payload에 is_admin=True 필요.
+    개발 환경에서는 검증을 건너뜀.
+    """
+    if os.getenv("ENV", "production") == "development":
+        return
+    user = getattr(getattr(request, "state", None), "user", None)
+    if not user or not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="관리자 권한이 필요합니다.")
+
+
+router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 # 프로젝트 루트 (lifesync-ai/)
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -226,7 +238,12 @@ async def create_backup(req: BackupRequest) -> dict[str, Any]:
     if not all(c.isalnum() or c in "-_." for c in tag):
         raise HTTPException(400, "태그명에 허용되지 않는 문자가 포함됨")
 
-    result = _run_git("tag", "-a", tag, "-m", req.message)
+    # 메시지 검증 (명령 주입 방지: -- 로 시작 불가, 길이 제한)
+    msg = req.message[:200]  # 최대 200자
+    if msg.startswith("-"):
+        raise HTTPException(400, "메시지가 '-'로 시작할 수 없습니다.")
+
+    result = _run_git("tag", "-a", tag, "-m", msg)
     # git tag는 성공 시 stdout 없음, 실패 시 stderr
     verify = _run_git("tag", "-l", tag)
     if tag not in verify:

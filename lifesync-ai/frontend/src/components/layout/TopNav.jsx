@@ -13,6 +13,7 @@ import {
   PersonStanding, FileText, Shield, Sun, Moon, Menu, X, LogIn, LogOut, Zap,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import SyncIndicator from "../SyncIndicator";
 import { useAppState } from "../../context/AppStateContext";
 
 const NAV_ITEMS = [
@@ -67,7 +68,8 @@ export default function TopNav() {
           </nav>
 
           {/* Right Controls */}
-          <div className="hidden lg:flex items-center gap-2 ml-auto">
+          <div className="hidden lg:flex items-center gap-3 ml-auto">
+            <SyncIndicator />
             <button onClick={toggle} className="p-2 rounded-lg text-white hover:bg-gray-800 transition-all">
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -87,8 +89,11 @@ export default function TopNav() {
             )}
           </div>
 
-          {/* Mobile Hamburger */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden ml-auto p-2 rounded-lg text-white hover:bg-gray-800">
+          {/* Mobile: Sync + Hamburger */}
+          <div className="lg:hidden ml-auto flex items-center gap-2">
+            <SyncIndicator />
+          </div>
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-2 rounded-lg text-white hover:bg-gray-800">
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>

@@ -19,7 +19,7 @@ import logging
 import os
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 # --- 서비스 import ---
@@ -74,11 +74,23 @@ gauge_subscribers: set[WebSocket] = set()
 # Pydantic 요청 모델
 # ============================================================
 
+from enum import Enum as PyEnum
+
+class DomainEnum(str, PyEnum):
+    food = "food"
+    exercise = "exercise"
+    health = "health"
+    hobby = "hobby"
+
 class QueryRequest(BaseModel):
-    """쿼리 요청 모델."""
-    domain: str
+    """쿼리 요청 모델 — domain 검증 + 입력 크기 제한."""
+    domain: DomainEnum
     action: dict[str, Any] = {}
     user_id: str = "default"
+
+    class Config:
+        # action dict 크기 제한 (JSON 직렬화 시 ~10KB)
+        max_anystr_length = 5000
 
 
 class FeedbackRequest(BaseModel):
@@ -239,13 +251,26 @@ async def cascade_preview(request: QueryRequest) -> dict[str, Any]:
 # 대시보드 & 상태 관리
 # ============================================================
 
+def _check_ownership(request, user_id: str) -> None:
+    """인증된 사용자와 요청 user_id가 일치하는지 검증 (IDOR 방지).
+    개발 환경에서는 검증을 건너뜀.
+    """
+    if os.getenv("ENV", "production") == "development":
+        return
+    auth_user = getattr(getattr(request, "state", None), "user", None)
+    if auth_user and auth_user.get("user_id") and auth_user["user_id"] != user_id:
+        raise HTTPException(status_code=403, detail="다른 사용자의 데이터에 접근할 수 없습니다.")
+
+
 @router.get("/api/dashboard/{user_id}")
-async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
+async def dashboard_endpoint(user_id: str, request: Request = None) -> dict[str, Any]:
     """대시보드 6개 게이지 + 4개 도메인 요약.
 
     프론트엔드 DashboardPage가 gauges와 domain_summary 모두 사용.
     """
     _validate_user_id(user_id)
+    if request:
+        _check_ownership(request, user_id)
     if state_manager is None or gauge_calculator is None:
         raise HTTPException(status_code=503, detail="대시보드 서비스가 비활성 상태입니다.")
     user_state = state_manager.to_dict(user_id)
@@ -273,9 +298,11 @@ async def dashboard_endpoint(user_id: str) -> dict[str, Any]:
 
 
 @router.put("/api/state/{user_id}")
-async def update_state(user_id: str, delta: dict[str, float]) -> dict[str, Any]:
+async def update_state(user_id: str, delta: dict[str, float], request: Request = None) -> dict[str, Any]:
     """사용자 상태 벡터 업데이트."""
     _validate_user_id(user_id)
+    if request:
+        _check_ownership(request, user_id)
     if state_manager is None:
         raise HTTPException(status_code=503, detail="상태 관리 서비스가 비활성 상태입니다.")
     state_manager.update_state(user_id, delta)
@@ -437,7 +464,7 @@ async def _handle_voice(ws: WebSocket, data: dict) -> None:
         })
     except Exception as e:
         logger.error("WS voice error: %s", e)
-        await ws.send_json({"type": "error", "data": {"message": str(e)}})
+        await ws.send_json({"type": "error", "data": {"message": "처리 중 오류가 발생했습니다."}})
 
 
 async def _handle_query(ws: WebSocket, data: dict) -> None:
@@ -453,7 +480,7 @@ async def _handle_query(ws: WebSocket, data: dict) -> None:
         await ws.send_json({"type": "query_result", "data": result})
     except Exception as e:
         logger.error("WS query error: %s", e)
-        await ws.send_json({"type": "error", "data": {"message": str(e)}})
+        await ws.send_json({"type": "error", "data": {"message": "처리 중 오류가 발생했습니다."}})
 
 
 async def _handle_feedback(ws: WebSocket, data: dict) -> None:

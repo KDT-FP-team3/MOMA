@@ -38,6 +38,14 @@ async def lifespan(app: FastAPI):
     """앱 시작/종료 이벤트."""
     logger.info("LifeSync AI 서버 시작")
 
+    # ── 보안 경고 ──
+    env_mode = os.getenv("ENV", "production")
+    if env_mode == "development":
+        logger.warning("⚠️  개발 모드(ENV=development) — 인증이 비활성화되어 있습니다. 절대 프로덕션에서 사용하지 마세요!")
+    if env_mode == "production" and not os.getenv("JWT_SECRET"):
+        logger.critical("❌ 프로덕션 모드에서 JWT_SECRET이 설정되지 않았습니다. 서버를 시작할 수 없습니다.")
+        raise RuntimeError("JWT_SECRET 환경변수가 프로덕션에서 필수입니다.")
+
     # 모니터링 에이전트 스케줄러 시작
     monitoring_scheduler = None
     try:
@@ -80,6 +88,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ws: wss: https:;"
         if os.getenv("ENV") == "production":
             response.headers["Strict-Transport-Security"] = (
                 "max-age=31536000; includeSubDomains"
@@ -116,7 +125,7 @@ app.add_middleware(
 PUBLIC_PATHS = {
     "/health", "/docs", "/openapi.json", "/redoc",
     "/api/auth/kakao/login-url", "/api/auth/kakao/callback",
-    "/api/onboarding", "/api/plugins/status", "/api/admin/status", "/api/device/info",
+    "/api/onboarding", "/api/plugins/status", "/api/device/info",
 }
 # 관리 API는 개발 환경에서만 인증 생략 (ENV=development 조건으로 자동 처리)
 
@@ -132,8 +141,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
 
-        # 공개 경로 / CORS preflight / WebSocket → 통과
-        if path in PUBLIC_PATHS or request.method == "OPTIONS" or path.startswith("/ws"):
+        # 공개 경로 / CORS preflight / WebSocket(정확히 /ws만) → 통과
+        if path in PUBLIC_PATHS or request.method == "OPTIONS" or path == "/ws":
             return await call_next(request)
 
         # 개발 환경 → 인증 생략 (명시적으로 "development"만 허용)
