@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeSync AI - System Diagram (FigJam Style)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; overflow: hidden; background: #1a1a2e; }
+
+  .toolbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 48px; background: #FFFFFF; border-bottom: 2px solid #E2D9B8;
+    display: flex; align-items: center; padding: 0 16px; gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .toolbar .logo {
+    font-size: 15px; font-weight: 700; color: #5D4E37;
+    margin-right: auto; white-space: nowrap;
+  }
+  .toolbar .logo span { color: #FF9800; }
+  .toolbar button {
+    background: #FFFDF0; border: 1.5px solid #E2D9B8; border-radius: 8px;
+    padding: 6px 14px; font-size: 12px; font-weight: 600; color: #5D4E37;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    font-family: inherit;
+  }
+  .toolbar button:hover { background: #FFF3C4; border-color: #D4B96A; }
+  .toolbar button.active { background: #FFE082; border-color: #FFA000; }
+  .toolbar .sep { width: 1px; height: 24px; background: #E2D9B8; }
+  .toolbar .zoom-text { font-size: 12px; color: #8D7B5F; min-width: 42px; text-align: center; }
+
+  .canvas-wrapper {
+    position: fixed; top: 48px; left: 0; right: 0; bottom: 0;
+    overflow: hidden; cursor: grab; background: #F5F0DC;
+  }
+  .canvas-wrapper.panning { cursor: grabbing; }
+
+  #canvas {
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* Tooltip */
+  .node-group { cursor: default; }
+  .node-group:hover .node-rect { filter: brightness(0.97); }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="logo">LifeSync AI <span>System Diagram</span></div>
+  <button onclick="jumpTo('flowchart')">순서도</button>
+  <button onclick="jumpTo('architecture')">아키텍처</button>
+  <button onclick="jumpTo('dataflow')">데이터 플로우</button>
+  <div class="sep"></div>
+  <button onclick="zoomIn()">+</button>
+  <span class="zoom-text" id="zoomLabel">45%</span>
+  <button onclick="zoomOut()">-</button>
+  <button onclick="resetView()">전체보기</button>
+</div>
+
+<div class="canvas-wrapper" id="canvasWrapper">
+  <svg id="canvas" width="6000" height="4800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Dot grid pattern -->
+      <pattern id="dotGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+        <circle cx="15" cy="15" r="1.2" fill="#d4c9a0" opacity="0.4"/>
+      </pattern>
+      <!-- Arrow markers -->
+      <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#9E9E9E"/>
+      </marker>
+      <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#FF9800"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#2196F3"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#4CAF50"/>
+      </marker>
+      <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#9C27B0"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#FF5722"/>
+      </marker>
+      <marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#009688"/>
+      </marker>
+      <marker id="arrow-indigo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#5C6BC0"/>
+      </marker>
+      <marker id="arrow-pink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,1 L10,5 L0,9 Z" fill="#E91E63"/>
+      </marker>
+      <!-- Drop shadow filter -->
+      <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+        <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+      </filter>
+      <filter id="shadowLight" x="-2%" y="-2%" width="104%" height="108%">
+        <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.06"/>
+      </filter>
+    </defs>
+
+    <!-- Background -->
+    <rect width="6000" height="4800" fill="#FFF9DB"/>
+    <rect width="6000" height="4800" fill="url(#dotGrid)"/>
+
+    <!-- Sections will be populated by JS -->
+    <g id="section-flowchart"></g>
+    <g id="section-architecture"></g>
+    <g id="section-dataflow"></g>
+  </svg>
+</div>
+
+<script>
+// ===== HELPER FUNCTIONS =====
+const svgNS = "http://www.w3.org/2000/svg";
+
+function createEl(tag, attrs) {
+  const el = document.createElementNS(svgNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v);
+  return el;
+}
+
+function drawSectionLabel(parent, x, y, text, borderColor) {
+  const g = createEl("g", { transform: `translate(${x},${y})` });
+  const r = createEl("rect", { x: 0, y: 0, width: text.length * 18 + 40, height: 44, rx: 10, fill: "#FFFFFF", stroke: borderColor || "#E2D9B8", "stroke-width": 2.5, filter: "url(#shadow)" });
+  const leftBar = createEl("rect", { x: 0, y: 0, width: 6, height: 44, rx: 3, fill: borderColor || "#FFA000" });
+  const t = createEl("text", { x: 22, y: 28, "font-size": 17, "font-weight": 700, fill: "#3E2C1C", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+  t.textContent = text;
+  g.append(r, leftBar, t);
+  parent.appendChild(g);
+}
+
+function drawNode(parent, x, y, w, h, label, sublabel, fill, border, textColor, extraClass) {
+  const g = createEl("g", { class: "node-group", transform: `translate(${x},${y})` });
+  const shadow = createEl("rect", { x: 2, y: 2, width: w, height: h, rx: 12, fill: "#00000008" });
+  const rect = createEl("rect", { class: "node-rect", x: 0, y: 0, width: w, height: h, rx: 12, fill: fill || "#F5F5F5", stroke: border || "#9E9E9E", "stroke-width": 2, filter: "url(#shadowLight)" });
+  g.append(shadow, rect);
+
+  if (sublabel) {
+    const t1 = createEl("text", { x: w/2, y: h/2 - 6, "text-anchor": "middle", "font-size": 13, "font-weight": 600, fill: textColor || "#333", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+    t1.textContent = label;
+    const t2 = createEl("text", { x: w/2, y: h/2 + 12, "text-anchor": "middle", "font-size": 10, fill: "#888", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+    t2.textContent = sublabel;
+    g.append(t1, t2);
+  } else {
+    const t = createEl("text", { x: w/2, y: h/2 + 5, "text-anchor": "middle", "font-size": 13, "font-weight": 600, fill: textColor || "#333", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+    t.textContent = label;
+    g.appendChild(t);
+  }
+  parent.appendChild(g);
+  return { cx: x + w/2, cy: y + h/2, x, y, w, h, top: y, bottom: y + h, left: x, right: x + w };
+}
+
+function drawSmallNode(parent, x, y, w, h, label, fill, border, textColor) {
+  return drawNode(parent, x, y, w, h, label, null, fill, border, textColor);
+}
+
+function drawArrow(parent, x1, y1, x2, y2, color, dashed) {
+  const line = createEl("line", {
+    x1, y1, x2, y2,
+    stroke: color || "#9E9E9E", "stroke-width": 2,
+    "marker-end": `url(#arrow-${getMarkerName(color)})`,
+  });
+  if (dashed) line.setAttribute("stroke-dasharray", "6 4");
+  parent.appendChild(line);
+}
+
+function drawCurvedArrow(parent, x1, y1, cx1, cy1, cx2, cy2, x2, y2, color, dashed) {
+  const path = createEl("path", {
+    d: `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`,
+    fill: "none", stroke: color || "#9E9E9E", "stroke-width": 2,
+    "marker-end": `url(#arrow-${getMarkerName(color)})`,
+  });
+  if (dashed) path.setAttribute("stroke-dasharray", "6 4");
+  parent.appendChild(path);
+}
+
+function drawArrowLabel(parent, x, y, text, color) {
+  const bg = createEl("rect", { x: x - text.length * 4 - 4, y: y - 8, width: text.length * 8 + 8, height: 16, rx: 4, fill: "#FFFFFFDD" });
+  const t = createEl("text", { x, y: y + 4, "text-anchor": "middle", "font-size": 9, fill: color || "#666", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+  t.textContent = text;
+  parent.append(bg, t);
+}
+
+function drawLayerRect(parent, x, y, w, h, label, fill, border) {
+  const g = createEl("g");
+  const rect = createEl("rect", { x, y, width: w, height: h, rx: 16, fill, stroke: border, "stroke-width": 2, opacity: 0.7 });
+  const labelBg = createEl("rect", { x: x + 12, y: y + 8, width: label.length * 10 + 20, height: 24, rx: 6, fill: border, opacity: 0.15 });
+  const t = createEl("text", { x: x + 22, y: y + 24, "font-size": 12, "font-weight": 700, fill: border, "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+  t.textContent = label;
+  g.append(rect, labelBg, t);
+  parent.appendChild(g);
+  return g;
+}
+
+function getMarkerName(color) {
+  const map = { "#9E9E9E": "gray", "#FF9800": "orange", "#2196F3": "blue", "#4CAF50": "green", "#9C27B0": "purple", "#FF5722": "red", "#009688": "teal", "#5C6BC0": "indigo", "#E91E63": "pink" };
+  return map[color] || "gray";
+}
+
+// Domain colors
+const C = {
+  food: { fill: "#FFF3E0", border: "#FF9800", text: "#E65100" },
+  exercise: { fill: "#E3F2FD", border: "#2196F3", text: "#0D47A1" },
+  health: { fill: "#E8F5E9", border: "#4CAF50", text: "#1B5E20" },
+  hobby: { fill: "#F3E5F5", border: "#9C27B0", text: "#4A148C" },
+  user: { fill: "#FFF9C4", border: "#F9A825", text: "#F57F17" },
+  process: { fill: "#F5F5F5", border: "#9E9E9E", text: "#424242" },
+  core: { fill: "#E0F7FA", border: "#009688", text: "#00695C" },
+  data: { fill: "#E1F5FE", border: "#03A9F4", text: "#01579B" },
+  infra: { fill: "#EFEBE9", border: "#795548", text: "#3E2723" },
+};
+
+// ========== SECTION 1: FLOWCHART (순서도) ==========
+(function renderFlowchart() {
+  const sec = document.getElementById("section-flowchart");
+  const ox = 80, oy = 30;
+
+  drawSectionLabel(sec, ox, oy, "순서도", "#FFA000");
+
+  // Row 0: User entry flow
+  const ry0 = oy + 70;
+  const user = drawNode(sec, ox, ry0, 100, 50, "사용자", null, C.user.fill, C.user.border, C.user.text);
+  const landing = drawNode(sec, ox + 170, ry0, 120, 50, "Landing", null, C.process.fill, C.process.border);
+  const login = drawNode(sec, ox + 360, ry0, 180, 50, "Login (카카오 OAuth)", null, "#FFF3E0", "#FF9800", "#E65100");
+  const onboard = drawNode(sec, ox + 610, ry0, 180, 50, "Onboarding (3단계)", null, "#E8F5E9", "#4CAF50", "#1B5E20");
+  const dash = drawNode(sec, ox + 870, ry0, 160, 55, "Dashboard", "Samsung Health 스타일", "#E3F2FD", "#1a73e8", "#0D47A1");
+
+  drawArrow(sec, user.right, user.cy, landing.left, landing.cy, "#9E9E9E");
+  drawArrow(sec, landing.right, landing.cy, login.left, login.cy, "#FF9800");
+  drawArrow(sec, login.right, login.cy, onboard.left, onboard.cy, "#4CAF50");
+  drawArrow(sec, onboard.right, onboard.cy, dash.left, dash.cy, "#2196F3");
+
+  // Row 1: Dashboard branches
+  const ry1 = ry0 + 120;
+  const branches = [
+    { label: "Solutions", sub: "4 도메인 AI 추천", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "Photo Analysis", sub: "YOLO + CLIP", fill: "#FCE4EC", border: "#E91E63", text: "#880E4F" },
+    { label: "Simulator", sub: "PPO RL 84스텝", fill: "#E0F7FA", border: "#009688", text: "#00695C" },
+    { label: "Schedule", sub: "24시간 스케줄러", fill: "#FFF3E0", border: "#FF9800", text: "#E65100" },
+    { label: "Report", sub: "주간 리포트", fill: "#F3E5F5", border: "#9C27B0", text: "#4A148C" },
+    { label: "Avatar", sub: "걷는 캐릭터", fill: "#FFF9C4", border: "#F9A825", text: "#F57F17" },
+  ];
+  const bNodes = [];
+  branches.forEach((b, i) => {
+    const bx = ox + i * 200;
+    const n = drawNode(sec, bx, ry1, 170, 55, b.label, b.sub, b.fill, b.border, b.text);
+    bNodes.push(n);
+    drawCurvedArrow(sec, dash.cx, dash.bottom, dash.cx, dash.bottom + 20, n.cx, n.top - 20, n.cx, n.top, "#5C6BC0");
+  });
+
+  // Row 1.5: Solution domain cards
+  const ry1b = ry1 + 100;
+  const domains = [
+    { label: "요리 Agent", ...C.food },
+    { label: "운동 Agent", ...C.exercise },
+    { label: "건강 Agent", ...C.health },
+    { label: "취미 Agent", ...C.hobby },
+  ];
+  const dCards = [];
+  domains.forEach((d, i) => {
+    const dx = ox + i * 160;
+    const n = drawSmallNode(sec, dx, ry1b, 140, 44, d.label, d.fill, d.border, d.text);
+    dCards.push(n);
+  });
+  // Arrow from Solutions to domain cards
+  dCards.forEach(dc => {
+    drawCurvedArrow(sec, bNodes[0].cx, bNodes[0].bottom, bNodes[0].cx, bNodes[0].bottom + 12, dc.cx, dc.top - 12, dc.cx, dc.top, "#5C6BC0", true);
+  });
+
+  // Row 2: Query processing pipeline
+  const ry2 = ry1b + 110;
+  drawSectionLabel(sec, ox, ry2 - 5, "쿼리 처리 파이프라인", "#009688");
+  const ry2b = ry2 + 50;
+  const userIn = drawNode(sec, ox, ry2b, 120, 50, "User Input", null, C.user.fill, C.user.border, C.user.text);
+  const apiRouter = drawNode(sec, ox + 200, ry2b, 140, 50, "API Router", "api_router.py", "#E0F2F1", "#009688", "#00695C");
+  const orch = drawNode(sec, ox + 420, ry2b, 200, 55, "Orchestrator", "LangGraph StateGraph", "#E8EAF6", "#5C6BC0", "#283593");
+  const classify = drawNode(sec, ox + 700, ry2b, 160, 50, "classify_intent", "키워드 기반 분류", "#FFF8E1", "#FFC107", "#F57F17");
+
+  drawArrow(sec, userIn.right, userIn.cy, apiRouter.left, apiRouter.cy, "#009688");
+  drawArrow(sec, apiRouter.right, apiRouter.cy, orch.left, orch.cy, "#5C6BC0");
+  drawArrow(sec, orch.right, orch.cy, classify.left, classify.cy, "#FFC107");
+
+  // Row 3: 4 agents
+  const ry3 = ry2b + 100;
+  const agents = [
+    { label: "food_agent", sub: "GPT-4o + RAG", ...C.food },
+    { label: "exercise_agent", sub: "운동 추천", ...C.exercise },
+    { label: "health_agent", sub: "건강검진 분석", ...C.health },
+    { label: "hobby_agent", sub: "스트레스 기반", ...C.hobby },
+  ];
+  const aNodes = [];
+  agents.forEach((a, i) => {
+    const ax = ox + 200 + i * 210;
+    const n = drawNode(sec, ax, ry3, 180, 55, a.label, a.sub, a.fill, a.border, a.text);
+    aNodes.push(n);
+    drawCurvedArrow(sec, classify.cx, classify.bottom, classify.cx, classify.bottom + 15, n.cx, n.top - 15, n.cx, n.top, a.border, true);
+  });
+
+  // Row 4: merge pipeline
+  const ry4 = ry3 + 110;
+  const merge = drawNode(sec, ox + 250, ry4, 160, 50, "merge_results", "다중 도메인 병합", "#E0F7FA", "#009688", "#00695C");
+  const cascade = drawNode(sec, ox + 490, ry4, 180, 50, "compute_cascade", "연쇄 효과 계산", "#FCE4EC", "#E91E63", "#880E4F");
+  const evalNode = drawNode(sec, ox + 750, ry4, 140, 50, "evaluate", "품질 메트릭", "#E8F5E9", "#4CAF50", "#1B5E20");
+  const resp = drawNode(sec, ox + 970, ry4, 130, 50, "Response", null, C.user.fill, C.user.border, C.user.text);
+
+  aNodes.forEach(a => {
+    drawCurvedArrow(sec, a.cx, a.bottom, a.cx, a.bottom + 15, merge.cx, merge.top - 15, merge.cx, merge.top, "#009688");
+  });
+  drawArrow(sec, merge.right, merge.cy, cascade.left, cascade.cy, "#E91E63");
+  drawArrow(sec, cascade.right, cascade.cy, evalNode.left, evalNode.cy, "#4CAF50");
+  drawArrow(sec, evalNode.right, evalNode.cy, resp.left, resp.cy, "#9E9E9E");
+
+  // Row 5: CASCADE rules sub-diagram
+  const ry5 = ry4 + 120;
+  drawSectionLabel(sec, ox + 200, ry5, "CASCADE 연쇄 규칙 (9개)", "#FF5722");
+  const ry5b = ry5 + 60;
+  const cw = 150, ch = 50, gap = 280;
+  const cFood    = drawSmallNode(sec, ox + 250, ry5b, cw, ch, "요리 (Food)", C.food.fill, C.food.border, C.food.text);
+  const cExer    = drawSmallNode(sec, ox + 250 + gap, ry5b, cw, ch, "운동 (Exercise)", C.exercise.fill, C.exercise.border, C.exercise.text);
+  const cHealth  = drawSmallNode(sec, ox + 250, ry5b + 120, cw, ch, "건강 (Health)", C.health.fill, C.health.border, C.health.text);
+  const cHobby   = drawSmallNode(sec, ox + 250 + gap, ry5b + 120, cw, ch, "취미 (Hobby)", C.hobby.fill, C.hobby.border, C.hobby.text);
+
+  // Cascade arrows with labels
+  // food → health
+  drawCurvedArrow(sec, cFood.cx, cFood.bottom, cFood.cx - 20, cFood.bottom + 40, cHealth.cx - 20, cHealth.top - 40, cHealth.cx, cHealth.top, "#FF5722", true);
+  drawArrowLabel(sec, cFood.cx - 40, cFood.bottom + 45, "칼로리/콜레스테롤", "#FF5722");
+  // food → exercise
+  drawArrow(sec, cFood.right, cFood.cy - 5, cExer.left, cExer.cy - 5, "#FF5722", true);
+  drawArrowLabel(sec, (cFood.right + cExer.left) / 2, cFood.cy - 20, "추가 운동 필요", "#FF5722");
+  // exercise → health
+  drawCurvedArrow(sec, cExer.cx, cExer.bottom, cExer.cx + 20, cExer.bottom + 40, cHealth.right + 40, cHealth.cy, cHealth.right, cHealth.cy - 5, "#2196F3", true);
+  drawArrowLabel(sec, cExer.cx + 60, cExer.bottom + 45, "수면/스트레스 개선", "#2196F3");
+  // exercise → food
+  drawArrow(sec, cExer.left, cExer.cy + 5, cFood.right, cFood.cy + 5, "#2196F3", true);
+  drawArrowLabel(sec, (cFood.right + cExer.left) / 2, cExer.cy + 20, "단백질/수분 권장", "#2196F3");
+  // health → exercise
+  drawCurvedArrow(sec, cHealth.right, cHealth.cy + 5, cHealth.right + 40, cHealth.cy + 20, cExer.cx + 20, cExer.bottom + 40, cExer.cx + 30, cExer.bottom, "#4CAF50", true);
+  // health → food
+  drawCurvedArrow(sec, cHealth.cx + 20, cHealth.top, cHealth.cx + 40, cHealth.top - 40, cFood.cx + 20, cFood.bottom + 40, cFood.cx + 30, cFood.bottom, "#4CAF50", true);
+  // hobby → health
+  drawCurvedArrow(sec, cHobby.left, cHobby.cy, cHobby.left - 30, cHobby.cy, cHealth.right + 30, cHealth.cy + 10, cHealth.right, cHealth.cy + 10, "#9C27B0", true);
+  drawArrowLabel(sec, (cHobby.left + cHealth.right) / 2, cHobby.cy + 15, "스트레스 감소", "#9C27B0");
+  // hobby → food
+  drawCurvedArrow(sec, cHobby.cx, cHobby.top, cHobby.cx, cHobby.top - 30, cFood.right + 80, cFood.cy + 20, cFood.right + 10, cFood.cy + 15, "#9C27B0", true);
+  // hobby → exercise
+  drawArrow(sec, cHobby.cx, cHobby.top, cExer.cx, cExer.bottom, "#9C27B0", true);
+})();
+
+// ========== SECTION 2: ARCHITECTURE DIAGRAM ==========
+(function renderArchitecture() {
+  const sec = document.getElementById("section-architecture");
+  const ox = 80, oy = 1550;
+  sec.setAttribute("transform", `translate(0, 0)`);
+
+  drawSectionLabel(sec, ox, oy, "아키텍처 다이어그램", "#5C6BC0");
+
+  const lx = ox, lw = 1300;
+
+  // Layer 1: Frontend
+  const ly1 = oy + 60;
+  drawLayerRect(sec, lx, ly1, lw, 130, "Frontend", "#E8EAF6", "#5C6BC0");
+  const fe1 = drawSmallNode(sec, lx + 30, ly1 + 45, 160, 44, "React 18 + Tailwind", "#E8EAF6", "#5C6BC0", "#283593");
+  const fe2 = drawSmallNode(sec, lx + 220, ly1 + 45, 170, 44, "Capacitor (Android)", "#E8EAF6", "#5C6BC0", "#283593");
+  const fe3 = drawSmallNode(sec, lx + 420, ly1 + 45, 130, 44, "Recharts", "#E8EAF6", "#5C6BC0", "#283593");
+  const fe4 = drawSmallNode(sec, lx + 580, ly1 + 45, 160, 44, "offlineEngine.js", "#E8EAF6", "#5C6BC0", "#283593");
+  const fe5 = drawSmallNode(sec, lx + 770, ly1 + 45, 170, 44, "HashRouter (12페이지)", "#E8EAF6", "#5C6BC0", "#283593");
+  const fe6 = drawSmallNode(sec, lx + 970, ly1 + 45, 180, 44, "AppStateContext", "#E8EAF6", "#5C6BC0", "#283593");
+
+  // Layer 2: Backend
+  const ly2 = ly1 + 160;
+  drawLayerRect(sec, lx, ly2, lw, 130, "Backend", "#E0F2F1", "#009688");
+  drawSmallNode(sec, lx + 30, ly2 + 45, 180, 44, "FastAPI + WebSocket", "#E0F2F1", "#009688", "#00695C");
+  drawSmallNode(sec, lx + 240, ly2 + 45, 140, 44, "ai_router.py", "#E0F2F1", "#009688", "#00695C");
+  drawSmallNode(sec, lx + 410, ly2 + 45, 150, 44, "api_router.py", "#E0F2F1", "#009688", "#00695C");
+  drawSmallNode(sec, lx + 590, ly2 + 45, 170, 44, "admin_router.py", "#E0F2F1", "#009688", "#00695C");
+  drawSmallNode(sec, lx + 790, ly2 + 45, 220, 44, "Middleware (Auth/CORS/Rate)", "#E0F2F1", "#009688", "#00695C");
+  drawSmallNode(sec, lx + 1040, ly2 + 45, 160, 44, "JWT + 보안헤더", "#E0F2F1", "#009688", "#00695C");
+
+  // Arrow between layers
+  drawArrow(sec, lx + lw/2, ly1 + 130, lx + lw/2, ly2, "#5C6BC0");
+
+  // Layer 3: AI/ML
+  const ly3 = ly2 + 160;
+  drawLayerRect(sec, lx, ly3, lw, 200, "AI/ML Layer", "#FCE4EC", "#E91E63");
+  drawSmallNode(sec, lx + 30, ly3 + 40, 220, 44, "LangGraph Orchestrator", "#FCE4EC", "#E91E63", "#880E4F");
+  drawSmallNode(sec, lx + 280, ly3 + 40, 200, 44, "Core + Plugin Registry", "#FCE4EC", "#E91E63", "#880E4F");
+  drawSmallNode(sec, lx + 510, ly3 + 40, 180, 44, "CASCADE Rules (9개)", "#FCE4EC", "#E91E63", "#880E4F");
+  drawSmallNode(sec, lx + 720, ly3 + 40, 200, 44, "Fallbacks (6 Basic*)", "#FCE4EC", "#E91E63", "#880E4F");
+  // Domain agents row
+  drawSmallNode(sec, lx + 50, ly3 + 110, 140, 44, "FoodAgent", C.food.fill, C.food.border, C.food.text);
+  drawSmallNode(sec, lx + 220, ly3 + 110, 160, 44, "ExerciseAgent", C.exercise.fill, C.exercise.border, C.exercise.text);
+  drawSmallNode(sec, lx + 410, ly3 + 110, 150, 44, "HealthAgent", C.health.fill, C.health.border, C.health.text);
+  drawSmallNode(sec, lx + 590, ly3 + 110, 150, 44, "HobbyAgent", C.hobby.fill, C.hobby.border, C.hobby.text);
+  drawSmallNode(sec, lx + 770, ly3 + 110, 170, 44, "ImageAnalyzer", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 970, ly3 + 110, 170, 44, "VoiceProcessor", "#EFEBE9", "#795548", "#3E2723");
+
+  drawArrow(sec, lx + lw/2, ly2 + 130, lx + lw/2, ly3, "#009688");
+
+  // Layer 4: ML Models
+  const ly4 = ly3 + 230;
+  drawLayerRect(sec, lx, ly4, lw, 120, "ML Models", "#FFF8E1", "#FFC107");
+  drawSmallNode(sec, lx + 30, ly4 + 45, 140, 44, "GPT-4o-mini", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 200, ly4 + 45, 180, 44, "OpenCLIP ViT-B-32", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 410, ly4 + 45, 120, 44, "YOLOv8", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 560, ly4 + 45, 130, 44, "MediaPipe", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 720, ly4 + 45, 140, 44, "PPO / SB3", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 890, ly4 + 45, 130, 44, "Optuna", "#FFF8E1", "#FFC107", "#F57F17");
+  drawSmallNode(sec, lx + 1050, ly4 + 45, 130, 44, "Whisper", "#FFF8E1", "#FFC107", "#F57F17");
+
+  drawArrow(sec, lx + lw/2, ly3 + 200, lx + lw/2, ly4, "#E91E63");
+
+  // Layer 5: Data
+  const ly5 = ly4 + 150;
+  drawLayerRect(sec, lx, ly5, lw, 120, "Data Layer", "#E1F5FE", "#03A9F4");
+  drawSmallNode(sec, lx + 50, ly5 + 45, 220, 44, "Supabase PostgreSQL", "#E1F5FE", "#03A9F4", "#01579B");
+  drawNode(sec, lx + 310, ly5 + 34, 200, 55, "ChromaDB", "Vector / RAG", "#E1F5FE", "#03A9F4", "#01579B");
+  drawNode(sec, lx + 550, ly5 + 34, 180, 55, "AWS S3", "Model Weights", "#E1F5FE", "#03A9F4", "#01579B");
+  drawNode(sec, lx + 770, ly5 + 34, 160, 55, "IndexedDB", "오프라인 캐시", "#E1F5FE", "#03A9F4", "#01579B");
+
+  drawArrow(sec, lx + lw/2, ly4 + 120, lx + lw/2, ly5, "#FFC107");
+
+  // Layer 6: Infrastructure
+  const ly6 = ly5 + 150;
+  drawLayerRect(sec, lx, ly6, lw, 120, "Infrastructure", "#EFEBE9", "#795548");
+  drawNode(sec, lx + 50, ly6 + 40, 180, 50, "Railway", "$5/월 Backend", "#EFEBE9", "#795548", "#3E2723");
+  drawNode(sec, lx + 280, ly6 + 40, 180, 50, "Vercel", "무료 CDN Frontend", "#EFEBE9", "#795548", "#3E2723");
+  drawNode(sec, lx + 510, ly6 + 40, 180, 50, "Docker Compose", "로컬 개발", "#EFEBE9", "#795548", "#3E2723");
+  drawNode(sec, lx + 740, ly6 + 40, 180, 50, "GitHub Actions", "CI/CD", "#EFEBE9", "#795548", "#3E2723");
+
+  drawArrow(sec, lx + lw/2, ly5 + 120, lx + lw/2, ly6, "#03A9F4");
+})();
+
+// ========== SECTION 3: DATA FLOW ==========
+(function renderDataFlow() {
+  const sec = document.getElementById("section-dataflow");
+  const ox = 1600, oy = 1550;
+
+  drawSectionLabel(sec, ox, oy, "데이터 플로우", "#009688");
+
+  // Lane 1: Main Query Flow
+  const lx1 = ox, ly = oy + 70;
+  drawSectionLabel(sec, lx1, ly, "메인 쿼리 플로우", "#5C6BC0");
+
+  const sp = 80; // vertical spacing
+  const nw = 180, nh = 48;
+  const lane1Nodes = [
+    { label: "User Input", ...C.user },
+    { label: "React Components", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "Axios (Bearer token)", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "FastAPI Middleware", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "Router (API/AI/Admin)", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "Orchestrator", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "Domain Agents (4개)", fill: "#FCE4EC", border: "#E91E63", text: "#880E4F" },
+    { label: "CASCADE 계산", fill: "#FCE4EC", border: "#E91E63", text: "#880E4F" },
+    { label: "UserStateManager", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "Supabase PostgreSQL", fill: "#E1F5FE", border: "#03A9F4", text: "#01579B" },
+    { label: "GaugeCalculator", fill: "#E8F5E9", border: "#4CAF50", text: "#1B5E20" },
+    { label: "6 Gauges 계산", fill: "#E8F5E9", border: "#4CAF50", text: "#1B5E20" },
+    { label: "WebSocket Push", fill: "#E0F7FA", border: "#009688", text: "#00695C" },
+    { label: "React State Update", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "Dashboard UI 렌더", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+  ];
+  const l1Pos = [];
+  lane1Nodes.forEach((n, i) => {
+    const ny = ly + 50 + i * (nh + sp - 30);
+    const pos = drawSmallNode(sec, lx1, ny, nw, nh, n.label, n.fill, n.border, n.text);
+    l1Pos.push(pos);
+    if (i > 0) {
+      drawArrow(sec, l1Pos[i-1].cx, l1Pos[i-1].bottom, pos.cx, pos.top, n.border);
+    }
+  });
+
+  // 6 gauge mini nodes
+  const gaugeY = ly + 50 + 11 * (nh + sp - 30) + nh + 10;
+  const gaugeNames = ["ROS", "혈액순도", "탈모위험", "수면점수", "스트레스", "주간달성"];
+  const gaugeColors = ["#FF5722", "#E91E63", "#9C27B0", "#2196F3", "#4CAF50", "#FFC107"];
+  gaugeNames.forEach((gn, i) => {
+    const gx = lx1 + 200 + (i % 3) * 100;
+    const gy = gaugeY + Math.floor(i / 3) * 36;
+    const g = createEl("g", { transform: `translate(${gx},${gy})` });
+    const circle = createEl("circle", { cx: 12, cy: 12, r: 12, fill: gaugeColors[i], opacity: 0.2, stroke: gaugeColors[i], "stroke-width": 1.5 });
+    const t = createEl("text", { x: 30, y: 16, "font-size": 10, fill: "#555", "font-family": "'Segoe UI','Malgun Gothic',sans-serif" });
+    t.textContent = gn;
+    g.append(circle, t);
+    sec.appendChild(g);
+  });
+
+  // Lane 2: Photo Analysis Flow
+  const lx2 = ox + 350;
+  drawSectionLabel(sec, lx2, ly, "사진 분석 플로우", "#E91E63");
+
+  const photoNodes = [
+    { label: "Camera / 파일 업로드", ...C.user },
+    { label: "POST /api/photo/upload", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "YOLOv8 식재료 감지", fill: "#FFF8E1", border: "#FFC107", text: "#F57F17" },
+    { label: "CLIP 이미지 임베딩", fill: "#FFF8E1", border: "#FFC107", text: "#F57F17" },
+    { label: "MediaPipe 자세 분석", fill: "#FFF8E1", border: "#FFC107", text: "#F57F17" },
+    { label: "분석 결과 (Top 5)", fill: "#FCE4EC", border: "#E91E63", text: "#880E4F" },
+    { label: "POST /api/query", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "Gauge 업데이트", fill: "#E8F5E9", border: "#4CAF50", text: "#1B5E20" },
+  ];
+  const l2Pos = [];
+  photoNodes.forEach((n, i) => {
+    const ny = ly + 50 + i * (nh + sp - 20);
+    const pos = drawSmallNode(sec, lx2, ny, nw, nh, n.label, n.fill, n.border, n.text);
+    l2Pos.push(pos);
+    if (i > 0) {
+      drawArrow(sec, l2Pos[i-1].cx, l2Pos[i-1].bottom, pos.cx, pos.top, n.border);
+    }
+  });
+
+  // Lane 3: RL + Offline Flow
+  const lx3 = ox + 700;
+  drawSectionLabel(sec, lx3, ly, "RL 학습 / 오프라인", "#795548");
+
+  const rlNodes = [
+    { label: "사용자 피드백", ...C.user },
+    { label: "FeedbackCollector", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "Reward 계산", fill: "#FCE4EC", border: "#E91E63", text: "#880E4F" },
+    { label: "RetrainScheduler", fill: "#E0F7FA", border: "#009688", text: "#00695C" },
+    { label: "PPO Train (SB3)", fill: "#FFF8E1", border: "#FFC107", text: "#F57F17" },
+    { label: "Model → S3 업로드", fill: "#E1F5FE", border: "#03A9F4", text: "#01579B" },
+  ];
+  const l3Pos = [];
+  rlNodes.forEach((n, i) => {
+    const ny = ly + 50 + i * (nh + sp - 20);
+    const pos = drawSmallNode(sec, lx3, ny, nw, nh, n.label, n.fill, n.border, n.text);
+    l3Pos.push(pos);
+    if (i > 0) {
+      drawArrow(sec, l3Pos[i-1].cx, l3Pos[i-1].bottom, pos.cx, pos.top, n.border);
+    }
+  });
+
+  // Offline sub-section
+  const offY = ly + 50 + 7 * (nh + sp - 20);
+  drawSectionLabel(sec, lx3, offY, "오프라인 지원", "#5C6BC0");
+  const offNodes = [
+    { label: "offlineEngine.js", fill: "#E8EAF6", border: "#5C6BC0", text: "#283593" },
+    { label: "IndexedDB 캐시", fill: "#E1F5FE", border: "#03A9F4", text: "#01579B" },
+    { label: "Model Sync (5s)", fill: "#E0F2F1", border: "#009688", text: "#00695C" },
+    { label: "로컬 추론 (Fallback)", fill: "#EFEBE9", border: "#795548", text: "#3E2723" },
+  ];
+  const l4Pos = [];
+  offNodes.forEach((n, i) => {
+    const ny = offY + 50 + i * (nh + sp - 25);
+    const pos = drawSmallNode(sec, lx3, ny, nw, nh, n.label, n.fill, n.border, n.text);
+    l4Pos.push(pos);
+    if (i > 0) {
+      drawArrow(sec, l4Pos[i-1].cx, l4Pos[i-1].bottom, pos.cx, pos.top, n.border);
+    }
+  });
+
+  // Cross-lane connection: S3 → offlineEngine
+  drawCurvedArrow(sec, l3Pos[5].cx + 50, l3Pos[5].bottom, l3Pos[5].cx + 80, l3Pos[5].bottom + 60, l4Pos[0].cx + 80, l4Pos[0].top - 60, l4Pos[0].cx + 50, l4Pos[0].top, "#03A9F4", true);
+  drawArrowLabel(sec, l3Pos[5].cx + 100, l3Pos[5].bottom + 40, "모델 동기화", "#03A9F4");
+
+  // Cross-lane: Photo → main query
+  drawCurvedArrow(sec, l2Pos[6].left, l2Pos[6].cy, l2Pos[6].left - 30, l2Pos[6].cy, l1Pos[5].right + 30, l1Pos[5].cy, l1Pos[5].right, l1Pos[5].cy, "#009688", true);
+})();
+
+// ===== PAN / ZOOM =====
+let scale = 0.38, panX = -20, panY = -10, isPanning = false, startX, startY;
+const canvas = document.getElementById("canvas");
+const wrapper = document.getElementById("canvasWrapper");
+
+function applyTransform() {
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  document.getElementById("zoomLabel").textContent = Math.round(scale * 100) + "%";
+}
+applyTransform();
+
+wrapper.addEventListener("wheel", e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  const newScale = Math.max(0.1, Math.min(3, scale * factor));
+  const rect = wrapper.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}, { passive: false });
+
+wrapper.addEventListener("mousedown", e => {
+  if (e.button !== 0) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  wrapper.classList.add("panning");
+});
+window.addEventListener("mousemove", e => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyTransform();
+});
+window.addEventListener("mouseup", () => {
+  isPanning = false;
+  wrapper.classList.remove("panning");
+});
+
+function zoomIn() { scale = Math.min(3, scale * 1.2); applyTransform(); }
+function zoomOut() { scale = Math.max(0.1, scale * 0.8); applyTransform(); }
+function resetView() { scale = 0.38; panX = -20; panY = -10; applyTransform(); }
+
+function jumpTo(section) {
+  const vw = window.innerWidth, vh = window.innerHeight - 48;
+  if (section === "flowchart") { scale = 0.55; panX = -20; panY = -10; }
+  else if (section === "architecture") { scale = 0.55; panX = -20; panY = -800; }
+  else if (section === "dataflow") { scale = 0.5; panX = -750; panY = -720; }
+  applyTransform();
+}
+</script>
+</body>
+</html>

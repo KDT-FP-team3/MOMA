@@ -7,6 +7,18 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // 카카오 OAuth 콜백 처리: /auth/kakao/callback?code=xxx → /#/login?code=xxx
+      // HashRouter는 /auth/kakao/callback 경로를 인식하지 못하므로
+      // React 앱 로드 전에 URL을 변환합니다.
+      (function() {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        if (path === '/auth/kakao/callback' && search.includes('code=')) {
+          window.location.replace('/' + search + '#/login');
+        }
+      })();
+    </script>
     <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>
