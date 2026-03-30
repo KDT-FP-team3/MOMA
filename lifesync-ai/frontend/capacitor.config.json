@@ -3,9 +3,9 @@
   "appName": "LifeSync AI",
   "webDir": "dist",
   "server": {
-    "_comment_url": "프로덕션: https://lifesync-ai.vercel.app (Vercel 배포 완료 후 활성화)",
     "cleartext": true,
-    "allowNavigation": ["*"]
+    "allowNavigation": ["*"],
+    "androidScheme": "https"
   },
   "plugins": {
     "CapacitorHttp": {

@@ -32,19 +32,42 @@ function PageLoader() {
   );
 }
 
-/** Android 뒤로가기 버튼 처리 (HashRouter 내부에서 사용) */
+/** Android 뒤로가기 버튼 처리 (HashRouter 내부에서 사용)
+ *
+ * window.history.length는 세션 전체 히스토리이므로 부정확.
+ * 대신 앱 내 네비게이션 횟수를 직접 추적합니다.
+ */
+const navCountRef = { current: 0 };
+
 function BackButtonHandler() {
   const navigate = useNavigate();
+
+  // 페이지 이동 시마다 카운트 증가
   useEffect(() => {
-    const listener = CapApp.addListener("backButton", ({ canGoBack }) => {
-      if (canGoBack) {
+    const onHash = () => { navCountRef.current++; };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  // 뒤로가기 버튼 리스너
+  useEffect(() => {
+    let listenerHandle = null;
+
+    CapApp.addListener("backButton", () => {
+      if (navCountRef.current > 0) {
+        navCountRef.current--;
         window.history.back();
       } else {
-        CapApp.exitApp();
+        // 홈 화면(첫 페이지)에서 뒤로가기 → 앱을 백그라운드로
+        CapApp.minimizeApp();
       }
-    });
-    return () => { listener.then(h => h.remove()); };
+    }).then(handle => { listenerHandle = handle; });
+
+    return () => {
+      if (listenerHandle) listenerHandle.remove();
+    };
   }, [navigate]);
+
   return null;
 }
 
